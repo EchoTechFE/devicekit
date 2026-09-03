@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { sameContentRect, toViewportRect } from './content-rect.js'
-import { DEVICE_FRAME_TAG, defineDeviceFrame, type DiminaDeviceFrame } from './device-frame.js'
+import { DEVICE_FRAME_TAG, defineDeviceFrame, type DeviceFrameElement } from './device-frame.js'
 
 defineDeviceFrame()
 
@@ -18,9 +18,9 @@ interface ContentRect {
  * immersive mode that gives it back, and a content rectangle it can position a
  * webview with), and must not be shaped by how the element happens to compute it.
  */
-interface ContentFrame extends DiminaDeviceFrame {
+interface ContentFrame extends DeviceFrameElement {
   readonly contentRect: ContentRect
-  readonly metrics: DiminaDeviceFrame['metrics'] & {
+  readonly metrics: DeviceFrameElement['metrics'] & {
     tabBarHeight: number
     content: { x: number, y: number, width: number, height: number }
   }
@@ -33,17 +33,17 @@ function mountFrame(attributes: Record<string, string> = {}): ContentFrame {
   return el
 }
 
-function shadowEl(el: DiminaDeviceFrame, selector: string): HTMLElement {
+function shadowEl(el: DeviceFrameElement, selector: string): HTMLElement {
   return el.shadowRoot!.querySelector<HTMLElement>(selector)!
 }
 
-const statusBar = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.status-bar')
-const navigationBarEl = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.navigation-bar')
-const tabBarEl = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.tab-bar')
+const statusBar = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.status-bar')
+const navigationBarEl = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.navigation-bar')
+const tabBarEl = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.tab-bar')
 
 // slotchange fires on a microtask, so the shadow DOM only catches up after one
 // await; el.metrics is a plain getter and already sees the assigned node.
-async function fillSlot(el: DiminaDeviceFrame, name: string): Promise<void> {
+async function fillSlot(el: DeviceFrameElement, name: string): Promise<void> {
   const node = document.createElement('div')
   node.slot = name
   el.append(node)
@@ -200,7 +200,7 @@ describe('contentRect in viewport coordinates', () => {
 })
 
 describe('the contentrectchange event', () => {
-  function countChanges(el: DiminaDeviceFrame): () => number {
+  function countChanges(el: DeviceFrameElement): () => number {
     let count = 0
     el.addEventListener('contentrectchange', () => {
       count += 1

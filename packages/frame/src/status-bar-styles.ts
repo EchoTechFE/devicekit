@@ -1,5 +1,5 @@
 /**
- * Status bar rules for `<dimina-device-frame>`'s shadow DOM — split out of
+ * Status bar rules for `<device-frame>`'s shadow DOM — split out of
  * styles.ts so that file stays under the repo's file-length ratchet.
  *
  * Geometry is read-only here: status-bar.ts is the single owner of where the
@@ -62,7 +62,7 @@ export const STATUS_BAR_STYLES = `
 }
 
 /* Size, corner radius and both offsets are written inline from the resolved
-   cutout — a cutout is not always centred, so nothing here may place it. */
+   cutout — a cutout is not always centered, so nothing here may place it. */
 .status-bar__notch {
   position: absolute;
   background: var(--device-cutout-color);

@@ -40,7 +40,7 @@ function currentClockText(now: Date): string {
 }
 
 /**
- * `status-bar-text-style` mirrors 微信's `navigationBarTextStyle`: it is the one
+ * `status-bar-text-style` mirrors WeChat's `navigationBarTextStyle`: it is the one
  * switch for the whole body chrome's foreground, not just the time/icons — the
  * home indicator reads this too, so both stay in sync with a single attribute.
  */

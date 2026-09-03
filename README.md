@@ -1,34 +1,38 @@
+English | [简体中文](./README.zh-CN.md)
+
 # devicekit
 
-一张机型表，加一个能画出假手机的自定义元素。
+A device table, and a custom element that draws the phone around it.
 
 [![CI](https://github.com/EchoTechFE/devicekit/actions/workflows/ci.yml/badge.svg)](https://github.com/EchoTechFE/devicekit/actions/workflows/ci.yml)
 [![npm @devicekit/devices](https://img.shields.io/npm/v/@devicekit/devices)](https://www.npmjs.com/package/@devicekit/devices)
 [![npm @devicekit/frame](https://img.shields.io/npm/v/@devicekit/frame)](https://www.npmjs.com/package/@devicekit/frame)
 
-## 在线预览
+## Live demo
 
-[echotechfe.github.io/devicekit](https://echotechfe.github.io/devicekit/) 就是 `packages/frame/demo`，main 分支下 `packages/` 一有改动就会自动重新部署。
+[echotechfe.github.io/devicekit](https://echotechfe.github.io/devicekit/) is `packages/frame/demo`, redeployed automatically whenever `packages/` changes on main. Pick a device, flip the orientation, toggle the bars, and watch the resolved metrics update next to the rendered phone.
 
-## 包
+## Packages
 
-| 包 | 是什么 |
+| Package | What it is |
 | --- | --- |
-| [`@devicekit/devices`](packages/devices) | 一张机型表（手机和平板，屏幕尺寸、像素比、状态栏、安全区、UA），和把机型换算成可用窗口尺寸的函数。不碰 DOM。 |
-| [`@devicekit/frame`](packages/frame) | 一个框架无关的 `<dimina-device-frame>` 自定义元素，负责画机身、状态栏和底部手势条。 |
+| [`@devicekit/devices`](packages/devices) | A table of phones and tablets — screen size, pixel ratio, status bar, safe-area insets, cutout geometry, user agent — plus the functions that turn a device into the window size a page actually gets. No DOM. |
+| [`@devicekit/frame`](packages/frame) | A framework-agnostic `<device-frame>` custom element that draws the body, the status bar and the home indicator around whatever you are previewing. |
 
-各包的完整 API 见它们自己的 README。
+Each package documents its full API in its own README.
 
-## 安装
+## Install
 
 ```sh
 pnpm add @devicekit/devices
 pnpm add @devicekit/frame
 ```
 
-## 最短上手
+If you only need the data and the arithmetic, `@devicekit/devices` is enough. `@devicekit/frame` depends on it, so installing the frame brings the table along.
 
-只要机型数据和尺寸换算：
+## Quick start
+
+Device data and size arithmetic only:
 
 ```ts
 import { findDevice, resolveWindowSize } from '@devicekit/devices'
@@ -37,7 +41,7 @@ const device = findDevice('iPhone 16 Pro')
 const size = device && resolveWindowSize(device)
 ```
 
-要画出这台手机：
+Draw the phone:
 
 ```ts
 import { defineDeviceFrame } from '@devicekit/frame'
@@ -46,18 +50,20 @@ defineDeviceFrame()
 ```
 
 ```html
-<dimina-device-frame device="iPhone 16 Pro">
-  <!-- 你的预览页面 -->
-</dimina-device-frame>
+<device-frame device="iPhone 16 Pro">
+  <!-- your preview goes here -->
+</device-frame>
 ```
 
-React 项目用 `@devicekit/frame/react` 的 `<DeviceFrame device="iPhone 16 Pro">` 组件，效果一样。
+React hosts can import `<DeviceFrame device="iPhone 16 Pro">` from `@devicekit/frame/react` instead; it renders the same element.
 
-## 机型覆盖
+## Device coverage
 
-机型表共 171 台，覆盖 iOS、Android、HarmonyOS 三个平台，包含折叠机的内外屏。另有一份精选的 `CLASSIC_DEVICES`（不到 20 台），给下拉框这类只需要常见机型的场景用。
+The table holds 171 devices across iOS, Android and HarmonyOS, including both screens of each folding model. `CLASSIC_DEVICES` is a hand-picked subset of fewer than 20, for places that need a short list rather than the full table — a device picker in a toolbar, for instance. `DEFAULT_DEVICE` is what renders when nothing asked for a particular device.
 
-## 开发
+Every number is sourced, and the fields nobody could verify are left at platform defaults rather than guessed. [`packages/devices`](packages/devices) says which is which, field by field.
+
+## Development
 
 ```sh
 pnpm install
@@ -67,27 +73,35 @@ pnpm lint
 pnpm check-types
 ```
 
-本地预览 `@devicekit/frame` 的 demo 页：
+Run the `@devicekit/frame` demo page locally:
 
 ```sh
 pnpm --filter @devicekit/frame demo
 ```
 
-构建预览页产物（Pages 部署走的也是这条命令，只是多带一个 `--base=/devicekit/`）：
+Build it (Pages deploys this same command, with `--base=/devicekit/` added):
 
 ```sh
 pnpm --filter @devicekit/frame demo:build
 ```
 
-## 发布
+## Releasing
 
-`pnpm publish -r` 只会发布 registry 上还没有的版本号，没改版本号的包会被自动跳过。所以发布流程是：改动对应包 `package.json` 里的 `version`，合并到 main，然后发一个 GitHub Release（或者手动跑 Publish 这个 workflow）。`@devicekit/frame` 对 `@devicekit/devices` 的 `workspace:` 依赖，会在打包时由 pnpm 自动换成真实版本号，不用手工处理。
+`pnpm publish -r --provenance` publishes only versions that are not on the registry yet, so a package whose version did not change is skipped automatically. The release flow is therefore: bump `version` in the package's `package.json`, merge to main, then publish a GitHub Release (or run the Publish workflow by hand). The `workspace:` dependency from `@devicekit/frame` on `@devicekit/devices` is rewritten to a real version range by pnpm at pack time — nothing to do by hand.
 
-仓库需要的一次性设置：
+One-time repository setup:
 
-- Settings → Secrets and variables → Actions 里加 `NPM_TOKEN`：一个对 `@devicekit` 组织有发布权限的 npm granular access token（如果给这个仓库开了 npm 的 trusted publishing，可以省掉这个 token）。
-- Settings → Pages，Source 选 "GitHub Actions"。
+- Settings → Secrets and variables → Actions: add `NPM_TOKEN`, an npm granular access token with publish rights on the `@devicekit` scope. (Not needed if npm trusted publishing is enabled for this repository.)
+- Settings → Pages: set Source to "GitHub Actions".
 
-## 许可证
+## Contributing
+
+Issues and pull requests are welcome. [CONTRIBUTING.md](./CONTRIBUTING.md) covers the local setup, the checks a change has to pass, and what adding a device to the table involves. Participation is governed by the [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Security
+
+Please do not report security issues in public issues. [SECURITY.md](./SECURITY.md) explains how to reach the maintainers privately.
+
+## License
 
 MIT

@@ -14,10 +14,10 @@ function pick(name: string): DeviceProfile {
 }
 
 /**
- * A hand-picked subset of `DEVICES` for hosts whose picker can't show all
- * 171 rows — devtools' simulator toolbar is the first consumer. Entries are
- * the same objects as in the full table (never copies), grouped iOS →
- * Android → HarmonyOS so a grouped dropdown needs no sorting of its own.
+ * A hand-picked subset of `DEVICES` for a host whose picker can't show all
+ * 171 rows — a toolbar dropdown, a segmented control. Entries are the same
+ * objects as in the full table (never copies), grouped iOS → Android →
+ * HarmonyOS so a grouped dropdown needs no sorting of its own.
  */
 export const CLASSIC_DEVICES: readonly DeviceProfile[] = [
   pick('iPhone SE (3rd gen)'),

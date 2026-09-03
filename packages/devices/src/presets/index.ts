@@ -19,7 +19,7 @@
  *   platform, screen and pixel ratio, and only where every one of them states
  *   the same value. One disagreement inside such a group and none of its
  *   members gets that field: iPhone X and iPhone 12 mini are both 375x812@3 and
- *   report status bars of 44 and 47, so neither lends one.
+ *   report status bars of 44 and 50, so neither lends one.
  *
  * Two things are deliberately left at platform defaults rather than guessed:
  * every non-iOS landscape inset, and the HarmonyOS gesture-bar height, which no
@@ -39,6 +39,7 @@ import { IOS_DEVICES } from './ios.js'
 
 export { ANDROID_DEVICES, HARMONY_DEVICES, IOS_DEVICES }
 
+/** Every device in the table, ordered iOS → Android → HarmonyOS. */
 export const DEVICES: readonly DeviceProfile[] = [...IOS_DEVICES, ...ANDROID_DEVICES, ...HARMONY_DEVICES]
 
 const BY_NAME = new Map(DEVICES.map((device) => [device.name, device]))
@@ -46,6 +47,13 @@ const BY_NAME = new Map(DEVICES.map((device) => [device.name, device]))
 /** What renders when nothing asked for a particular device. */
 export const DEFAULT_DEVICE: DeviceProfile = BY_NAME.get('iPhone X')!
 
+/**
+ * Looks a device up by its `name`, which is unique across the whole table.
+ *
+ * @param name a `DeviceProfile.name`; null and undefined are accepted so a
+ *   caller can pass a missing attribute straight through
+ * @returns the table's own object, or undefined when no row has that name
+ */
 export function findDevice(name: string | null | undefined): DeviceProfile | undefined {
   if (!name) return undefined
   return BY_NAME.get(name)

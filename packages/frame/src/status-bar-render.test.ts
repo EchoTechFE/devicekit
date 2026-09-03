@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { DEVICE_FRAME_TAG, defineDeviceFrame, type DiminaDeviceFrame } from './device-frame.js'
+import { DEVICE_FRAME_TAG, defineDeviceFrame, type DeviceFrameElement } from './device-frame.js'
 
 defineDeviceFrame()
 
-function mountFrame(attributes: Record<string, string> = {}): DiminaDeviceFrame {
-  const el = document.createElement(DEVICE_FRAME_TAG) as DiminaDeviceFrame
+function mountFrame(attributes: Record<string, string> = {}): DeviceFrameElement {
+  const el = document.createElement(DEVICE_FRAME_TAG) as DeviceFrameElement
   for (const [name, value] of Object.entries(attributes)) el.setAttribute(name, value)
   document.body.append(el)
   return el
 }
 
-function statusBar(el: DiminaDeviceFrame): HTMLElement {
+function statusBar(el: DeviceFrameElement): HTMLElement {
   return el.shadowRoot!.querySelector<HTMLElement>('.status-bar')!
 }
 

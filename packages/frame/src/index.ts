@@ -1,6 +1,6 @@
 export {
   CONTENT_RECT_CHANGE_EVENT,
-  DiminaDeviceFrame,
+  DeviceFrameElement,
   DEVICE_FRAME_TAG,
   defineDeviceFrame,
   type DeviceMetrics,

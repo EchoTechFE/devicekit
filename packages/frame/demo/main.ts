@@ -1,36 +1,38 @@
 /**
- * 这个包自带的预览页：把 <dimina-device-frame> 的每个属性、每个插槽都摆出来点一遍，
- * 顺便把它算出来的数字实时打在旁边。
+ * The package's own preview page: every attribute and every slot of
+ * <device-frame> wired to a control, with the numbers it resolves printed
+ * alongside as they change.
  *
- * 它直接引 ../src，不引构建产物——改了源码刷新就能看见。
+ * It imports ../src rather than the build output, so an edit to the source
+ * shows up on the next refresh.
  */
 import { DEFAULT_DEVICE, DEVICES, type DeviceOS } from '@devicekit/devices'
 import {
   CONTENT_RECT_CHANGE_EVENT,
   defineDeviceFrame,
   type ContentRect,
-  type DiminaDeviceFrame,
+  type DeviceFrameElement,
 } from '../src/index.js'
 
 defineDeviceFrame()
 
 const OS_LABEL: Record<DeviceOS, string> = { ios: 'iOS', android: 'Android', harmony: 'HarmonyOS' }
-/** 舞台四周留出的空白，自动缩放时按这个算装不装得下。 */
+/** Blank space kept around the stage; the auto-fit scale has to leave this much. */
 const STAGE_MARGIN = 48
 
 function need<T extends HTMLElement>(id: string): T {
   const element = document.getElementById(id)
-  if (element === null) throw new Error(`预览页缺少 #${id}`)
+  if (element === null) throw new Error(`the demo page has no #${id}`)
   return element as T
 }
 
 function templateChild(id: string): HTMLElement {
   const node = need<HTMLTemplateElement>(id).content.firstElementChild
-  if (!(node instanceof HTMLElement)) throw new Error(`预览页模板 #${id} 是空的`)
+  if (!(node instanceof HTMLElement)) throw new Error(`the demo template #${id} is empty`)
   return node
 }
 
-const frame = need<HTMLElement>('frame') as DiminaDeviceFrame
+const frame = need<HTMLElement>('frame') as DeviceFrameElement
 const stage = need('stage')
 const scaler = need('scaler')
 const deviceSelect = need<HTMLSelectElement>('device')
@@ -87,8 +89,9 @@ function setOrRemove(name: string, value: string): void {
 }
 
 /**
- * 插槽是「有没有内容」说了算的，所以关掉一条栏得把节点从 DOM 里拿走。
- * 光把它 hidden 起来，它仍然算插槽里的内容，那段高度照样被扣。
+ * A slot counts as filled or empty, so turning a bar off means taking its node
+ * out of the DOM. Merely hiding it still leaves it assigned to the slot, and
+ * the frame goes on charging the page for its height.
  */
 function syncSlot(active: HTMLElement | null, candidates: HTMLElement[]): void {
   for (const node of candidates) {
@@ -115,7 +118,7 @@ function report(rect: ContentRect = frame.contentRect): void {
   }
 }
 
-/** 先按舞台大小缩到装得下，再乘滑杆上的倍数。 */
+/** Scale down to fit the stage first, then multiply by the slider. */
 function layout(): void {
   const zoom = Number(zoomInput.value)
   zoomValue.value = `${Math.round(zoom * 100)}%`
@@ -128,8 +131,9 @@ function layout(): void {
   )
   scaler.style.transform = `scale(${(fit > 0 ? fit : 1) * zoom})`
 
-  // 缩放是宿主在自己这边做的变形，元素自己的盒子没变大小，ResizeObserver 不会响；
-  // 位置确实动了，所以这里主动读一次。
+  // Zooming is a transform the host applies on its own side: the element's box
+  // is not resized, so its ResizeObserver stays quiet. The rect did move, so
+  // read it once here.
   report()
 }
 

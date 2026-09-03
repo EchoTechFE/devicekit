@@ -19,8 +19,13 @@ function screenWidthFor(device: ResolvedDevice, orientation: Orientation): numbe
   return orientation === 'landscape' ? device.screen.height : device.screen.width
 }
 
+/**
+ * Which of the four status bar arrangements a device uses: an iPhone with a
+ * cutout, one without, an iPad, or Android's (which HarmonyOS borrows).
+ */
 export type StatusBarLayoutMode = 'ios-cutout' | 'ios-classic' | 'ipad' | 'android'
 
+/** Status bar geometry for one device in one orientation, all in CSS px. */
 export interface StatusBarLayout {
   mode: StatusBarLayoutMode
   /** This orientation's status bar height; 0 means the bar itself is hidden. */
@@ -144,6 +149,15 @@ function androidLayout(height: number): OrientationlessLayout {
   return { timeLeft: 31, trailing: 28, centerY: height / 2, scale: 1, leadingIcons: null }
 }
 
+/**
+ * Where to draw this device's status bar.
+ *
+ * @param device a resolved profile — the mode is picked from `os`, the screen
+ *   and the cutout, and the measured rows are keyed on `pixelRatio` too
+ * @param orientation which way the device is held
+ * @returns the geometry in CSS px, with `height` 0 when this orientation shows
+ *   no status bar at all
+ */
 export function computeStatusBarLayout(device: ResolvedDevice, orientation: Orientation): StatusBarLayout {
   const mode = modeFor(device)
   const height = statusBarHeightFor(device, orientation)

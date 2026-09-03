@@ -6,6 +6,7 @@
  */
 import type { DeviceProfile } from '../devices.js'
 
+/** Android phones and tablets. Part of DEVICES; listed here so a host can offer one platform alone. */
 export const ANDROID_DEVICES: readonly DeviceProfile[] = [
   { name: 'Pixel 7', os: 'android', screen: { width: 412, height: 915 }, pixelRatio: 2.625, system: 'Android 13', statusBarHeight: 52, safeAreaInsets: { top: 52 }, safeAreaInsetsLandscape: { right: 52 }, cutout: { shape: 'circle', width: 26, height: 26, top: 13 }, userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.55 Mobile Safari/537.36' },
   { name: 'Pixel 8', os: 'android', screen: { width: 412, height: 915 }, pixelRatio: 2.625, system: 'Android 14', statusBarHeight: 50, safeAreaInsets: { top: 50 }, safeAreaInsetsLandscape: { right: 50 }, cutout: { shape: 'circle', width: 28, height: 28, top: 11 }, userAgent: 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.55 Mobile Safari/537.36' },

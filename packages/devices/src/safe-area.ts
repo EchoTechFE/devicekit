@@ -73,7 +73,9 @@ export function resolveSafeArea(device: DeviceProfile, orientation: Orientation 
   return { top, left, right, bottom, width: right - left, height: bottom - top }
 }
 
+/** How much chrome to take off the screen in resolveWindowSize(). */
 export interface WindowSizeOptions {
+  /** Which way the device is held. Default portrait. */
   orientation?: Orientation
   /**
    * The app's own top bar. `true` uses the device's navigation bar height for

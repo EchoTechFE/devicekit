@@ -27,10 +27,13 @@
 
 import { deviceUserAgent } from './user-agent.js'
 
+/** The platforms the table covers. */
 export type DeviceOS = 'ios' | 'android' | 'harmony'
 
+/** Which way the device is held. Landscape swaps the screen's two sides. */
 export type Orientation = 'portrait' | 'landscape'
 
+/** A width and a height in CSS px — never physical pixels. */
 export interface ScreenSize {
   width: number
   height: number
@@ -63,7 +66,7 @@ export interface CutoutSpec {
   height: number
   /** Distance from the screen's top edge. 0 = flush, which is what a notch is. */
   top: number
-  /** Horizontal centre as a fraction of screen width. Omitted = centred. */
+  /** Horizontal center as a fraction of screen width. Omitted = centered. */
   centerX?: number
 }
 
@@ -77,6 +80,11 @@ export interface DeviceShell {
   bodyRadius?: number
 }
 
+/**
+ * One device as the table stores it: everything measured, nothing derived.
+ * Optional fields fall back to that platform's entry in PLATFORM_DEFAULTS —
+ * resolveDevice() applies those fallbacks so no reader has to.
+ */
 export interface DeviceProfile {
   /** Lookup key, so it has to be unique within the table. */
   name: string
@@ -188,6 +196,13 @@ function withInsets(partial: Partial<EdgeInsets> | undefined, fallback: EdgeInse
   }
 }
 
+/**
+ * Fills a profile's optional fields in from its platform's defaults, generating
+ * the user agent when the profile states none.
+ *
+ * @param profile a table entry or a caller's own profile of the same shape
+ * @returns the same device with every field present
+ */
 export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
   const defaults = PLATFORM_DEFAULTS[profile.os]
   const statusBarHeight = profile.statusBarHeight ?? defaults.statusBarHeight
@@ -216,15 +231,26 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
   }
 }
 
-/** Per-orientation views of the fields that are stored twice. */
+/**
+ * The status bar height for this orientation, in CSS px. 0 means the platform
+ * draws no status bar when held this way, which is what iOS does in landscape.
+ */
 export function statusBarHeightFor(device: ResolvedDevice, orientation: Orientation): number {
   return orientation === 'landscape' ? device.statusBarHeightLandscape : device.statusBarHeight
 }
 
+/**
+ * The height of the app's own top bar for this orientation, in CSS px. It is a
+ * per-platform convention rather than something the screen dictates.
+ */
 export function navigationBarHeightFor(device: ResolvedDevice, orientation: Orientation): number {
   return orientation === 'landscape' ? device.navigationBarHeightLandscape : device.navigationBarHeight
 }
 
+/**
+ * The safe-area insets for this orientation, in CSS px from each screen edge.
+ * Stored per orientation, never derived: rotating a phone does not scale them.
+ */
 export function safeAreaInsetsFor(device: ResolvedDevice, orientation: Orientation): EdgeInsets {
   return orientation === 'landscape' ? device.safeAreaInsetsLandscape : device.safeAreaInsets
 }

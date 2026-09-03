@@ -1,5 +1,5 @@
 /**
- * Shadow-DOM styles for `<dimina-device-frame>`.
+ * Shadow-DOM styles for `<device-frame>`.
  *
  * Kept as a string rather than a `.css` file so the package builds with plain
  * `tsc` and carries no bundler requirement into its consumers.
@@ -18,6 +18,11 @@ import { STATUS_BAR_STYLES } from './status-bar-styles.js'
  */
 export const DEVICE_FRAME_BORDER_WIDTH = 1
 
+/**
+ * The element's whole shadow-DOM stylesheet, as one CSS string. Exported so a
+ * host that registers the element under its own name, or renders it server-side,
+ * can reuse exactly the rules the element ships with.
+ */
 export const DEVICE_FRAME_STYLES = `
 :host {
   /* Reflected from the resolved device so slotted content can lay itself out
@@ -136,7 +141,7 @@ export const DEVICE_FRAME_STYLES = `
  * own background is what the status bar is painted on. These are !important on
  * purpose — a light-DOM rule of equal specificity beats a shadow-tree one, and
  * a host's ordinary padding: 0 12px would otherwise silently zero the top
- * inset and put the title under the status bar. Horizontal padding, colours
+ * inset and put the title under the status bar. Horizontal padding, colors
  * and content stay the host's.
  */
 ::slotted([slot="navigation-bar"]) {

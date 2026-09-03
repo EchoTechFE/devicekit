@@ -1,22 +1,24 @@
+English | [简体中文](./README.zh-CN.md)
+
 # @devicekit/frame
 
-预览界面里那台假手机：一个 `<dimina-device-frame>` 自定义元素，负责画机身、状态栏（时间、信号图标、刘海 / 灵动岛 / 挖孔）和底部的手势条。机型数据和尺寸换算在 [@devicekit/devices](../devices)，这个包依赖它。
+The phone a preview pretends to be: a `<device-frame>` custom element that draws the body, the status bar (clock, glyphs, notch / Dynamic Island / punch-hole) and the home indicator. The device data and the size arithmetic live in [@devicekit/devices](../devices), which this package depends on.
 
-同一台手机的预览外壳，不同宿主各写一份很容易漂移：写死的宽高、缺状态栏、不认识灵动岛。这个包把它做成一个独立的自定义元素，逻辑和样式只有一份权威实现。
+When every host writes its own preview shell, the shells drift apart: hard-coded sizes, a missing status bar, an island nobody knows about. This package makes it one standalone custom element, so the logic and the styles have a single authoritative implementation.
 
-做成自定义元素而不是某个框架的组件，是因为预览这台手机的宿主不见得用同一个框架——Electron 里的 React 面板、纯 DOM 的 Web 页面，都能直接用同一个标签。
+It is a custom element rather than a component in one framework because the hosts that need it do not share a framework — a React panel inside Electron, a plain-DOM web page, a CSS-only preview stage all use the same tag.
 
-## 安装
+## Install
 
 ```sh
 pnpm add @devicekit/frame
 ```
 
-机型表会跟着一起装上。只要数据不要外壳的，装 `@devicekit/devices` 就够。
+The device table comes along with it. If you only want the data and not the shell, `@devicekit/devices` alone is enough.
 
-## 快速上手
+## Quick start
 
-注册一次，之后当普通标签用：
+Register once, then use it as an ordinary tag:
 
 ```ts
 import { defineDeviceFrame } from '@devicekit/frame'
@@ -25,30 +27,32 @@ defineDeviceFrame()
 ```
 
 ```html
-<dimina-device-frame device="iPhone 16 Pro">
+<device-frame device="iPhone 16 Pro">
   <iframe src="/preview"></iframe>
-</dimina-device-frame>
+</device-frame>
 ```
 
-React 里也是同一个标签，属性全是字符串，JSX 类型也认得它：
+`defineDeviceFrame(tag?)` is safe to call more than once — a host that bundles the package twice, or hot-reloads, must not crash on the duplicate definition. It registers under `DEVICE_FRAME_TAG` (`'device-frame'`) unless you pass another name.
+
+The same tag works in JSX, with string attributes, and the JSX types know about it:
 
 ```tsx
-<dimina-device-frame device={deviceName} orientation={orientation}>
+<device-frame device={deviceName} orientation={orientation}>
   <MiniAppFrame ... />
-</dimina-device-frame>
+</device-frame>
 ```
 
-被预览的内容放在默认插槽里，它待在 light DOM，不进 shadow root——所以宿主自己的样式表、`document.querySelector`、往里挂节点的扩展点，全都跟以前一样能够到它。元素只画外壳，从不伸手进内容。
+The previewed content goes in the default slot, and it stays in the light DOM rather than moving into the shadow root — so the host's own stylesheets, `document.querySelector`, and any extension point that appends nodes into it all keep working. The element draws the shell and never reaches into the content.
 
-没有机型表的宿主（比如只有一块写死的屏）可以不给 `device`，直接给尺寸：
+A host with no device table (a single hard-coded screen, say) can skip `device` and give sizes directly:
 
 ```html
-<dimina-device-frame width="375" height="812" cutout="none"></dimina-device-frame>
+<device-frame width="375" height="812" cutout="none"></device-frame>
 ```
 
 ## `@devicekit/frame/react`
 
-想要属性对象、`deviceProfile` 这种没有属性形式的字段、或者一个能拿 ref 的组件，就从这个子入口拿 `<DeviceFrame>` 而不是直接写标签名。它是对元素的一层薄封装：模块加载时自动 `defineDeviceFrame()`，把布尔 prop 翻成"要么带属性要么整个不带"（`embedded={false}` 不会像原生自定义元素那样把 `embedded="false"` 糊到 DOM 上），并在 `useLayoutEffect` 里把 `deviceProfile` 当属性（而不是属性字符串）赋给底层元素：
+For a props object, for `deviceProfile` (which has no attribute form), or for a component you can take a ref to, import `<DeviceFrame>` from this subpath instead of writing the tag by hand. It is a thin wrapper over the element: it calls `defineDeviceFrame()` on module load, turns boolean props into "attribute present or absent entirely" (`embedded={false}` does not land as the literal `embedded="false"` the way it would on a raw custom element), maps `className` to the `class` attribute, and assigns `deviceProfile` as a property — not an attribute string — in a `useLayoutEffect`:
 
 ```tsx
 import { DeviceFrame } from '@devicekit/frame/react'
@@ -58,90 +62,105 @@ import { DeviceFrame } from '@devicekit/frame/react'
 </DeviceFrame>
 ```
 
-这个子入口把 `react` 列为可选 peer dependency——只有真的 `import` 它才会拉进 React，普通标签用法（上面那段）完全不需要装 React。
+`DeviceFrameProps` extends `React.HTMLAttributes<HTMLElement>` and adds `device`, `deviceProfile`, `orientation`, `embedded`, `immersive`, `statusBar` (`false` hides the drawn status bar), `statusBarTextStyle`, `statusBarBackground`, `navigationBarHeight`, `tabBarHeight` and `children`. The ref is a `DeviceFrameElement`, so `metrics` and `contentRect` are available on it.
 
-## 布局前先知道尺寸：`frameOuterSize`
+This subpath lists `react` as an optional peer dependency — React is only pulled in if you actually import it. The plain-tag usage above needs no React at all.
 
-机身外框有多大（屏幕 + 机身 padding + 1px 描边）在元素挂载前就能算出来，宿主排自己的容器/自动缩放时不必等一次布局：
+## Knowing the size before layout: `frameOuterSize`
+
+How large the body ends up (screen + bezel padding + a 1px border) can be computed before the element is even mounted, so a host laying out its own container or auto-scaling does not have to wait for a layout pass:
 
 ```ts
 import { frameOuterSize } from '@devicekit/frame'
 import { findDevice } from '@devicekit/devices'
 
 const size = frameOuterSize(findDevice('iPhone 16 Pro')!, 'portrait')
-// { width, height } —— embedded: true 时就是裸屏幕尺寸,不含机身
+// { width, height } — with { embedded: true } it is the bare screen, no body
 ```
 
-## 自带的预览页
+## The bundled demo page
 
-包里带一个预览页，把这篇文档说的东西全摆成了控件：
+The package ships a preview page with everything in this document wired up to a control:
 
 ```sh
 pnpm --filter @devicekit/frame demo
 ```
 
-左边一列是机型（171 台全在里面）、方向、两条栏、`immersive`、`embedded`、状态栏和缩放，往下是实时打出来的 `metrics` 和 `contentRect`，以及 `contentrectchange` 到目前为止发了多少次；右边是画出来的手机，标题栏和 tab 栏用的就是下面那两段可复制的示例。
+The left column has the device (all 171 of them), the orientation, the two bars, `immersive`, `embedded`, the status bar and the zoom, and below that the live `metrics` and `contentRect` plus how many `contentrectchange` events have fired so far. On the right is the rendered phone, whose title bar and tab bar are the copyable examples below.
 
-它直接引 `src/`，不引构建产物——改完源码存盘，页面就是新的。这份预览只在仓库里，不进 npm 包。
+It imports `src/` directly rather than the build output, so saving a source file updates the page. The demo lives in the repository only and is not part of the npm package.
 
-## 属性
+## Attributes
 
-| 属性 | 取值 | 说明 |
+| Attribute | Values | What it does |
 | --- | --- | --- |
-| `device` | 机型名，如 `iPhone 16 Pro` | 表里没有的名字会被忽略，退回默认尺寸 |
-| `os` | `ios`（默认）、`android`、`harmony` | 没有机型也没写高度时，状态栏和导航栏走这个平台的默认值 |
-| `orientation` | `portrait`（默认）、`landscape` | 横屏时宽高互换，其余的数字换成机型表里横屏那一套 |
-| `width`、`height` | 数字，CSS px，**竖屏方向** | 给了就盖过机型表里的值 |
-| `pixel-ratio` | 数字 | 同上 |
-| `cutout` | `none`、`notch`、`pill`、`circle` | 按形状取一套通用几何。要精确的挖孔用 `deviceProfile` 传 |
-| `status-bar-height` | 数字 | 状态栏那条的高度，画出来的那个；横竖屏都覆盖 |
-| `safe-area-top` / `-right` / `-bottom` / `-left` | 数字 | 安全区四边，各自独立，写哪边覆盖哪边；横竖屏都覆盖 |
-| `navigation-bar-height` | 数字 | 盖过机型表里的导航栏高度；横竖屏都覆盖 |
-| `tab-bar-height` | 数字 | 盖过 tab 栏的默认高度 50 |
-| `user-agent` | 字符串 | 盖过按平台生成的 UA |
-| `status-bar` | 缺省、任意文本、`live`、`hidden` | 缺省显示 `9:41`；`live` 走真实时钟，每分钟走一次；`hidden` 整条藏起来 |
-| `status-bar-text-style` | `black`（默认）、`white` | black = 深色文字/图标，配浅色背景用（对应 iOS 的 `darkContent`、Android 的 light status bar）；white = 浅色文字，配深色背景用（对应 iOS 的 `lightContent`）。真机的 home 指示条也是系统按内容明暗自适应，这里跟随同一个开关 |
-| `status-bar-background` | CSS 颜色 | 显式给状态栏这条 strip 上底色；缺省透明。配了 `navigation-bar` 插槽的页面不需要它——插槽自己的背景已经盖住状态栏了，这个属性是给没有导航栏、或者要模拟 App 级涂色（Android 15 之前的 `statusBarColor`）的场景用的 |
-| `immersive` | 布尔属性 | 见"页面自己画标题栏" |
-| `embedded` | 布尔属性 | 见 `embedded` |
+| `device` | A device name, such as `iPhone 16 Pro` | A name not in the table is ignored, falling back to the default size |
+| `os` | `ios` (default), `android`, `harmony` | With no device and no explicit heights, the status bar and navigation bar use this platform's defaults |
+| `orientation` | `portrait` (default), `landscape` | Landscape swaps width and height and switches the other numbers to the device's landscape set |
+| `width`, `height` | Numbers, CSS px, **portrait orientation** | Override the device table |
+| `pixel-ratio` | Number | Same |
+| `cutout` | `none`, `notch`, `pill`, `circle` | Stock geometry for that shape. Exact cutouts go through `deviceProfile` |
+| `status-bar-height` | Number | The height of the drawn strip; overrides both orientations |
+| `safe-area-top` / `-right` / `-bottom` / `-left` | Numbers | Each edge independently; whichever you set is overridden, in both orientations |
+| `navigation-bar-height` | Number | Overrides the device table's navigation bar height, in both orientations |
+| `tab-bar-height` | Number | Overrides the default tab bar height of 50 |
+| `user-agent` | String | Overrides the generated user agent |
+| `status-bar` | Absent, any text, `live`, `hidden` | Absent shows `9:41`; `live` runs a real clock, ticking once a minute; `hidden` removes the strip |
+| `status-bar-text-style` | `black` (default), `white` | black = dark text and glyphs for a light background (iOS `darkContent`, Android light status bar); white = light text for a dark background (iOS `lightContent`). On a real phone the home indicator adapts to the content the same way, so it follows this switch too |
+| `status-bar-background` | A CSS color | Paints the status bar strip; transparent by default. A page with a `navigation-bar` slot does not need it — the slot's own background already covers the status bar. This is for pages with no navigation bar, or for emulating an app-level tint (Android's pre-15 `statusBarColor`) |
+| `immersive` | Boolean attribute | See "The page draws its own title bar" |
+| `embedded` | Boolean attribute | See `embedded` |
 
-默认时间固定在 `9:41` 而不是当前时间，是为了截图和视觉 diff 每次都一样。真的想让它走起来就写 `status-bar="live"`。
+The default clock is pinned to `9:41` rather than the current time so screenshots and visual diffs come out identical every run. Set `status-bar="live"` if you want it to move.
 
-机型表以外的机型，用 property（没有对应的属性写法）传进去，它优先于 `device`：
+## Properties
+
+| Property | Type | What it is |
+| --- | --- | --- |
+| `deviceProfile` | `DeviceProfile \| null` | A device that is not in the shared table; wins over the `device` attribute. Read/write, no attribute form. `null` clears it |
+| `device` | `DeviceProfile \| null` | Read-only: whichever profile the `device` attribute named, or `null` |
+| `orientation` | `Orientation` | Read-only: the current orientation |
+| `embedded` | `boolean` | Read-only: whether the element is in embedded mode |
+| `immersive` | `boolean` | Read-only: whether the page runs behind the bars |
+| `profile` | `DeviceProfile` | Read-only: the profile actually in effect, attribute overrides folded in |
+| `metrics` | `DeviceMetrics` | Read-only: the numbers the element last drew with |
+| `contentRect` | `ContentRect` | Read-only: where the content region sits in viewport coordinates |
+
+A device the table does not have is passed as a property, and it takes precedence over `device`:
 
 ```ts
 el.deviceProfile = { name: 'Pixel 9', os: 'android', screen: { width: 412, height: 915 }, pixelRatio: 3 }
 ```
 
-`el.metrics` 读得到元素最后是按哪几个数画的：`screen`、`orientation`、`pixelRatio`、`userAgent`、`statusBarHeight`、`navigationBarHeight`、`tabBarHeight`、`safeArea`、`safeAreaInsets`、`window`、`content`、`cutout`、`shell`。
+`el.metrics` is a `DeviceMetrics`: `screen`, `orientation`, `pixelRatio`, `userAgent`, `statusBarHeight`, `navigationBarHeight`, `tabBarHeight`, `safeArea`, `safeAreaInsets`, `window`, `content`, `cutout` and `shell`. `navigationBarHeight` and `tabBarHeight` are zero unless the matching slot has content; `window` is what the previewed page actually gets, and `content` is where that window sits on the screen.
 
-## 插槽
+## Slots
 
-| 插槽 | 放什么 |
+| Slot | What goes in it |
 | --- | --- |
-| 默认 | 被预览的内容 |
-| `navigation-bar` | 宿主自己画的标题栏，从屏幕顶端开始、盖住状态栏 |
-| `tab-bar` | 宿主自己画的 tab 栏，贴在屏幕底部 |
-| `overlay` | 盖在整块屏幕之上的层（调试标注、扩展挂载点）；默认不收点击 |
+| default | The content being previewed |
+| `navigation-bar` | The host's own title bar, starting at the top of the screen and covering the status bar |
+| `tab-bar` | The host's own tab bar, pinned to the bottom of the screen |
+| `overlay` | A layer above the whole screen (debug annotations, extension mount points); does not take clicks by default |
 
-`navigation-bar` 和 `tab-bar` 这两条**收点击**——插进来的是带按钮的真栏。它们各自占一段高度，`metrics.window` 会把这段扣掉。
+`navigation-bar` and `tab-bar` **do take clicks** — what gets slotted in are real bars with real buttons. Each reserves its own height, and `metrics.window` has it subtracted.
 
-`navigation-bar` 这个槽位从屏幕 y=0 起、盖住状态栏——微信小程序里导航栏视图本来就是从 y=0 起、高度等于状态栏加导航栏，`navigationBarBackgroundColor` 因此铺满状态栏，这里照这个模型来。插进来的元素默认会得到 `padding-top: var(--device-status-bar-height)`，让内容本身让开状态栏，而它的背景自然盖到了状态栏底下——和微信的效果一致。竖直方向的几何（`box-sizing`、`height: 100%`、`padding-top`）由 frame 用 `!important` 钉死，宿主的 `padding: 0 12px` 之类简写不会把顶部留白清零；左右内边距、颜色和内容仍归宿主。自定义导航（`immersive`）或者干脆没插导航栏的页面，则要自己把内容画到顶。
+The `navigation-bar` slot starts at screen y=0 and covers the status bar, because that is the model a mini program uses: the navigation bar view starts at y=0 with a height of status bar plus navigation bar, which is why `navigationBarBackgroundColor` fills the status bar too. A slotted element gets `padding-top: var(--device-status-bar-height)` by default, so its content clears the status bar while its background naturally extends underneath — matching what WeChat draws. The vertical geometry (`box-sizing`, `height: 100%`, `padding-top`) is pinned with `!important` so a host shorthand like `padding: 0 12px` cannot zero out the top inset; horizontal padding, colors and content remain the host's. A page with a custom navigation bar (`immersive`), or no slotted bar at all, draws to the top itself.
 
-**插槽空着的时候这层不存在**：高度是 0，页面也不会被凭空缩短。导航栏的高度取机型表里当前方向的值（iOS 竖屏 44、横屏 32），tab 栏没有机型数据可依——tab 栏是应用的东西不是手机的——默认按 50 算，自己的栏不是这个高度就写 `tab-bar-height`。
+**An empty slot does not exist**: its height is zero and the page is not shortened for nothing. The navigation bar height comes from the device table for the current orientation (44 portrait, 32 landscape on iOS). The tab bar has no device data to go on — a tab bar belongs to the app, not the phone — so it defaults to 50; set `tab-bar-height` if yours is a different height.
 
-这个包**不提供现成的标题栏组件**：标题栏长什么样是宿主的事，一个组件挡不住各家的按钮、字号和配色。下面两段是可以直接复制走的起点。
+This package **ships no ready-made title bar component**: what a title bar looks like is the host's business, and one component cannot survive everybody's buttons, type sizes and colors. The two snippets below are starting points to copy.
 
-### 小程序标题栏
+### A mini-program title bar
 
 ```html
-<dimina-device-frame device="iPhone 16 Pro">
+<device-frame device="iPhone 16 Pro">
   <div slot="navigation-bar" class="mp-title-bar">
-    <button class="mp-title-bar__back" aria-label="返回">‹</button>
-    <span class="mp-title-bar__title">购物车</span>
+    <button class="mp-title-bar__back" aria-label="Back">‹</button>
+    <span class="mp-title-bar__title">Cart</span>
   </div>
   <iframe src="/preview"></iframe>
-</dimina-device-frame>
+</device-frame>
 ```
 
 ```css
@@ -165,7 +184,8 @@ el.deviceProfile = { name: 'Pixel 9', os: 'android', screen: { width: 412, heigh
   cursor: pointer;
 }
 
-/* 标题在整条栏里居中，而不是在返回键右边居中——微信就是这么排的 */
+/* The title is centered in the whole bar, not in the space right of the back
+   button — that is how WeChat lays it out. */
 .mp-title-bar__title {
   position: absolute;
   left: 50%;
@@ -173,17 +193,17 @@ el.deviceProfile = { name: 'Pixel 9', os: 'android', screen: { width: 412, heigh
 }
 ```
 
-### App 内嵌 H5 的返回栏
+### An in-app browser's back bar
 
 ```html
-<dimina-device-frame device="iPhone 16 Pro" status-bar-text-style="white">
+<device-frame device="iPhone 16 Pro" status-bar-text-style="white">
   <div slot="navigation-bar" class="h5-bar">
-    <button class="h5-bar__back" aria-label="返回">‹</button>
-    <span class="h5-bar__title">活动详情</span>
-    <button class="h5-bar__close" aria-label="关闭">✕</button>
+    <button class="h5-bar__back" aria-label="Back">‹</button>
+    <span class="h5-bar__title">Campaign</span>
+    <button class="h5-bar__close" aria-label="Close">✕</button>
   </div>
   <iframe src="/activity"></iframe>
-</dimina-device-frame>
+</device-frame>
 ```
 
 ```css
@@ -211,18 +231,18 @@ el.deviceProfile = { name: 'Pixel 9', os: 'android', screen: { width: 412, heigh
 }
 ```
 
-深色的栏配 `status-bar-text-style="white"`，状态栏里的时间、图标和 home 指示条才跟着变白。
+A dark bar wants `status-bar-text-style="white"`, so the clock, the glyphs and the home indicator turn white with it.
 
-状态栏里时间和图标摆在哪，不是居中或按耳朵平分，而是按真机排：iPhone 刘海 / 灵动岛机型按屏宽、像素比和状态栏高度查一张模拟器实测表（时间左边缘、电池右边缘、行高中线、图标缩放），表外尺寸退回按耳朵推的公式；没有刘海的 iPhone 走老式排法（信号在左、时间居中、电池在右）；iPad 时间贴左 17pt（Home 键 iPad 7pt）、电池贴右；Android 和鸿蒙时间左起 31dp、图标右留 28dp、电池竖放。这套规则在 `computeStatusBarLayout` 里，`.status-bar` 上的 `data-layout` 和 `--sb-*` 变量就是它的输出。鸿蒙没有实测，沿用 Android 的排法。
+Where the clock and the glyphs sit in the status bar is neither centered nor split evenly around the cutout, but laid out the way the device does it: iPhones with a notch or an island look up a measured table by screen width, pixel ratio and status bar height (time's left edge, battery's right edge, the midline, glyph scale), and sizes outside that table fall back to a formula derived from the ears; iPhones without a notch use the classic arrangement (signal left, time centered, battery right); iPads put the clock 17pt from the left (7pt on Home-button iPads) and the battery against the right edge; Android and HarmonyOS start the clock 31dp in, leave 28dp on the right, and stand the battery upright. Those rules are `computeStatusBarLayout`, and the `data-layout` attribute and `--sb-*` variables on `.status-bar` are its output. HarmonyOS has no measurements, so it reuses the Android arrangement.
 
-## 页面自己画标题栏（`immersive`）
+## The page draws its own title bar (`immersive`)
 
-小程序的 `navigationStyle: "custom"`，以及自绘标题栏的内嵌 H5，是另一种排法：**栏还在屏幕上，但页面拿到的是整块屏，自己往下让开那几条栏。**
+A mini program's `navigationStyle: "custom"`, and an in-app H5 page with its own title bar, are a different arrangement: **the bars are still on screen, but the page is handed the whole screen and keeps clear of them itself.**
 
 ```html
-<dimina-device-frame device="iPhone 16 Pro" immersive>
+<device-frame device="iPhone 16 Pro" immersive>
   <div class="page">...</div>
-</dimina-device-frame>
+</device-frame>
 ```
 
 ```css
@@ -233,15 +253,15 @@ el.deviceProfile = { name: 'Pixel 9', os: 'android', screen: { width: 412, heigh
 }
 ```
 
-写上 `immersive` 之后 `metrics.window` 就是整块屏幕，`metrics.content` 从 `(0, 0)` 起算；各条栏照样画、照样报自己的高度，页面按这些高度自己留白。不写的时候是默认那种排法：页面从状态栏和导航栏下面开始，`metrics.content.y` 就是这两条之和。
+With `immersive`, `metrics.window` is the whole screen and `metrics.content` starts at `(0, 0)`. The bars are still drawn and still report their heights; the page uses those heights to leave room itself. Without it, the default arrangement applies: the page starts below the status bar and the navigation bar, and `metrics.content.y` is the sum of the two.
 
 ## `embedded`
 
-写上 `embedded` 就是"别装了"：不画状态栏、不画手势条、不锁死设备尺寸，安全区全部报 0，整块交给容器自己排。devtools 把模拟器嵌进面板里的时候走这条路——那时外面那圈机身是面板画的，元素再画一层就重了。
+`embedded` means "stop pretending": no status bar, no home indicator, no locked device size, all safe-area insets reported as zero, and the whole thing left to the container to lay out. This is how devtools embeds the simulator in a panel — the body around it is drawn by the panel there, and a second one from the element would be one too many.
 
-## 内容怎么知道自己有多少地方
+## How content learns how much room it has
 
-元素把最后算出来的那些数写成宿主上的 CSS 变量，插槽里的内容直接拿来用，不需要宿主再通过别的通道把同样的数字告诉它一遍：
+The element reflects the resolved numbers onto the host as CSS custom properties, so slotted content can read them directly instead of the host having to hand the same numbers over through some other channel:
 
 ```css
 .page {
@@ -250,39 +270,79 @@ el.deviceProfile = { name: 'Pixel 9', os: 'android', screen: { width: 412, heigh
 }
 ```
 
-| 变量 | 是什么 |
+| Variable | What it is |
 | --- | --- |
-| `--device-width`、`--device-height` | 屏幕尺寸，当前方向 |
-| `--device-window-width`、`--device-window-height` | 页面真正能用的尺寸：屏幕减状态栏、减导航栏、减 tab 栏（`immersive` 下就是整块屏） |
-| `--device-pixel-ratio` | 无单位数字 |
-| `--device-status-bar-height` | 状态栏那条的高度 |
-| `--device-navigation-bar-height` | 插槽里那层导航栏的高度，没插内容时是 0 |
-| `--device-tab-bar-height` | 插槽里那层 tab 栏的高度，没插内容时是 0 |
-| `--device-safe-area-top` / `-right` / `-bottom` / `-left` | 安全区**边距**（离各边多远），跟 `env(safe-area-inset-*)` 报的是同一回事 |
-| `--device-screen-radius`、`--device-bezel`、`--device-body-radius` | 机身几何 |
+| `--device-width`, `--device-height` | The screen size in the current orientation |
+| `--device-window-width`, `--device-window-height` | What the page actually gets: the screen minus the status bar, the navigation bar and the tab bar (the whole screen under `immersive`) |
+| `--device-pixel-ratio` | A unitless number |
+| `--device-status-bar-height` | The height of the drawn status bar |
+| `--device-navigation-bar-height` | The height of the slotted navigation bar; zero when the slot is empty |
+| `--device-tab-bar-height` | The height of the slotted tab bar; zero when the slot is empty |
+| `--device-safe-area-top` / `-right` / `-bottom` / `-left` | Safe-area **insets** (distance from each edge), the same thing `env(safe-area-inset-*)` reports |
+| `--device-screen-radius`, `--device-bezel`, `--device-body-radius` | Body geometry |
 
-`embedded` 下屏幕尺寸那两个不再写出（元素自己宽高走 `100%`，尺寸归容器管），其余为 0。
+Under `embedded` the two screen-size variables are not written at all (the element sizes itself at `100%` and the container owns the size); the rest are zero.
 
-外观也留了几个变量可以盖：`--device-frame-radius`（盖过机型自己的机身圆角）、`--device-frame-border`、`--device-frame-background`、`--device-frame-shadow`、`--device-cutout-color`（刘海/灵动岛/挖孔的颜色）。机身默认是近黑色（`#0b0b0c`）配一圈极淡的白色描边，`--device-bezel` 按平台取默认值（iOS 6、Android/HarmonyOS 4），单个机型可以在 `shell.bezel` 里覆盖。
+A few more variables exist to override the appearance: `--device-frame-radius` (overrides the device's own body radius), `--device-frame-border`, `--device-frame-background`, `--device-frame-shadow` and `--device-cutout-color` (the color of the notch, island or punch-hole). The body defaults to near-black (`#0b0b0c`) with a very faint white hairline border, and `--device-bezel` takes its default from the platform (6 on iOS, 4 on Android and HarmonyOS); an individual device can override it in `shell.bezel`.
 
-**它只给数值，不改 `env(safe-area-inset-*)`。** 被预览的页面里那句 `env(safe-area-inset-top)` 拿到的仍然是 0，因为浏览器不让 JS 改这个值。要让页面里的 `env()` 真的返回 59，只有 Electron / Chromium 能做到，走 CDP 的 `Emulation.setSafeAreaInsetsOverride`——devtools 就是这么做的，把这里算出来的边距喂给它就行。纯 web 宿主没有对应能力，只能让被预览的页面改读上面那几个 CSS 变量。
+**It publishes numbers and does not change `env(safe-area-inset-*)`.** An `env(safe-area-inset-top)` inside the previewed page still returns 0, because browsers do not let JavaScript set that value. Making `env()` actually return 59 is possible only in Electron or Chromium, through CDP's `Emulation.setSafeAreaInsetsOverride` — which is what devtools does, feeding it the insets computed here. A plain web host has no equivalent and has to let the previewed page read the CSS variables above instead.
 
-## 用 webview 装内容
+## Hosting content in a webview
 
-放得进 DOM 的东西（`<iframe>`、宿主自己的组件）扔默认插槽就行，元素已经把位置排好了。但 Electron 的 `WebContentsView` 根本不是 DOM 节点，插不进插槽，只能由宿主按坐标摆。
+Anything that goes in the DOM — an `<iframe>`, a component of the host's own — goes in the default slot, already positioned. But Electron's `WebContentsView` is not a DOM node at all, cannot be slotted, and has to be placed by the host at coordinates.
 
-**这个包不管这块 webview，只报它该在哪。** 谁来创建这个 view、用哪个 partition、挂什么 preload、什么时候销毁，都是宿主的事；把这些塞进一个元素里，只会让每个宿主都得去绕开它。
+**This package does not own that webview; it only reports where it belongs.** Who creates the view, which partition it uses, what preload it gets and when it is destroyed are the host's business, and folding those into an element would only make every host work around it.
 
 ```ts
-frame.addEventListener('contentrectchange', (event) => {
+import { CONTENT_RECT_CHANGE_EVENT } from '@devicekit/frame'
+
+frame.addEventListener(CONTENT_RECT_CHANGE_EVENT, (event) => {
   const { x, y, width, height, scale } = event.detail
-  // 在 renderer 里量，把数字发给 main 去摆 view
+  // measured in the renderer; the numbers go to main, which positions the view
   ipcRenderer.send('preview:bounds', { x, y, width, height, scale })
 })
 ```
 
-`event.detail` 和 `frame.contentRect` 是同一个东西：内容区在**视口坐标系**里的位置，可以直接拿去 `setBounds()`。`scale` 是渲染出来的一个 px 顶几个屏幕逻辑 px——宿主把整台手机缩小塞进面板时它才不是 1，这时候 view 也得跟着缩（Electron 用 `setZoomFactor`），否则位置对了尺寸不对。
+`CONTENT_RECT_CHANGE_EVENT` is the event name, `'contentrectchange'`. Its `event.detail` and `frame.contentRect` are the same thing: a `ContentRect`, the content region in **viewport coordinates**, ready to hand to `setBounds()`. `scale` is how many screen-logical pixels one rendered pixel covers — it is 1 until the host shrinks the whole phone to fit a panel, and then the view has to shrink with it (Electron's `setZoomFactor`), or the position will be right and the size wrong.
 
-事件只在矩形真的动了才发：改方向、开关 `immersive`、插拔导航栏、宿主缩放，都会发；状态栏换个颜色、时钟走一分钟，不发。宿主大小变化靠 `ResizeObserver` 盯着，所以缩放面板也能收到。
+The event fires only when the rectangle actually moved: changing orientation, toggling `immersive`, slotting a bar in or out, and host zoom all fire it; recoloring the status bar or ticking the clock do not. Host size changes are watched with a `ResizeObserver`, so a resizable panel gets events too.
 
-`metrics.content` 是同一块区域在**屏幕坐标系**里的位置——从屏幕左上角量起，不含机身那一圈。要往被预览页面里传"你在屏幕的哪个位置"用它，摆真实 view 用 `contentRect`。
+`metrics.content` is the same region in **screen coordinates** — a `ContentBox`, measured from the screen's top-left and excluding the body. Use it to tell the previewed page where on the screen it sits; use `contentRect` to position a real view.
+
+## Building on the internals
+
+The pieces the element is built from are exported too, for a host that needs to draw part of this itself or to check its own arithmetic against the frame's.
+
+`computeStatusBarLayout(device, orientation)` returns the `StatusBarLayout` described above: `mode` (a `StatusBarLayoutMode`: `'ios-cutout'`, `'ios-classic'`, `'ipad'` or `'android'`), `height`, `centerY`, `scale`, `timeLeft`, `trailing` and `leadingIcons`. It is the single owner of that geometry — the DOM only writes these numbers out, and the stylesheet only reads them, so there is one place to fix when a measurement turns out to be wrong.
+
+`CUTOUT_PRESETS` is the stock geometry per shape (`Record<CutoutShape, CutoutSpec>`), for a host that knows its phone has a notch but carries no measurements of its own; per-device presets in the table override it. `cutoutBorderRadius(cutout)` gives the CSS `border-radius` that follows from the shape — a notch hangs off the top edge and rounds only its bottom corners, while a pill and a punch-hole float free and round the whole way. `cutoutLeft(cutout, screenWidth)` is its left offset, honoring `centerX`. `statusBarEars(cutout, screenWidth)` returns the two clear strips either side of it, `{ left, right }`, or `null` when there is no cutout to dodge.
+
+`profileFromAttributes(element, named, fallbackScreen)` is how attributes get folded back onto a device profile — the rule that an attribute overrides the preset and a missing attribute falls through to it, stated once for every field instead of once per field inside a render path.
+
+`DEVICE_FRAME_STYLES` is the shadow-DOM stylesheet as a string. It is a string rather than a `.css` file so the package builds with plain `tsc` and carries no bundler requirement into its consumers.
+
+## API reference
+
+| Export | Type | What it is |
+| --- | --- | --- |
+| `defineDeviceFrame` | `(tag?: string) => void` | Registers the element; safe to call repeatedly |
+| `DEVICE_FRAME_TAG` | `string` | `'device-frame'` |
+| `DeviceFrameElement` | `class extends HTMLElement` | The element class, for `instanceof` and for typing a ref |
+| `CONTENT_RECT_CHANGE_EVENT` | `string` | `'contentrectchange'` |
+| `frameOuterSize` | `(profile: DeviceProfile, orientation: Orientation, options?: { embedded?: boolean }) => ScreenSize` | The frame's outer footprint, before layout |
+| `computeStatusBarLayout` | `(device: ResolvedDevice, orientation: Orientation) => StatusBarLayout` | Status bar geometry |
+| `CUTOUT_PRESETS` | `Record<CutoutShape, CutoutSpec>` | Stock geometry per cutout shape |
+| `cutoutBorderRadius` | `(cutout: CutoutSpec) => string` | The `border-radius` for that shape |
+| `cutoutLeft` | `(cutout: CutoutSpec, screenWidth: number) => number` | The cutout's left offset |
+| `statusBarEars` | `(cutout: CutoutSpec \| null, screenWidth: number) => { left: number, right: number } \| null` | The clear strips either side of the cutout |
+| `profileFromAttributes` | `(element: Element, named: DeviceProfile \| null, fallbackScreen: { width: number, height: number }) => DeviceProfile` | Attributes folded back onto a profile |
+| `DEVICE_FRAME_STYLES` | `string` | The shadow-DOM stylesheet |
+| `DeviceFrame` | React component (`@devicekit/frame/react`) | The React wrapper |
+
+Types: `DeviceMetrics`, `StatusBarTextStyle` (`'black' | 'white'`), `ContentBox`, `ContentRect`, `StatusBarLayout`, `StatusBarLayoutMode`, and `DeviceFrameProps` from the React entry.
+
+The types this element's own API is written in — `CutoutShape`, `CutoutSpec`, `DeviceOS`, `DeviceProfile`, `DeviceShell`, `EdgeInsets`, `Orientation`, `ResolvedDevice`, `SafeAreaRect`, `ScreenSize` — are re-exported here as types so you do not have to add a second import for them. The values behind them are not: `DEVICES`, `findDevice`, `resolveDevice` and `resolveWindowSize` are imported from `@devicekit/devices`, because two import paths for one device table would be two things to keep in step.
+
+## License
+
+MIT

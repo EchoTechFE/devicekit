@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,85 +11,85 @@
     <h1>device-frame</h1>
 
     <label class="field">
-      <span>机型</span>
+      <span>Device</span>
       <select id="device"></select>
     </label>
 
     <label class="field">
-      <span>方向</span>
+      <span>Orientation</span>
       <select id="orientation">
-        <option value="portrait">竖屏</option>
-        <option value="landscape">横屏</option>
+        <option value="portrait">Portrait</option>
+        <option value="landscape">Landscape</option>
       </select>
     </label>
 
     <label class="field">
-      <span>标题栏（<code>navigation-bar</code> 插槽）</span>
+      <span>Top bar (<code>navigation-bar</code> slot)</span>
       <select id="navigation-bar">
-        <option value="none">不放</option>
-        <option value="mp">小程序标题栏</option>
-        <option value="h5">App 内嵌 H5 的返回栏</option>
+        <option value="none">None</option>
+        <option value="mp">Mini-program title bar</option>
+        <option value="h5">In-app browser back bar</option>
       </select>
     </label>
 
     <label class="field field--inline">
       <input type="checkbox" id="tab-bar">
-      <span>tab 栏（<code>tab-bar</code> 插槽）</span>
+      <span>Tab bar (<code>tab-bar</code> slot)</span>
     </label>
 
     <label class="field">
-      <span><code>tab-bar-height</code>（留空按 50 + 底部安全区算）</span>
+      <span><code>tab-bar-height</code> (empty = 50 + the bottom safe area)</span>
       <input type="number" id="tab-bar-height" min="0" step="1" placeholder="50">
     </label>
 
     <label class="field field--inline">
       <input type="checkbox" id="show-safe-area">
-      <span>显示安全区</span>
+      <span>Show the safe area</span>
     </label>
 
     <label class="field field--inline">
       <input type="checkbox" id="immersive">
-      <span><code>immersive</code>：页面自己画标题栏</span>
+      <span><code>immersive</code>: the page draws its own top bar</span>
     </label>
 
     <label class="field field--inline">
       <input type="checkbox" id="embedded">
-      <span><code>embedded</code>：不画机身，填满容器</span>
+      <span><code>embedded</code>: no body, fills the container</span>
     </label>
 
     <label class="field">
-      <span>状态栏</span>
+      <span>Status bar</span>
       <select id="status-bar">
-        <option value="">照常画</option>
-        <option value="hidden">不画</option>
+        <option value="">Drawn</option>
+        <option value="hidden">Hidden</option>
       </select>
     </label>
 
     <label class="field">
-      <span>状态栏文字</span>
+      <span>Status bar text</span>
       <select id="status-bar-text-style">
-        <option value="">跟着机型</option>
-        <option value="black">黑字（浅色背景）</option>
-        <option value="white">白字（深色背景）</option>
+        <option value="">Follow the device</option>
+        <option value="black">Black (light page)</option>
+        <option value="white">White (dark page)</option>
       </select>
     </label>
 
     <label class="field field--inline">
       <input type="checkbox" id="dark-page">
-      <span>深色页面（联动状态栏文字，手动改下拉后以下拉为准）</span>
+      <span>Dark page (also sets the status bar text; a manual choice above wins afterwards)</span>
     </label>
 
     <label class="field">
       <span><code>status-bar-background</code></span>
-      <input type="text" id="status-bar-background" placeholder="透明；例如 #07c160">
+      <input type="text" id="status-bar-background" placeholder="transparent; e.g. #07c160">
     </label>
 
     <label class="field">
-      <span>缩放 <output id="zoom-value">100%</output></span>
+      <span>Zoom <output id="zoom-value">100%</output></span>
       <input type="range" id="zoom" min="0.3" max="1" step="0.05" value="1">
     </label>
 
-    <p class="note">缩放先按舞台大小自动缩到装得下，再乘这里的倍数。整台手机被缩小时，<code>contentRect.scale</code> 就不是 1 了。</p>
+    <p class="note">The phone is first scaled down to fit the stage, then multiplied by this slider. Once it is scaled at all, <code>contentRect.scale</code> is no longer 1.</p>
 
     <div class="readout">
       <div class="readout__head">
@@ -104,37 +104,37 @@
 
   <main class="stage" id="stage">
     <div class="stage__scaler" id="scaler">
-      <dimina-device-frame id="frame">
+      <device-frame id="frame">
         <div class="page">
-          <h2>页面</h2>
-          <p>这块用的是元素写在宿主上的 CSS 变量：高度 <code>--device-height</code>，上下留白 <code>--device-status-bar-height + --device-navigation-bar-height</code> 和 <code>--device-tab-bar-height</code>。</p>
-          <p>元素只发布数字（这些 CSS 变量和 <code>metrics</code>），真正的 <code>env(safe-area-inset-*)</code> 由宿主自己按这些数字注入给被预览的 webview——Electron 场景下是 CDP 的 <code>Emulation.setSafeAreaInsetsOverride</code>，这个包不做这一步。</p>
+          <h2>Page</h2>
+          <p>This block lays itself out against the CSS custom properties the element writes onto its host: <code>--device-height</code> for its height, <code>--device-status-bar-height + --device-navigation-bar-height</code> and <code>--device-tab-bar-height</code> for the room above and below it.</p>
+          <p>The element only publishes numbers (those custom properties and <code>metrics</code>). Real <code>env(safe-area-inset-*)</code> values have to be injected into the previewed webview by the host from those numbers — under Electron that is CDP's <code>Emulation.setSafeAreaInsetsOverride</code>. This package does not do that step.</p>
           <p class="page__size" id="page-size"></p>
         </div>
-      </dimina-device-frame>
+      </device-frame>
     </div>
   </main>
 
   <template id="tpl-mp">
     <div slot="navigation-bar" class="mp-title-bar">
-      <button class="mp-title-bar__back" aria-label="返回">‹</button>
-      <span class="mp-title-bar__title">购物车</span>
+      <button class="mp-title-bar__back" aria-label="Back">‹</button>
+      <span class="mp-title-bar__title">Cart</span>
     </div>
   </template>
 
   <template id="tpl-h5">
     <div slot="navigation-bar" class="h5-bar">
-      <button class="h5-bar__back" aria-label="返回">‹</button>
-      <span class="h5-bar__title">活动详情</span>
-      <button class="h5-bar__close" aria-label="关闭">✕</button>
+      <button class="h5-bar__back" aria-label="Back">‹</button>
+      <span class="h5-bar__title">Campaign details</span>
+      <button class="h5-bar__close" aria-label="Close">✕</button>
     </div>
   </template>
 
   <template id="tpl-tab">
     <nav slot="tab-bar" class="demo-tab-bar">
-      <button class="demo-tab-bar__item demo-tab-bar__item--on">首页</button>
-      <button class="demo-tab-bar__item">分类</button>
-      <button class="demo-tab-bar__item">我的</button>
+      <button class="demo-tab-bar__item demo-tab-bar__item--on">Home</button>
+      <button class="demo-tab-bar__item">Browse</button>
+      <button class="demo-tab-bar__item">Me</button>
     </nav>
   </template>
 

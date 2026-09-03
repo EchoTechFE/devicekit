@@ -1,5 +1,5 @@
 /**
- * Reading `<dimina-device-frame>`'s attributes back into a device profile.
+ * Reading `<device-frame>`'s attributes back into a device profile.
  *
  * Kept apart from the element so that "an attribute overrides the preset, a
  * missing attribute falls through to it" is stated once, in one place, for

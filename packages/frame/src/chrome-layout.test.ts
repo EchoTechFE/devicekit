@@ -1,22 +1,22 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { DEVICE_FRAME_TAG, defineDeviceFrame, DiminaDeviceFrame } from './device-frame.js'
+import { DEVICE_FRAME_TAG, defineDeviceFrame, DeviceFrameElement } from './device-frame.js'
 import { DEVICE_FRAME_STYLES } from './styles.js'
 
 defineDeviceFrame()
 
-function mountFrame(attributes: Record<string, string> = {}): DiminaDeviceFrame {
-  const el = document.createElement(DEVICE_FRAME_TAG) as DiminaDeviceFrame
+function mountFrame(attributes: Record<string, string> = {}): DeviceFrameElement {
+  const el = document.createElement(DEVICE_FRAME_TAG) as DeviceFrameElement
   for (const [name, value] of Object.entries(attributes)) el.setAttribute(name, value)
   document.body.append(el)
   return el
 }
 
-function shadowEl(el: DiminaDeviceFrame, selector: string): HTMLElement {
+function shadowEl(el: DeviceFrameElement, selector: string): HTMLElement {
   return el.shadowRoot!.querySelector<HTMLElement>(selector)!
 }
 
-const statusBar = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.status-bar')
-const cutoutEl = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.status-bar__notch')
+const statusBar = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.status-bar')
+const cutoutEl = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.status-bar__notch')
 
 afterEach(() => {
   document.body.innerHTML = ''
@@ -69,7 +69,7 @@ describe('the navigation-bar slot wrapper covers the status bar', () => {
  */
 describe('status-bar-background colors the status bar strip', () => {
   it('is observed', () => {
-    expect(DiminaDeviceFrame.observedAttributes).toContain('status-bar-background')
+    expect(DeviceFrameElement.observedAttributes).toContain('status-bar-background')
   })
 
   it('sets the status bar background when present', () => {

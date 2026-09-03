@@ -6,6 +6,7 @@
  */
 import type { DeviceProfile } from '../devices.js'
 
+/** HarmonyOS phones, including both screens of each folding model. Part of DEVICES; listed here so a host can offer one platform alone. */
 export const HARMONY_DEVICES: readonly DeviceProfile[] = [
   { name: 'HUAWEI Mate 80', os: 'harmony', screen: { width: 366, height: 809 }, pixelRatio: 3.5, system: 'HarmonyOS 5.0', statusBarHeight: 39, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 39 } },
   { name: 'HUAWEI Mate 70', os: 'harmony', screen: { width: 374, height: 827 }, pixelRatio: 3.25, system: 'HarmonyOS 5.0', statusBarHeight: 34, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 34 } },

@@ -4,9 +4,13 @@
   "description": "The device table behind devicekit's previews: phones and tablets with screens, pixel ratios, status bars, safe areas and user agents, plus the arithmetic that turns one into a usable window size. No DOM.",
   "keywords": [
     "device",
+    "devices",
     "safe-area",
     "viewport",
-    "user-agent"
+    "user-agent",
+    "screen",
+    "status-bar",
+    "presets"
   ],
   "type": "module",
   "sideEffects": false,
@@ -33,6 +37,8 @@
   "files": [
     "dist",
     "src",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx",
     "README.md",
     "LICENSE"
   ],

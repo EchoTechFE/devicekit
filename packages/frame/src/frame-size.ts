@@ -3,7 +3,7 @@ import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
 
 /**
  * The frame's outer footprint for a given profile and orientation — what a
- * host needs to size its own layout around `<dimina-device-frame>` without
+ * host needs to size its own layout around `<device-frame>` without
  * waiting for a layout pass. Embedded mode draws no body, so it is exactly
  * the bare screen; otherwise the body's bezel padding plus its hairline
  * border (see `.body` in styles.ts) widen the screen on every side.

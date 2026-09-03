@@ -14,13 +14,21 @@
  * top-left, not the host element's, so the bezel is not in it.
  */
 export interface ContentBox {
+  /** CSS px from the screen's left edge. */
   x: number
+  /** CSS px from the screen's top edge, below the status and navigation bars. */
   y: number
+  /** CSS px of device screen. */
   width: number
+  /** CSS px of device screen. */
   height: number
 }
 
-/** The same region in viewport coordinates, which is what positioning needs. */
+/**
+ * The same region in viewport coordinates, which is what positioning needs.
+ * `x`, `y`, `width` and `height` are rendered CSS px of the host page here, not
+ * of the device screen — they already have `scale` in them.
+ */
 export interface ContentRect extends ContentBox {
   /**
    * Rendered px per CSS px of device screen: 1 unless the host scaled the frame
@@ -30,6 +38,7 @@ export interface ContentRect extends ContentBox {
   scale: number
 }
 
+/** A zero box, which is what an embedded frame reports for content. */
 export const EMPTY_BOX: ContentBox = { x: 0, y: 0, width: 0, height: 0 }
 
 /**

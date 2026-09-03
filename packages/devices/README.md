@@ -1,106 +1,180 @@
+English | [简体中文](./README.zh-CN.md)
+
 # @devicekit/devices
 
-一张机型表，和几个把机型换算成可用尺寸的函数。手机和平板，每台带屏幕尺寸、像素比、状态栏高度、安全区、挖孔几何和 UA。
+A table of phones and tablets, and the functions that turn one of them into usable sizes. Every device carries a screen size, a pixel ratio, a status bar height, safe-area insets, cutout geometry and a user agent.
 
-**这个包里没有 DOM。** `tsconfig` 的 `lib` 只有 `ES2022`，所以谁往这儿写 `document` 就是编译错误，而不是评审时才被人看见。Node 脚本、构建期、测试、服务端都能直接用。要画出这台手机的，是 [@devicekit/frame](../frame)。
+**There is no DOM in this package.** Its `tsconfig` sets `lib` to `ES2022` only, so writing `document` in here is a compile error rather than something a reviewer has to catch. Node scripts, build steps, tests and servers can all use it directly. Drawing the phone is [@devicekit/frame](../frame).
 
-## 安装
+## Install
 
 ```sh
 pnpm add @devicekit/devices
 ```
 
-## 机型表
+## The device table
 
 ```ts
-import { DEVICES, DEFAULT_DEVICE, findDevice, resolveDevice } from '@devicekit/devices'
+import { DEVICES, DEFAULT_DEVICE, findDevice } from '@devicekit/devices'
+
+const device = findDevice('iPhone 16 Pro') ?? DEFAULT_DEVICE
 ```
 
-iPhone、iPad、安卓和鸿蒙都有（折叠机连内外两块屏一起算）。按平台分成三个文件，一台一行，`DEVICES` 是三份拼起来的全表。
+`DEVICES` is the whole table: iPhones, iPads, Android phones and HarmonyOS phones, with both screens of each folding model counted separately. It is the concatenation of `IOS_DEVICES`, `ANDROID_DEVICES` and `HARMONY_DEVICES`, one file per platform, one line per device — import a platform list directly if that is all you need. `findDevice(name)` looks a device up by its exact `name` and returns `undefined` for anything not in the table. `DEFAULT_DEVICE` (an iPhone X) is what to render when nothing asked for a particular device.
 
-一条机型长这样：
+`CLASSIC_DEVICES` is a hand-picked subset of the same objects — fewer than 20, grouped iOS → Android → HarmonyOS — for a device picker that cannot show 171 rows. Hosts that need the full table still read `DEVICES`.
+
+## What a device looks like
+
+A row of the table is a `DeviceProfile`:
 
 ```ts
 {
   name: 'iPhone 16 Pro',
   os: 'ios',
-  screen: { width: 402, height: 874 },   // 物理屏，竖屏方向
+  screen: { width: 402, height: 874 },   // physical screen, portrait
   pixelRatio: 3,
   system: 'iOS 18.5',
-  statusBarHeight: 54,                    // 画出来的那条状态栏
-  safeAreaInsets: { top: 62, bottom: 34 },              // 竖屏，实测值
-  safeAreaInsetsLandscape: { left: 62, right: 62, bottom: 21 },  // 横屏，也是实测值
+  statusBarHeight: 54,                    // the strip that gets drawn
+  safeAreaInsets: { top: 62, bottom: 34 },              // portrait, measured
+  safeAreaInsetsLandscape: { left: 62, right: 62, bottom: 21 },  // landscape, also measured
   cutout: { shape: 'pill', width: 125, height: 37, top: 14 },
   shell: { screenRadius: 62 },
   userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) ...',
 }
 ```
 
-这个形状里有五个决定，也是它跟"随手写个宽高"的区别：
+Five decisions in that shape are what separate it from a hand-written pair of numbers.
 
-**屏幕尺寸不是可用尺寸。** 状态栏和应用自己的导航栏一扣，两者差出将近一百像素；只存一个数就等于让预览撒谎。这里只存屏幕，可用尺寸交给 `resolveWindowSize()` 算，因为它取决于页面要了什么样的导航栏。
+**The screen size is not the usable size.** Take away the status bar and the app's own navigation bar and the two differ by close to a hundred pixels; storing one number would make every preview lie. Only the screen is stored here, and the usable size comes from `resolveWindowSize()`, because it depends on which bars the page asked for.
 
-**只有屏幕尺寸靠横竖互换，其余全部存两份。** 因为其余那些根本推不出来：底部安全区从 34 缩到 21，导航栏从 44 缩到 32，而 iOS 26 又给横屏顶部塞进去一个 20——没有哪条规则能从竖屏值算出这三件事。
+**Only the screen size flips with orientation — everything else is stored twice.** The rest cannot be derived: the bottom inset shrinks from 34 to 21, the navigation bar from 44 to 32, and iOS 26 adds a 20-pixel top inset in landscape. No rule computes those three from their portrait values.
 
-**状态栏高度和顶部安全区是两个数。** 灵动岛机型上状态栏还是 54，顶部安全区却是 59 或 62：一个是时间和图标画进去的那条，另一个是灵动岛连同它周围一圈让出来的。一个字段伺候不了两个用途。
+**Status bar height and top inset are two different numbers.** On a Dynamic Island device the status bar is still 54 while the top safe-area inset is 59 or 62: one is the strip the clock and glyphs are drawn into, the other is what the island and the ring of space around it claim. One field cannot serve both.
 
-**`cutout` 自带形状和几何。** 挖孔机型不用等着枚举加一个分支。它只管长什么样，屏幕为它让出多少写在安全区里，两者不互相推导。
+**`cutout` carries its own shape and geometry.** A new cutout device needs no new branch in an enum. It only says what to draw; how much screen it costs is in the safe-area insets, and neither is derived from the other.
 
-**`shell` 是机身**：屏幕圆角和边框厚度。2016 年的手机和 2025 年的手机没有相同的圆角。
+**`shell` is the body**: screen corner radius and bezel thickness. A 2016 phone and a 2025 phone do not have the same corners.
 
-`resolveDevice(profile)` 把省略的字段按平台默认补齐，返回一条字段齐全的机型，省得每个调用方各写一遍兜底。省略安全区就是"顶上一条状态栏，别处什么都没有"——没有挖孔也没有手势条的手机报的正是这个。
+Only `name`, `os`, `screen` and `pixelRatio` are required. Everything else is optional, and omitted fields fall through to the platform defaults.
 
-### 数据从哪来，哪些没核实
-
-这张表是四套设备模拟表取并集来的，每套能给到的东西不一样：
-
-- **屏幕尺寸和像素比**是厂商公布的逻辑分辨率，四套之间逐条交叉核对。冲突时取更新、更具体的那一份——有一套存的是浏览器视口而不是屏幕（它给 iPhone 14 Pro 的高度是 659，真机是 852），这类值一律不要。
-- **安全区和挖孔几何**只有一套按方向实测过，覆盖表里 37 台。iOS 各代的状态栏高度另有实测记录。
-- **鸿蒙**的尺寸、状态栏、导航栏和 iOS 的底部安全区来自小程序工具链的机型表，它也是目前唯一结构化覆盖鸿蒙机型的来源，折叠机内外两块屏都有。
-
-自己没有实测值的机型，向**同屏机型**借：同平台、同尺寸、同像素比，且它们对这一项的说法完全一致才借。组里只要有一处不一致，整组的这一项都不填——iPhone X 和 iPhone 12 mini 共用 375×812@3，状态栏一个 44 一个 50，所以谁也别想从对方那里拿到状态栏高度。最终 93 台带安全区，94 台带状态栏高度，46 台带挖孔几何，74 台带显式 UA（其余按机型和系统版本生成）。
-
-表里的数值还经过一轮逐台核对（2026-09）：
-
-- **iOS**：iPhone XR 到 iPhone 17 全系和 iPad 各代在 Xcode 模拟器（iOS 18.3 / 26.5）上用探针 app 读 UIKit 的状态栏高度和横竖屏安全区，逐字段对照后修正。留下的差异点：iPhone 12/13 mini 状态栏是 50 不是 47；iPhone XR/11 是 48；iPhone Air 状态栏 54、顶部安全区 68；iPhone 17 系横屏没有顶部安全区，底部是 20；全面屏 iPad 横竖屏状态栏都是 24、底部安全区 25，Home 键 iPad 是 20。iPhone X/8/8 Plus 和 Home 键的老 iPad 没有可用的模拟器 runtime，只按公开规格核对。刘海宽度模拟器不渲染，按同屏同代机型取值。
-- **Android**：型号串、出厂系统版本和 UA 的一致性逐台核对；Pixel 7 / 7 Pro 的状态栏和挖孔几何来自模拟器实测。其余挖孔机型没有实测几何，不补。
-- **鸿蒙**：只核对了分辨率（Mate 60 高度 862 改 827）；状态栏高度没有官方表，未核实。
-
-明确**未核实**、因而留在默认值上没有猜的：
-
-- 鸿蒙的手势条高度——来源里没有这一项，所以这些机型报的底部安全区是 0，手势条也不画。
-- 安卓和鸿蒙横屏的一切——包括状态栏转屏后是不是还在。这两个平台的横屏值目前等于竖屏值。
-- 挖孔几何一律是**外观近似**。它不参与任何尺寸计算，画错了也只是画错了；屏幕真正让出多少写在安全区里，不从它推。没有实测几何的机型（含全部鸿蒙机型）就不画挖孔。
-
-表本身是普通源码，一台一行。要加机型直接往对应平台文件里加一行，`presets.test.ts` 会把重名、屏幕越界、UA 串平台、以及"同一台机器躺着又写了一遍"挡下来。
-
-`CLASSIC_DEVICES` 是从 `DEVICES` 里手选出的一份精简子集（不超过 20 台，同一批对象，按 iOS → Android → HarmonyOS 分组），给放不下 171 行的机型下拉框用，比如 devtools 的模拟器面板；需要完整机型表的宿主仍然读 `DEVICES`。
-
-## 算尺寸
+## Filling in the gaps
 
 ```ts
-import { resolveSafeArea, resolveSafeAreaInsets, resolveWindowSize, orientedScreen } from '@devicekit/devices'
+import { resolveDevice, PLATFORM_DEFAULTS, statusBarHeightFor, navigationBarHeightFor, safeAreaInsetsFor } from '@devicekit/devices'
+
+const resolved = resolveDevice(device)
 ```
 
-`resolveSafeAreaInsets(device, orientation)` 返回四条边距；`resolveSafeArea(device, orientation)` 把同样的信息给成 `{ top, left, right, bottom, width, height }`，跟 `wx.getWindowInfo().safeArea` 是同一个形状（边是从屏幕左上角量的坐标，不是边距）。两个都是直接读机型表里那一方向存的值，不做推导。
+`resolveDevice(profile)` fills every omitted field from the platform defaults and returns a `ResolvedDevice`, in which nothing is optional — so callers do not each write their own fallbacks. Omitting the safe-area insets means "a status bar on top and nothing anywhere else", which is exactly what a phone with no cutout and no gesture bar reports.
 
-`resolveWindowSize(device, { orientation, navigationBar, tabBarHeight })` 返回页面自己真正能用的宽高：屏幕减状态栏、减导航栏、减 tab 栏。
+`PLATFORM_DEFAULTS` is the table those fallbacks come from, keyed by `DeviceOS`: `statusBarHeight`, `statusBarHeightLandscape`, `navigationBarHeight`, `navigationBarHeightLandscape` and `shell` for each of `ios`, `android` and `harmony`. It is exported so a host can show a default the same way it shows a measured value, rather than reimplementing it.
+
+`statusBarHeightFor(device, orientation)`, `navigationBarHeightFor(device, orientation)` and `safeAreaInsetsFor(device, orientation)` take a `ResolvedDevice` and pick the value stored for that orientation. They derive nothing; they choose between the two stored sets.
+
+### Where the numbers come from, and what is not verified
+
+The table is the union of four device-emulation tables, each of which could supply different things:
+
+- **Screen sizes and pixel ratios** are the vendors' published logical resolutions, cross-checked row by row across all four. Where they disagree, the more recent and more specific one wins — one source stores the browser viewport rather than the screen (it gives iPhone 14 Pro a height of 659; the device is 852), and those values are dropped.
+- **Safe-area insets and cutout geometry** come from the one source that measured them per orientation, covering 37 of the devices here. Status bar heights per iOS generation have their own measured record.
+- **HarmonyOS** sizes, status bars, navigation bars and the iOS bottom insets come from a mini-program toolchain table, which is also the only structured source that covers HarmonyOS devices at all, both screens of each folding model included.
+
+A device with no measurement of its own borrows from **devices with the same screen**: same platform, same size, same pixel ratio, and only when every one of them states the same value. One disagreement inside such a group and none of its members gets that field — iPhone X and iPhone 12 mini are both 375×812@3 with status bars of 44 and 50, so neither lends one. The result: 93 devices with safe-area insets, 94 with a status bar height, 46 with cutout geometry, and 74 with an explicit user agent (the rest generate one from the model and system version).
+
+The values then went through a device-by-device review (2026-09):
+
+- **iOS**: every iPhone from XR through 17 and every iPad generation was checked against UIKit's own status bar height and portrait/landscape safe-area insets, read by a probe app on the Xcode simulator (iOS 18.3 and 26.5), and corrected field by field. The differences worth naming: iPhone 12/13 mini report a 50-pixel status bar, not 47; iPhone XR and 11 report 48; iPhone Air has a 54-pixel status bar and a 68-pixel top inset; the iPhone 17 line has no top inset in landscape and a bottom inset of 20; full-screen iPads report a 24-pixel status bar in both orientations with a 25-pixel bottom inset, and Home-button iPads report 20. iPhone X, 8 and 8 Plus and the Home-button iPads have no usable simulator runtime and were checked against published specifications only. Notch widths are not rendered by the simulator and are taken from same-screen, same-generation devices.
+- **Android**: model strings, shipped system versions and user agents were checked for consistency device by device. Pixel 7 and 7 Pro status bars and cutout geometry are simulator measurements. The other cutout devices have no measured geometry and were left without.
+- **HarmonyOS**: only the resolutions were checked (Mate 60's height was corrected from 862 to 827). There is no official status bar table, so those heights are unverified.
+
+Explicitly **unverified**, and therefore left at the default rather than guessed:
+
+- HarmonyOS gesture bar heights. No source states them, so these devices report a bottom inset of 0 and draw no gesture bar.
+- Everything about Android and HarmonyOS in landscape, including whether the status bar survives the rotation. Landscape values for these two platforms currently equal their portrait values.
+- All cutout geometry is **appearance only**. It takes part in no size calculation, so a wrong one is only drawn wrong; what the screen actually gives up is in the safe-area insets, never derived from the cutout. A device with no measured geometry — which is every HarmonyOS device here — simply draws no cutout.
+
+The table is ordinary source code from there on, one device per line. Adding a device means adding a line, and `presets.test.ts` rejects duplicate names, screens out of range, user agents that name the wrong platform, and a device that has already been entered lying down.
+
+## Computing sizes
 
 ```ts
-resolveWindowSize(iPhoneX)                             // { width: 375, height: 724 }
-resolveWindowSize(iPhoneX, { navigationBar: false })   // 724 + 44 = 768，页面自绘导航栏
-resolveWindowSize(iPhoneX, { tabBarHeight: 50 })       // 674
-resolveWindowSize(iPhoneX, { orientation: 'landscape' })  // { width: 812, height: 343 }，横屏状态栏是 0
+import { resolveWindowSize, resolveSafeArea, resolveSafeAreaInsets, orientedScreen } from '@devicekit/devices'
 ```
 
-**这个函数是给预览宿主用的。** 直接把 812 交给被预览的页面，页面里的 `100vh` 就比真机多出 88px：预览里看着刚好，装到手机上就溢出。
-
-## 生成 UA
+`resolveWindowSize(device, options)` returns the width and height the page itself actually gets: the screen minus the status bar, minus the navigation bar, minus the tab bar. `options` is a `WindowSizeOptions` — `orientation`, `navigationBar` (a boolean to keep or drop the device's own bar, or a number to override its height) and `tabBarHeight`.
 
 ```ts
-import { deviceUserAgent } from '@devicekit/devices'
+resolveWindowSize(iPhoneX)                                // { width: 375, height: 724 }
+resolveWindowSize(iPhoneX, { navigationBar: false })      // 724 + 44 = 768, the page draws its own bar
+resolveWindowSize(iPhoneX, { tabBarHeight: 50 })          // 674
+resolveWindowSize(iPhoneX, { orientation: 'landscape' })  // { width: 812, height: 343 }, no status bar in landscape
 ```
 
-UA 按 `os` 和 `system` 现拼，不逐台存，免得一台机的名字写着 iOS 18、UA 里却是 iOS 15。要精确到某个 build 的宿主，自己在机型上写 `userAgent`，生成这一步就会跳过。
+**This function is for the host doing the previewing.** Hand 812 straight to the previewed page and every `100vh` in it is 88 pixels taller than the phone allows: it looks right in the preview and overflows on the device.
 
-拼出来的是一个移动浏览器的 UA，不是小程序容器的——这个包知道是哪台手机，不知道是谁在嵌它。想要末尾那截 `MicroMessenger/...` 的宿主自己接。
+`resolveSafeAreaInsets(device, orientation)` returns the four insets. `resolveSafeArea(device, orientation)` returns the same information as `{ top, left, right, bottom, width, height }` — a `SafeAreaRect`, the shape `wx.getWindowInfo().safeArea` uses, where the edges are coordinates measured from the screen's top-left rather than distances from each edge. Both read the values stored for that orientation and derive nothing.
+
+`orientedScreen(device, orientation)` is the one thing that does flip: the screen size with width and height swapped in landscape.
+
+## User agents
+
+```ts
+import { deviceUserAgent, systemVersion } from '@devicekit/devices'
+```
+
+`deviceUserAgent(profile)` builds the user agent from `os` and `system` instead of storing one per device, so a preset cannot drift into claiming iOS 18 in its label and iOS 15 in its UA. A profile that needs an exact string — a host pretending to be one specific container, down to its build — sets `userAgent`, and generation is skipped. `systemVersion(profile)` is the version it pulls out of a label like `"iOS 18.0"` or `"HarmonyOS 5.0"`, falling back to a current version rather than leaving a hole in the string.
+
+What comes out names a mobile browser, not a mini-program container: this package knows which phone it is describing, not which app is embedding it. A host that wants `MicroMessenger/...` on the end appends it itself.
+
+## API reference
+
+### Data
+
+| Export | Type | What it is |
+| --- | --- | --- |
+| `DEVICES` | `readonly DeviceProfile[]` | The whole table, iOS then Android then HarmonyOS |
+| `IOS_DEVICES` | `readonly DeviceProfile[]` | The iOS rows |
+| `ANDROID_DEVICES` | `readonly DeviceProfile[]` | The Android rows |
+| `HARMONY_DEVICES` | `readonly DeviceProfile[]` | The HarmonyOS rows |
+| `CLASSIC_DEVICES` | `readonly DeviceProfile[]` | Fewer than 20 hand-picked devices, same objects, for short pickers |
+| `DEFAULT_DEVICE` | `DeviceProfile` | What renders when nothing asked for a device (iPhone X) |
+| `PLATFORM_DEFAULTS` | `Record<DeviceOS, {...}>` | Per-platform status bar, navigation bar and shell defaults |
+
+### Functions
+
+| Export | Signature | What it does |
+| --- | --- | --- |
+| `findDevice` | `(name: string \| null \| undefined) => DeviceProfile \| undefined` | Exact lookup by name |
+| `resolveDevice` | `(profile: DeviceProfile) => ResolvedDevice` | Fills omitted fields from the platform defaults |
+| `statusBarHeightFor` | `(device: ResolvedDevice, orientation: Orientation) => number` | The status bar height stored for that orientation |
+| `navigationBarHeightFor` | `(device: ResolvedDevice, orientation: Orientation) => number` | The navigation bar height stored for that orientation |
+| `safeAreaInsetsFor` | `(device: ResolvedDevice, orientation: Orientation) => EdgeInsets` | The insets stored for that orientation |
+| `orientedScreen` | `(device: DeviceProfile, orientation?: Orientation) => ScreenSize` | The screen, with width and height swapped in landscape |
+| `resolveSafeAreaInsets` | `(device: DeviceProfile, orientation?: Orientation) => EdgeInsets` | Insets, resolving the profile first |
+| `resolveSafeArea` | `(device: DeviceProfile, orientation?: Orientation) => SafeAreaRect` | The same as a rectangle in screen coordinates |
+| `resolveWindowSize` | `(device: DeviceProfile, options?: WindowSizeOptions) => ScreenSize` | The size the page itself gets |
+| `deviceUserAgent` | `(profile: Pick<DeviceProfile, 'os' \| 'system' \| 'name' \| 'userAgent'>) => string` | The user agent a page emulating this device should report |
+| `systemVersion` | `(profile: Pick<DeviceProfile, 'os' \| 'system'>) => string` | The version out of a system label |
+
+`orientation` defaults to `'portrait'` everywhere it is optional.
+
+### Types
+
+| Type | What it describes |
+| --- | --- |
+| `DeviceProfile` | A row of the table; only `name`, `os`, `screen` and `pixelRatio` are required |
+| `ResolvedDevice` | The same device with every field filled in |
+| `DeviceOS` | `'ios' \| 'android' \| 'harmony'` |
+| `Orientation` | `'portrait' \| 'landscape'` |
+| `ScreenSize` | `{ width, height }` |
+| `EdgeInsets` | `{ top, right, bottom, left }`, distances from each edge, like `env(safe-area-inset-*)` |
+| `SafeAreaRect` | `{ top, left, right, bottom, width, height }`, edges as screen coordinates, like `wx.getWindowInfo().safeArea` |
+| `CutoutShape` | `'notch' \| 'pill' \| 'circle'` |
+| `CutoutSpec` | A cutout's shape and geometry: `shape`, `width`, `height`, `top`, optional `centerX` |
+| `DeviceShell` | The body: `screenRadius`, `bezel`, optional `bodyRadius` |
+| `WindowSizeOptions` | `resolveWindowSize` options: `orientation`, `navigationBar`, `tabBarHeight` |
+
+## License
+
+MIT

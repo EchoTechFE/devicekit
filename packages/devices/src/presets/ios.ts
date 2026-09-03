@@ -6,6 +6,7 @@
  */
 import type { DeviceProfile } from '../devices.js'
 
+/** iPhones and iPads. Part of DEVICES; listed here so a host can offer one platform alone. */
 export const IOS_DEVICES: readonly DeviceProfile[] = [
   { name: 'iPhone SE', os: 'ios', screen: { width: 375, height: 667 }, pixelRatio: 2, system: 'iOS 15.0', statusBarHeight: 20, navigationBarHeight: 44, navigationBarHeightLandscape: 32, safeAreaInsets: { top: 20 }, shell: { screenRadius: 6 } },
   { name: 'iPhone XR', os: 'ios', screen: { width: 414, height: 896 }, pixelRatio: 2, system: 'iOS 18.5', statusBarHeight: 48, navigationBarHeight: 44, navigationBarHeightLandscape: 32, safeAreaInsets: { top: 48, bottom: 34 }, safeAreaInsetsLandscape: { left: 48, right: 48, bottom: 21 }, cutout: { shape: 'notch', width: 231, height: 33, top: 0 } },

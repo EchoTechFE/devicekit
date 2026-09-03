@@ -38,6 +38,14 @@ export function systemVersion(profile: Pick<DeviceProfile, 'os' | 'system'>): st
   return match?.[1] ?? DEFAULT_VERSIONS[profile.os] ?? ''
 }
 
+/**
+ * The `navigator.userAgent` string a page emulating this device should report.
+ *
+ * @param profile needs `os` and `name`; `system` picks the version, and an
+ *   explicit `userAgent` is returned unchanged
+ * @returns a mobile browser UA — Safari on iOS, Chrome on Android, ArkWeb on
+ *   HarmonyOS
+ */
 export function deviceUserAgent(profile: Pick<DeviceProfile, 'os' | 'system' | 'name' | 'userAgent'>): string {
   if (profile.userAgent) return profile.userAgent
   const version = systemVersion(profile)

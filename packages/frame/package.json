@@ -1,12 +1,15 @@
 {
   "name": "@devicekit/frame",
   "version": "0.1.0",
-  "description": "The simulated phone behind devicekit's previews: a framework-agnostic <dimina-device-frame> custom element that draws the bezel, status bar and home indicator. Device presets live in @devicekit/devices.",
+  "description": "The simulated phone behind devicekit's previews: a framework-agnostic <device-frame> custom element that draws the bezel, status bar and home indicator. Device presets live in @devicekit/devices.",
   "keywords": [
-    "devtools",
-    "simulator",
-    "device",
-    "web-components"
+    "device-frame",
+    "mockup",
+    "web-components",
+    "custom-element",
+    "status-bar",
+    "safe-area",
+    "preview"
   ],
   "type": "module",
   "sideEffects": false,
@@ -34,6 +37,8 @@
   "files": [
     "dist",
     "src",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx",
     "README.md",
     "LICENSE"
   ],

@@ -1,24 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { DEVICE_FRAME_TAG, defineDeviceFrame, type DiminaDeviceFrame } from './device-frame.js'
+import { DEVICE_FRAME_TAG, defineDeviceFrame, type DeviceFrameElement } from './device-frame.js'
 import { DEVICE_FRAME_STYLES } from './styles.js'
 
 defineDeviceFrame()
 
-function mountFrame(attributes: Record<string, string> = {}): DiminaDeviceFrame {
-  const el = document.createElement(DEVICE_FRAME_TAG) as DiminaDeviceFrame
+function mountFrame(attributes: Record<string, string> = {}): DeviceFrameElement {
+  const el = document.createElement(DEVICE_FRAME_TAG) as DeviceFrameElement
   for (const [name, value] of Object.entries(attributes)) el.setAttribute(name, value)
   document.body.append(el)
   return el
 }
 
-function shadowEl(el: DiminaDeviceFrame, selector: string): HTMLElement {
+function shadowEl(el: DeviceFrameElement, selector: string): HTMLElement {
   return el.shadowRoot!.querySelector<HTMLElement>(selector)!
 }
 
-const statusBar = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.status-bar')
-const homeIndicator = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.home-indicator')
-const cutoutEl = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.status-bar__notch')
-const navigationBarEl = (el: DiminaDeviceFrame): HTMLElement => shadowEl(el, '.navigation-bar')
+const statusBar = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.status-bar')
+const homeIndicator = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.home-indicator')
+const cutoutEl = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.status-bar__notch')
+const navigationBarEl = (el: DeviceFrameElement): HTMLElement => shadowEl(el, '.navigation-bar')
 
 afterEach(() => {
   document.body.innerHTML = ''
@@ -326,7 +326,7 @@ describe('status bar time', () => {
     vi.useRealTimers()
   })
 
-  function time(el: DiminaDeviceFrame): string {
+  function time(el: DeviceFrameElement): string {
     return el.shadowRoot!.querySelector<HTMLElement>('.status-bar__time')!.textContent ?? ''
   }
 

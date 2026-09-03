@@ -1,5 +1,5 @@
 /**
- * `<dimina-device-frame>` — the phone a preview pretends to be.
+ * `<device-frame>` — the phone a preview pretends to be.
  *
  * It draws the body, the screen, the status bar (time, glyphs, cutout) and the
  * home indicator at the device's own size, and nothing else. Whatever is being
@@ -21,8 +21,8 @@
  * it owns no iframe and no view of its own.
  *
  * A custom element rather than a framework component because the hosts that
- * need it do not share a framework: an Electron devtools simulator on React, a
- * web workbench on plain DOM, and preview stages that are pure CSS today.
+ * need it do not share a framework: a React panel in a desktop app, a plain
+ * web page, a documentation site whose preview stages are pure CSS.
  *
  * The chrome lives in the shadow root; slotted content stays in the light DOM,
  * so the host's own stylesheets keep reaching it. The resolved metrics are
@@ -66,16 +66,22 @@ const EMPTY_RECT: SafeAreaRect = { top: 0, left: 0, right: 0, bottom: 0, width: 
 const EMPTY_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 }
 const EMPTY_SIZE: ScreenSize = { width: 0, height: 0 }
 
-/** Fired when {@link DiminaDeviceFrame.contentRect} moves or resizes. */
+/** Fired when {@link DeviceFrameElement.contentRect} moves or resizes. */
 export const CONTENT_RECT_CHANGE_EVENT = 'contentrectchange'
 
+/**
+ * The ink color of the drawn status bar and home indicator: `black` for a
+ * light page under them, `white` for a dark one.
+ */
 export type StatusBarTextStyle = 'black' | 'white'
 
 /** What the frame resolved from its attributes — the numbers it drew with. */
 export interface DeviceMetrics {
   /** The screen in the current orientation. */
   screen: ScreenSize
+  /** Which way the device is held, from the `orientation` attribute. */
   orientation: Orientation
+  /** Physical pixels per CSS px on the real device — 3 on most iPhones. */
   pixelRatio: number
   /** What a page emulating this device should report as `navigator.userAgent`. */
   userAgent: string
@@ -100,7 +106,13 @@ export interface DeviceMetrics {
   shell: Required<DeviceShell>
 }
 
-export class DiminaDeviceFrame extends HTMLElement {
+/**
+ * The element `<device-frame>` registers to. Read the resolved numbers off
+ * `metrics` and `contentRect`; everything else is driven by attributes, which
+ * `observedAttributes` lists.
+ */
+export class DeviceFrameElement extends HTMLElement {
+  /** Every attribute the frame draws from; changing any of them re-renders it. */
   static get observedAttributes(): string[] {
     return [
       'device',
@@ -165,6 +177,7 @@ export class DiminaDeviceFrame extends HTMLElement {
     shadow.append(style, body)
   }
 
+  /** Renders and starts watching the host's box for moves the attributes miss. */
   connectedCallback(): void {
     this.#render()
     // The content rect is in viewport coordinates, so it moves when the host
@@ -176,11 +189,13 @@ export class DiminaDeviceFrame extends HTMLElement {
     this.#resizeObserver.observe(this)
   }
 
+  /** Stops the status bar clock and the resize observer. */
   disconnectedCallback(): void {
     this.#statusBar?.stop()
     this.#resizeObserver?.disconnect()
   }
 
+  /** Any observed attribute changing re-renders from scratch; none is cached. */
   attributeChangedCallback(): void {
     this.#render()
   }
@@ -194,10 +209,16 @@ export class DiminaDeviceFrame extends HTMLElement {
     return this.#deviceProfile ?? findDevice(this.getAttribute('device')) ?? null
   }
 
+  /** Which way the device is held. Anything but `landscape` reads as portrait. */
   get orientation(): Orientation {
     return toOrientation(this.getAttribute('orientation'))
   }
 
+  /**
+   * The frame draws no body, no bezel and no chrome, and stretches to fill its
+   * container instead of standing at the device's own size — a bare screen for
+   * a host that supplies its own surround.
+   */
   get embedded(): boolean {
     return this.hasAttribute('embedded')
   }
@@ -211,6 +232,10 @@ export class DiminaDeviceFrame extends HTMLElement {
     return this.hasAttribute('immersive')
   }
 
+  /**
+   * The preset with the loose attributes (`width`, `pixel-ratio`, `cutout`,
+   * `safe-area-*` …) folded over it — the profile the frame actually drew.
+   */
   get profile(): DeviceProfile {
     return profileFromAttributes(this, this.device, DEFAULT_DEVICE.screen)
   }
@@ -450,13 +475,17 @@ export class DiminaDeviceFrame extends HTMLElement {
   }
 }
 
-export const DEVICE_FRAME_TAG = 'dimina-device-frame'
+/** The tag name defineDeviceFrame() registers unless given another. */
+export const DEVICE_FRAME_TAG = 'device-frame'
 
 /**
  * Registers the element. Safe to call more than once — a host that bundles this
  * package twice, or hot-reloads, must not crash on the duplicate definition.
+ *
+ * @param tag the custom element name, for a host that already owns
+ *   `device-frame` or wants the element under its own prefix
  */
 export function defineDeviceFrame(tag: string = DEVICE_FRAME_TAG): void {
   if (customElements.get(tag)) return
-  customElements.define(tag, DiminaDeviceFrame)
+  customElements.define(tag, DeviceFrameElement)
 }

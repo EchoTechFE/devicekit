@@ -1,7 +1,7 @@
 /**
  * CLASSIC_DEVICES is the short hand-picked list a host shows when the whole
- * 171-row table is too much for a picker (devtools' simulator toolbar). It
- * must stay a strict subset of the table — the same objects, not copies — so
+ * 171-row table is too much for a picker. It must stay a strict subset of
+ * the table — the same objects, not copies — so
  * a name chosen from it resolves through findDevice() like any other entry.
  */
 import { describe, expect, it } from 'vitest'
