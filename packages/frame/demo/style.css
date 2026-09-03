@@ -1,0 +1,308 @@
+/* 预览页自己的排版。真正属于这个包的示例是下面「插槽里的两条栏」和「被预览的页面」两段，
+   README 里贴的就是它们，可以整段复制走。 */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  color: #0f172a;
+  background: #eef2f6;
+}
+
+.panel {
+  flex: none;
+  width: 300px;
+  padding: 20px;
+  overflow: auto;
+  background: #fff;
+  border-right: 1px solid #dde3ea;
+}
+
+.panel h1 {
+  margin: 0 0 16px;
+  font-size: 16px;
+}
+
+.field {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.field > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #475569;
+  font-size: 12px;
+}
+
+.field--inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field--inline > span {
+  margin: 0;
+  font-size: 13px;
+  color: #0f172a;
+}
+
+.field select,
+.field input[type="number"],
+.field input[type="range"] {
+  width: 100%;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.note {
+  margin: 16px 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
+.readout__head {
+  display: flex;
+  justify-content: space-between;
+  margin: 12px 0 4px;
+  color: #475569;
+  font-size: 12px;
+}
+
+.readout pre {
+  margin: 0;
+  padding: 8px;
+  max-height: 220px;
+  overflow: auto;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: auto;
+}
+
+.stage__scaler {
+  transform-origin: center;
+}
+
+/* embedded 下元素不再自带尺寸，由容器说了算——这里给它一块 390×760 的板子。 */
+.stage__scaler--embedded {
+  width: 390px;
+  height: 760px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 18px 50px rgba(16, 20, 24, 0.18);
+}
+
+/* ---- 被预览的页面：高度和留白全部读元素写出来的变量 ---- */
+
+.page {
+  height: var(--device-height);
+  /* Left/right make room for a landscape cutout's ears; bottom takes whichever
+     is taller, the tab bar or the gesture-bar inset, the way a real page's own
+     bottom padding has to when it sits under both at once. */
+  padding: calc(var(--device-status-bar-height) + var(--device-navigation-bar-height) + 16px)
+    calc(var(--device-safe-area-right) + 16px)
+    calc(max(var(--device-tab-bar-height), var(--device-safe-area-bottom)) + 16px)
+    calc(var(--device-safe-area-left) + 16px);
+  overflow: auto;
+  background: linear-gradient(#dbeafe, #f8fafc 160px);
+  color: #0f172a;
+}
+
+/* embedded 下没有屏幕尺寸可读，高度归容器管。 */
+[embedded] .page {
+  height: 100%;
+}
+
+.page h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.page p {
+  margin: 0 0 8px;
+  font-size: 13px;
+}
+
+.page__size {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #1d4ed8;
+}
+
+/* ---- 小程序标题栏 ---- */
+
+.mp-title-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 12px;
+  background: #ededed;
+  color: #000;
+  font: 500 17px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.mp-title-bar__back {
+  border: 0;
+  background: none;
+  font-size: 26px;
+  line-height: 1;
+  padding: 0 8px;
+  cursor: pointer;
+}
+
+/* 标题在整条栏里居中，而不是在返回键右边居中——微信就是这么排的 */
+.mp-title-bar__title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ---- App 内嵌 H5 的返回栏 ---- */
+
+.h5-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 12px;
+  background: #0f172a;
+  color: #fff;
+  font: 500 17px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.h5-bar__title { flex: 1; text-align: center; }
+
+.h5-bar__back,
+.h5-bar__close {
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: 20px;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+/* ---- tab 栏 ---- */
+
+.demo-tab-bar {
+  display: flex;
+  height: 100%;
+  background: #f7f7f7;
+  border-top: 1px solid #d8d8d8;
+  /* A real tab bar absorbs the gesture-bar inset itself rather than letting the
+     home indicator sit on top of its labels. */
+  padding-bottom: var(--device-safe-area-bottom);
+}
+
+.demo-tab-bar__item {
+  flex: 1;
+  border: 0;
+  background: none;
+  color: #7a7e83;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.demo-tab-bar__item--on {
+  color: #07c160;
+}
+
+/* ---- 安全区可视化：四条半透明色带，宽度/高度直接读元素写出的那四个变量 ---- */
+
+.safe-area-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+/* The band's own display outranks the UA sheet's [hidden] rule, so it needs its
+   own; main.ts hides a band whose inset is 0. */
+.safe-area-overlay__band[hidden] {
+  display: none;
+}
+.safe-area-overlay__band {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: 600 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.safe-area-overlay__band--top {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--device-safe-area-top);
+  background: rgba(239, 68, 68, 0.35);
+}
+
+.safe-area-overlay__band--bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: var(--device-safe-area-bottom);
+  background: rgba(16, 185, 129, 0.35);
+}
+
+.safe-area-overlay__band--left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--device-safe-area-left);
+  background: rgba(234, 179, 8, 0.35);
+  writing-mode: vertical-rl;
+}
+
+.safe-area-overlay__band--right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--device-safe-area-right);
+  background: rgba(59, 130, 246, 0.35);
+  writing-mode: vertical-rl;
+}
+
+/* ---- 深色页面：切换 status-bar-text-style 时一眼看清两种前景色的样子 ---- */
+
+body.demo-dark-page .page {
+  background: linear-gradient(#0f172a, #1e293b 160px);
+  color: #e2e8f0;
+}
+
+body.demo-dark-page .mp-title-bar {
+  background: #1f1f1f;
+  color: #fff;
+}
+
+body.demo-dark-page .demo-tab-bar {
+  background: #111827;
+  border-top-color: #1f2937;
+}
+
+body.demo-dark-page .demo-tab-bar__item {
+  color: #94a3b8;
+}
+
+body.demo-dark-page .demo-tab-bar__item--on {
+  color: #34d399;
+}
