@@ -8,8 +8,22 @@ A device table, and a custom element that draws the phone around it.
 [![npm @devicekit/devices](https://img.shields.io/npm/v/@devicekit/devices)](https://www.npmjs.com/package/@devicekit/devices)
 [![npm @devicekit/frame](https://img.shields.io/npm/v/@devicekit/frame)](https://www.npmjs.com/package/@devicekit/frame)
 
+## Highlights
+
+- **171 devices, measured, not guessed.** 63 iPhones and iPads, 86 Android phones and tablets, and 22 Huawei HarmonyOS devices — both screens of every folding phone included. `CLASSIC_DEVICES` is a hand-picked shortlist of 19 for a picker that cannot show the whole table.
+- **Every device carries real geometry.** Status bar height, safe-area insets, corner radius, bezel and cutout shape — notch, Dynamic Island or punch-hole — stored separately for portrait and landscape wherever they were measured. `resolveDevice()` fills in whatever a profile leaves out from that platform's defaults, so nothing comes back empty.
+- **`<device-frame>` draws the phone**: body, status bar (static `9:41`, a live ticking clock, or hidden; black or white text; any CSS background color) and home indicator, as a Web Component with no dependencies of its own.
+- **Three slots, real layout.** `navigation-bar` and `tab-bar` let a host drop in its own title bar and tab bar; the frame places them under the status bar and works out exactly how much room is left for the default slot's content.
+- **`immersive` and `embedded` modes** cover a page that draws its own title bar behind the system bars, and a frame that has to fit inside a container that already supplies its own chrome.
+- **The numbers reach the content, too.** `contentrectchange` events and `--device-*` CSS custom properties expose the safe-area insets, status bar height and content rect the frame just drew with, so a preview can react without polling.
+- **`@devicekit/frame/react`** wraps the element for React 18 and 19 — same element, same output, just props.
+- **`DEVICE_NAMES`** turns every device name into a typed constant, so a host never hand-types, or mistypes, a device string.
+- **Zero dependencies.** `@devicekit/devices` depends on nothing; `@devicekit/frame` depends only on it. Works with any framework, or none.
+- MIT licensed.
+
 ## Contents
 
+- [Highlights](#highlights)
 - [Live demo](#live-demo)
 - [Packages](#packages)
 - [Install](#install)
@@ -73,6 +87,28 @@ React hosts can import `<DeviceFrame device={DEVICE_NAMES.iPhone_16_Pro}>` from 
 ## Device coverage
 
 The table holds 171 devices across iOS, Android and HarmonyOS, including both screens of each folding model. `CLASSIC_DEVICES` is a hand-picked subset of 19, for places that need a short list rather than the full table — a device picker in a toolbar, for instance.
+
+| Platform | Devices |
+| --- | --- |
+| iOS | 63 |
+| Android | 86 |
+| HarmonyOS | 22 |
+| **Total** | **171** |
+
+No profile carries a brand field, so the counts below come from each device's name: `Galaxy` / `Samsung` is Samsung, `Pixel` / `Nexus` is Google, `Surface Duo` is Microsoft, `Moto` / `Motorola` is Motorola, and every iOS device is Apple, every HarmonyOS device is Huawei.
+
+| Brand | Devices |
+| --- | --- |
+| Apple | 63 |
+| Samsung | 42 |
+| Google | 34 |
+| Huawei | 22 |
+| Motorola | 3 |
+| Microsoft | 2 |
+| OnePlus | 2 |
+| LG | 1 |
+| Nothing | 1 |
+| Xiaomi | 1 |
 
 Only the name, the OS, the screen size and the pixel ratio are stored for every device. Status bar height, safe-area insets, cutout geometry and an explicit user agent are stored where somebody could measure them, and everything else falls through to that platform's defaults — `resolveDevice()` is what hands back a device with no holes in it. [`packages/devices`](packages/devices) says which is which, field by field, and what is explicitly unverified.
 

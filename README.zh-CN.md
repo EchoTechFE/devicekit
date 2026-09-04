@@ -8,8 +8,22 @@
 [![npm @devicekit/devices](https://img.shields.io/npm/v/@devicekit/devices)](https://www.npmjs.com/package/@devicekit/devices)
 [![npm @devicekit/frame](https://img.shields.io/npm/v/@devicekit/frame)](https://www.npmjs.com/package/@devicekit/frame)
 
+## 特点
+
+- **171 台机型，数字都是实测的，不是拍脑袋估的。** 63 台 iPhone/iPad、86 台 Android 手机和平板、22 台华为 HarmonyOS 机型，折叠机的内外屏都各算一条。`CLASSIC_DEVICES` 是手选出来的 19 台精简列表，给放不下整张表的地方用。
+- **每台机型都带真实几何数据。** 状态栏高度、安全区、圆角、边框，以及刘海/灵动岛/挖孔这三种挖孔形状，竖屏横屏分开存，量到哪台记哪台；没量到的字段由 `resolveDevice()` 按平台默认值补齐，拿到手的数据永远是完整的。
+- **`<device-frame>` 直接把手机画出来**：机身、状态栏（固定 `9:41`、真走的实时时钟、或者干脆隐藏；文字黑白色可切；背景色随便传）、底部 Home 指示条——本身零依赖的 Web Component。
+- **三个插槽，真实布局。** `navigation-bar` 和 `tab-bar` 让宿主放进自己的标题栏和 tab 栏，frame 会把它们摆在状态栏下面，并算出默认插槽里的内容还剩多少空间。
+- **`immersive` 和 `embedded` 两种模式**，分别对应“页面自己画标题栏、内容顶到系统栏下面”和“frame 要塞进一个已经有自己外壳的容器里”这两种场景。
+- **算出来的数字也会传给内容。** `contentrectchange` 事件和 `--device-*` 这组 CSS 变量，把 frame 刚画完时用的安全区、状态栏高度和内容区位置暴露出来，宿主不用轮询就能拿到。
+- **`@devicekit/frame/react`** 把这个元素包成 React 组件，支持 React 18 和 19——渲染出来还是同一个元素，只是换成 props 传参。
+- **`DEVICE_NAMES`** 把每台机型的名字都变成一个带类型的常量，宿主不用手写（也就不会手滑写错）机型字符串。
+- **零依赖。** `@devicekit/devices` 不依赖任何包；`@devicekit/frame` 只依赖它。用什么框架都行，不用框架也行。
+- MIT 许可证。
+
 ## 目录
 
+- [特点](#特点)
 - [在线预览](#在线预览)
 - [包](#包)
 - [安装](#安装)
@@ -73,6 +87,28 @@ React 项目从 `@devicekit/frame/react` 引 `<DeviceFrame device={DEVICE_NAMES.
 ## 机型覆盖
 
 机型表共 171 台，覆盖 iOS、Android、HarmonyOS 三个平台，折叠机的内外屏都算在里面。`CLASSIC_DEVICES` 是手选出来的 19 台，给放不下整张表的地方用，比如工具栏里的机型下拉框。
+
+| 平台 | 数量 |
+| --- | --- |
+| iOS | 63 |
+| Android | 86 |
+| HarmonyOS | 22 |
+| **合计** | **171** |
+
+表里没有专门的厂商字段，下面这张表是按机型名字归类出来的：名字带 `Galaxy`/`Samsung` 算三星，带 `Pixel`/`Nexus` 算 Google，`Surface Duo` 算微软，`Moto`/`Motorola` 算摩托罗拉；iOS 机型全部算苹果，HarmonyOS 机型全部算华为。
+
+| 厂商 | 数量 |
+| --- | --- |
+| 苹果 | 63 |
+| 三星 | 42 |
+| Google | 34 |
+| 华为 | 22 |
+| 摩托罗拉 | 3 |
+| 微软 | 2 |
+| OnePlus | 2 |
+| LG | 1 |
+| Nothing | 1 |
+| 小米 | 1 |
 
 每台一定有的只有名字、系统、屏幕尺寸和像素比。状态栏高度、安全区、挖孔几何和写死的 UA 是量到哪台记哪台，没记的按平台默认值补——`resolveDevice()` 返回的就是补完、没有空洞的那份数据。哪些字段是实测、哪些明确没核实过，[`packages/devices`](packages/devices) 里逐字段写清楚了。
 
