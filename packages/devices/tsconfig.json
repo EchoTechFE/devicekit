@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // No DOM on purpose. This package is numbers; anything here that reaches
+    // for `document` or `HTMLElement` belongs in @devicekit/frame, and
+    // leaving DOM out of the lib is what makes that a compile error rather
+    // than a review comment.
+    "lib": ["ES2022"],
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

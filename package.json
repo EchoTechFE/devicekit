@@ -1,0 +1,33 @@
+{
+  "name": "devicekit",
+  "private": true,
+  "description": "A device table and a simulated-phone custom element: presets for phones and tablets, and the frame that draws one around any previewed page.",
+  "license": "MIT",
+  "author": "EchoTechFE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EchoTechFE/devicekit.git"
+  },
+  "homepage": "https://github.com/EchoTechFE/devicekit#readme",
+  "bugs": {
+    "url": "https://github.com/EchoTechFE/devicekit/issues"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "check-types": "pnpm -r check-types",
+    "test": "pnpm -r test && pnpm run test:scripts",
+    "test:scripts": "node --test scripts/*.test.mjs",
+    "test:coverage": "pnpm -r test:coverage",
+    "lint": "pnpm -r lint",
+    "verify:pack": "pnpm -r build && node scripts/verify-pack.mjs"
+  },
+  "devDependencies": {
+    "eslint": "^10.2.1",
+    "typescript": "5.9.2",
+    "typescript-eslint": "^8.58.2"
+  },
+  "packageManager": "pnpm@9.15.9"
+}

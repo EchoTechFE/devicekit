@@ -1,0 +1,114 @@
+{
+  "name": "@devicekit/frame",
+  "version": "0.1.0",
+  "description": "The simulated phone behind devicekit's previews: a framework-agnostic <device-frame> custom element that draws the bezel, status bar and home indicator. Device presets live in @devicekit/devices.",
+  "keywords": [
+    "device-frame",
+    "mockup",
+    "web-components",
+    "custom-element",
+    "status-bar",
+    "safe-area",
+    "preview"
+  ],
+  "type": "module",
+  "sideEffects": ["./src/react/index.tsx", "./dist/react/index.js"],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "author": "EchoTechFE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EchoTechFE/devicekit.git",
+    "directory": "packages/frame"
+  },
+  "bugs": {
+    "url": "https://github.com/EchoTechFE/devicekit/issues"
+  },
+  "homepage": "https://github.com/EchoTechFE/devicekit/tree/main/packages/frame#readme",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react/index.tsx",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "check-types": "tsc --noEmit && tsc --noEmit -p demo/tsconfig.json && tsc --noEmit -p type-tests/tsconfig.json",
+    "demo": "vite demo",
+    "demo:build": "vite build demo",
+    "lint": "eslint . --max-warnings 0",
+    "test": "vitest run --reporter=default --reporter=json --outputFile.json=test-report.json --coverage.enabled --coverage.reporter=json-summary --coverage.reportsDirectory=coverage",
+    "test:dev": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "@devicekit/devices": "workspace:*"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^10.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-only-warn": "^1.2.1",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.5.0",
+    "jiti": "^2.7.0",
+    "jsdom": "^29.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "5.9.2",
+    "typescript-eslint": "^8.58.2",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.4"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "@types/react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "@types/react": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "./react": {
+        "types": "./dist/react/index.d.ts",
+        "default": "./dist/react/index.js"
+      },
+      "./package.json": "./package.json"
+    },
+    "typesVersions": {
+      "*": {
+        "react": ["./dist/react/index.d.ts"]
+      }
+    }
+  }
+}
