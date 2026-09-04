@@ -1,0 +1,177 @@
+/* Render target for scripts/render-readme-images.mjs — see index.html. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  color: #0f172a;
+  background: transparent;
+}
+
+/* Stacked so the render script can measure and screenshot each row by its
+   own content width — a shared shrink-to-fit ancestor would otherwise widen
+   the shorter row (align-items: stretch on the cross axis) to match the
+   wider one and leave it with trailing blank space. */
+.rows {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 48px;
+  padding: 12px;
+}
+
+/* Flat rather than the package's default drop shadow: at this crop the
+   shadow's blur radius reads as a smudge along the row's edge. */
+.row device-frame {
+  --device-frame-shadow: none;
+}
+
+/* The placeholder mini-program screen slotted into every <device-frame>. */
+.mock-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.banner {
+  height: 96px;
+  border-radius: 14px;
+  background: #f2f3f5;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #f2f3f5;
+}
+
+.tile__icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #d8dce2;
+}
+
+.tile__icon--on {
+  background: #07c160;
+}
+
+.tile__line {
+  height: 6px;
+  border-radius: 3px;
+  background: #d8dce2;
+}
+
+.tile__line--a { width: 70%; }
+.tile__line--b { width: 45%; }
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.list__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.list__avatar {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #d8dce2;
+}
+
+.list__lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.list__line {
+  height: 6px;
+  border-radius: 3px;
+  background: #d8dce2;
+}
+
+.list__line--a { width: 80%; }
+.list__line--b { width: 50%; }
+
+.list__dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #c7cbd1;
+}
+
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  background: #ffffff;
+  border-bottom: 1px solid #ececef;
+}
+
+.nav-bar__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111318;
+}
+
+.tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  height: 100%;
+  background: #ffffff;
+  border-top: 1px solid #ececef;
+  font-size: 10px;
+  color: #9aa1ac;
+}
+
+.tab-bar__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.tab-bar__item--on {
+  color: #07c160;
+}
+
+.tab-bar__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}

@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>devicekit README images</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!--
+    Not a demo: a render target for scripts/render-readme-images.mjs. It lays
+    out a row of <device-frame> elements with a placeholder mini-program UI
+    slotted in, and the script screenshots each row's container to produce
+    the README's device illustrations. Regenerate with `pnpm images`.
+  -->
+  <div class="rows">
+    <section id="portrait-row" class="row"></section>
+    <section id="landscape-row" class="row row--landscape"></section>
+  </div>
+
+  <template id="tpl-nav">
+    <div slot="navigation-bar" class="nav-bar">
+      <span class="nav-bar__title">Devicekit</span>
+    </div>
+  </template>
+
+  <template id="tpl-cards">
+    <div class="mock-page">
+      <div class="banner"></div>
+      <div class="grid">
+        <div class="tile"><span class="tile__icon tile__icon--on"></span><span class="tile__line tile__line--a"></span><span class="tile__line tile__line--b"></span></div>
+        <div class="tile"><span class="tile__icon"></span><span class="tile__line tile__line--a"></span><span class="tile__line tile__line--b"></span></div>
+        <div class="tile"><span class="tile__icon"></span><span class="tile__line tile__line--a"></span><span class="tile__line tile__line--b"></span></div>
+        <div class="tile"><span class="tile__icon"></span><span class="tile__line tile__line--a"></span><span class="tile__line tile__line--b"></span></div>
+      </div>
+      <ul class="list">
+        <li class="list__row"><span class="list__avatar"></span><span class="list__lines"><span class="list__line list__line--a"></span><span class="list__line list__line--b"></span></span><span class="list__dot"></span></li>
+        <li class="list__row"><span class="list__avatar"></span><span class="list__lines"><span class="list__line list__line--a"></span><span class="list__line list__line--b"></span></span><span class="list__dot"></span></li>
+        <li class="list__row"><span class="list__avatar"></span><span class="list__lines"><span class="list__line list__line--a"></span><span class="list__line list__line--b"></span></span><span class="list__dot"></span></li>
+      </ul>
+    </div>
+  </template>
+
+  <template id="tpl-tab-bar">
+    <nav slot="tab-bar" class="tab-bar">
+      <span class="tab-bar__item tab-bar__item--on">
+        <span class="tab-bar__dot"></span>
+        Home
+      </span>
+      <span class="tab-bar__item">
+        <span class="tab-bar__dot"></span>
+        Explore
+      </span>
+      <span class="tab-bar__item">
+        <span class="tab-bar__dot"></span>
+        Me
+      </span>
+    </nav>
+  </template>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>
