@@ -55,6 +55,11 @@ export const DEVICE_FRAME_STYLES = `
   --device-frame-background: #0b0b0c;
   --device-frame-shadow: 0 18px 50px rgba(16, 20, 24, 0.22);
   --device-cutout-color: #000;
+  /* The status bar is transparent by default, so without a navigation-bar slot
+     this is what shows behind the clock — a real screen is never the bezel
+     color. A dark page sets it to its own background so white status-bar text
+     keeps its contrast. */
+  --device-screen-background: #ffffff;
 
   position: relative;
   display: inline-flex;
@@ -117,6 +122,7 @@ export const DEVICE_FRAME_STYLES = `
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  background: var(--device-screen-background);
   /* The screen sits inside both the bezel and the border, so staying concentric
      with the body needs both subtracted back out — floored at 0 so a small
      --device-frame-radius override never asks for a negative radius. */

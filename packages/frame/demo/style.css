@@ -291,6 +291,12 @@ body.demo-dark-page .page {
   color: #e2e8f0;
 }
 
+/* The screen behind a transparent status bar has to match the page, or white
+   status-bar text disappears against the frame's default white screen. */
+body.demo-dark-page device-frame {
+  --device-screen-background: #0f172a;
+}
+
 body.demo-dark-page .mp-title-bar {
   background: #1f1f1f;
   color: #fff;
