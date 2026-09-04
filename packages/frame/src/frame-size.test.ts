@@ -1,4 +1,4 @@
-import { findDevice, orientedScreen, resolveDevice } from '@devicekit/devices'
+import { findDevice, resolveDevice } from '@devicekit/devices'
 import { describe, expect, it } from 'vitest'
 import { frameOuterSize } from './index.js'
 import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
@@ -20,13 +20,7 @@ describe('frameOuterSize', () => {
     expect(size).toEqual({ width: 852 + 2 * margin, height: 393 + 2 * margin })
   })
 
-  it('is exactly the bare screen when embedded — no body, no border', () => {
-    const size = frameOuterSize(iPhone15, 'portrait', { embedded: true })
-    expect(size).toEqual(orientedScreen(iPhone15, 'portrait'))
-  })
-
-  it('is exactly the bare landscape screen when embedded', () => {
-    const size = frameOuterSize(iPhone15, 'landscape', { embedded: true })
-    expect(size).toEqual(orientedScreen(iPhone15, 'landscape'))
+  it('takes exactly two arguments — embedding no longer changes the outer size call shape', () => {
+    expect(frameOuterSize.length).toBe(2)
   })
 })

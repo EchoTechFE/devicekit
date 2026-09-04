@@ -29,5 +29,6 @@ export const HARMONY_DEVICES: readonly DeviceProfile[] = [
   { name: 'HUAWEI nova 12', os: 'harmony', screen: { width: 361, height: 804 }, pixelRatio: 3, system: 'HarmonyOS 5.0', statusBarHeight: 35, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 35 } },
   { name: 'HUAWEI nova 12 Pro', os: 'harmony', screen: { width: 363, height: 823 }, pixelRatio: 3.375, system: 'HarmonyOS 5.0', statusBarHeight: 44, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 44 } },
   { name: 'HUAWEI Pura X Max (outer)', os: 'harmony', screen: { width: 460, height: 672 }, pixelRatio: 2.75, system: 'HarmonyOS 5.0', statusBarHeight: 66, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 66 } },
-  { name: 'HUAWEI Pura X Max (inner)', os: 'harmony', screen: { width: 940, height: 665 }, pixelRatio: 2.75, system: 'HarmonyOS 5.0', statusBarHeight: 72, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 72 } },
+  // Table stores portrait; the unfolded (wider-than-tall) screen is what orientation=landscape reads out.
+  { name: 'HUAWEI Pura X Max (inner)', os: 'harmony', screen: { width: 665, height: 940 }, pixelRatio: 2.75, system: 'HarmonyOS 5.0', statusBarHeight: 72, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 72 } },
 ]

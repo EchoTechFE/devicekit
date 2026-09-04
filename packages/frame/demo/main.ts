@@ -3,8 +3,9 @@
  * <device-frame> wired to a control, with the numbers it resolves printed
  * alongside as they change.
  *
- * It imports ../src rather than the build output, so an edit to the source
- * shows up on the next refresh.
+ * It imports the package by name, which the workspace resolves to ../src
+ * rather than the build output, so an edit to the source shows up on the next
+ * refresh — and the demo exercises the same entry point a consumer gets.
  */
 import { DEFAULT_DEVICE, DEVICES, type DeviceOS } from '@devicekit/devices'
 import {
@@ -12,7 +13,7 @@ import {
   defineDeviceFrame,
   type ContentRect,
   type DeviceFrameElement,
-} from '../src/index.js'
+} from '@devicekit/frame'
 
 defineDeviceFrame()
 

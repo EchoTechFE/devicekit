@@ -165,7 +165,7 @@ describe('falling back to platform defaults when a profile omits chrome fields',
   it('an omitted safe area defaults to the status bar on top and nothing on the other three edges', () => {
     const resolved = resolveDevice(bareProfile('android'))
     expect(resolved.safeAreaInsets).toEqual({ top: 24, right: 0, bottom: 0, left: 0 })
-    expect(resolved.safeAreaInsetsLandscape).toEqual({ top: 0, right: 0, bottom: 0, left: 0 })
+    expect(resolved.safeAreaInsetsLandscape).toEqual({ top: 24, right: 0, bottom: 0, left: 0 })
   })
 })
 
@@ -189,6 +189,6 @@ describe('per-orientation accessors just switch on orientation', () => {
     expect(navigationBarHeightFor(resolved, 'portrait')).toBe(30)
     expect(navigationBarHeightFor(resolved, 'landscape')).toBe(40)
     expect(safeAreaInsetsFor(resolved, 'portrait')).toEqual({ top: 10, right: 0, bottom: 0, left: 0 })
-    expect(safeAreaInsetsFor(resolved, 'landscape')).toEqual({ top: 0, right: 0, bottom: 0, left: 5 })
+    expect(safeAreaInsetsFor(resolved, 'landscape')).toEqual({ top: 20, right: 0, bottom: 0, left: 5 })
   })
 })

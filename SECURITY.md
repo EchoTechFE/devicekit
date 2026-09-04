@@ -6,8 +6,8 @@ Only the latest minor version of each package receives security fixes.
 
 | Package             | Supported     |
 | ------------------- | ------------- |
-| @devicekit/devices   | latest minor |
-| @devicekit/frame     | latest minor |
+| @devicekit/devices  | latest minor  |
+| @devicekit/frame    | latest minor  |
 
 ## Reporting a Vulnerability
 

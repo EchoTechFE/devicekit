@@ -50,8 +50,9 @@ export function orientedScreen(device: DeviceProfile, orientation: Orientation =
  *
  * Read straight off the profile rather than derived from the portrait values,
  * because the two orientations do not follow one another: on a notched iPhone
- * the bottom inset drops from 34 to 21 when rotated, and iOS 26 gave landscape
- * a top inset where earlier releases had none.
+ * the bottom inset drops from 34 to 21 when rotated, and the iPhone 17 line
+ * moved that landscape bottom inset again, from 21 to 20 — the top inset
+ * stays 0 in landscape on every iOS device, that generation included.
  */
 export function resolveSafeAreaInsets(device: DeviceProfile, orientation: Orientation = 'portrait'): EdgeInsets {
   return safeAreaInsetsFor(resolveDevice(device), orientation)
@@ -89,12 +90,34 @@ export interface WindowSizeOptions {
 }
 
 /**
+ * Rejects options that would otherwise subtract a negative number from the
+ * screen height and grow the window past it, or hand a non-finite value
+ * downstream into layout math.
+ */
+function assertWindowSizeOptions(options: WindowSizeOptions): void {
+  const { navigationBar, tabBarHeight } = options
+  if (navigationBar !== undefined && typeof navigationBar !== 'boolean') {
+    if (typeof navigationBar !== 'number' || !Number.isFinite(navigationBar) || navigationBar < 0) {
+      throw new RangeError(
+        `resolveWindowSize: options.navigationBar must be a boolean or a finite number >= 0, got ${navigationBar}`,
+      )
+    }
+  }
+  if (tabBarHeight !== undefined) {
+    if (typeof tabBarHeight !== 'number' || !Number.isFinite(tabBarHeight) || tabBarHeight < 0) {
+      throw new RangeError(`resolveWindowSize: options.tabBarHeight must be a finite number >= 0, got ${tabBarHeight}`)
+    }
+  }
+}
+
+/**
  * The box the page's own content gets: the screen minus the status bar, minus
  * the app's navigation bar, minus its tab bar. This is what a page sees as
  * `windowWidth` / `windowHeight`, and what an emulated viewport should be sized
  * to so that `100vh` means the same thing in the preview and on the device.
  */
 export function resolveWindowSize(device: DeviceProfile, options: WindowSizeOptions = {}): ScreenSize {
+  assertWindowSizeOptions(options)
   const { orientation = 'portrait', navigationBar = true, tabBarHeight = 0 } = options
   const resolved = resolveDevice(device)
   const screen = orientedScreen(device, orientation)

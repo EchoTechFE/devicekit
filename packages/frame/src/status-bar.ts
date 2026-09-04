@@ -53,7 +53,24 @@ export class StatusBar {
 
   #timeEl: HTMLElement
   #cutoutEl: HTMLElement
-  #clockTimer: ReturnType<typeof setInterval> | null = null
+  // Either the one-shot alignment timeout or the steady-state interval that
+  // replaces it — never both at once, so a single field and clearing both
+  // kinds unconditionally (see `#clearClockTimer`) is simpler than tracking
+  // which kind is currently live.
+  #clockTimer: ReturnType<typeof setTimeout> | null = null
+  // The document the visibilitychange listener was added to — the element's
+  // ownerDocument at that moment, which adoptNode() can change before stop()
+  // runs, so removal must target the document actually listened on.
+  #listeningDocument: Document | null = null
+  #onDocumentVisibilityChange = (): void => {
+    // Only a background→foreground transition needs a redraw: the minute the
+    // previewer was hidden in is already stale, and there is no other timer
+    // (browsers throttle backgrounded ones) to have refreshed it.
+    if (this.element.ownerDocument.hidden) return
+    this.#clearClockTimer()
+    this.#tick()
+    this.#scheduleAlignedTick()
+  }
 
   constructor() {
     this.element = document.createElement('div')
@@ -107,6 +124,13 @@ export class StatusBar {
 
     if (!visible) {
       this.stop()
+      // Hidden shadow DOM has to match what creating the element hidden would
+      // have produced — otherwise a bar that was live before going invisible
+      // keeps showing the last clock tick and sizing through a re-show that
+      // never touches these properties again.
+      this.#timeEl.textContent = ''
+      this.element.style.removeProperty('height')
+      this.element.style.removeProperty('color')
       return
     }
 
@@ -151,7 +175,15 @@ export class StatusBar {
     this.#cutoutEl.hidden = cutout === null
 
     if (!cutout) {
+      // Matches a from-scratch no-cutout render: without these, a device
+      // switch away from a cutout leaves the previous shape's geometry on an
+      // element that is merely `hidden`, not recreated.
       delete this.#cutoutEl.dataset.shape
+      this.#cutoutEl.style.removeProperty('width')
+      this.#cutoutEl.style.removeProperty('height')
+      this.#cutoutEl.style.removeProperty('top')
+      this.#cutoutEl.style.removeProperty('left')
+      this.#cutoutEl.style.removeProperty('border-radius')
       return
     }
 
@@ -166,19 +198,49 @@ export class StatusBar {
     this.#cutoutEl.style.borderRadius = cutoutBorderRadius(cutout)
   }
 
-  #startClock(): void {
-    const tick = (): void => {
-      this.#timeEl.textContent = currentClockText(new Date())
-    }
-    tick()
+  #tick(): void {
+    this.#timeEl.textContent = currentClockText(new Date())
+  }
+
+  /**
+   * A wall clock, not a "60s since whenever this happened to start" timer: the
+   * first tick lands on the real minute boundary rather than a minute after
+   * connect, so `#clockTimer` is a one-shot timeout up to that boundary which
+   * then hands off to a steady `setInterval` — see `#onDocumentVisibilityChange`
+   * for the field itself.
+   */
+  #scheduleAlignedTick(): void {
     if (this.#clockTimer !== null) return
-    this.#clockTimer = setInterval(tick, LIVE_CLOCK_INTERVAL_MS)
+    const delay = LIVE_CLOCK_INTERVAL_MS - (Date.now() % LIVE_CLOCK_INTERVAL_MS)
+    this.#clockTimer = setTimeout(() => {
+      this.#tick()
+      this.#clockTimer = setInterval(() => this.#tick(), LIVE_CLOCK_INTERVAL_MS)
+    }, delay)
+  }
+
+  #clearClockTimer(): void {
+    if (this.#clockTimer === null) return
+    // clearTimeout and clearInterval both operate on the same id space and
+    // are no-ops on an id of the other kind, so clearing unconditionally
+    // avoids tracking which one `#clockTimer` currently holds.
+    clearTimeout(this.#clockTimer)
+    clearInterval(this.#clockTimer)
+    this.#clockTimer = null
+  }
+
+  #startClock(): void {
+    this.#tick()
+    this.#scheduleAlignedTick()
+    if (this.#listeningDocument !== null) return
+    this.#listeningDocument = this.element.ownerDocument
+    this.#listeningDocument.addEventListener('visibilitychange', this.#onDocumentVisibilityChange)
   }
 
   /** Stops the clock. Called on every non-live render and when the frame leaves the document. */
   stop(): void {
-    if (this.#clockTimer === null) return
-    clearInterval(this.#clockTimer)
-    this.#clockTimer = null
+    this.#clearClockTimer()
+    if (this.#listeningDocument === null) return
+    this.#listeningDocument.removeEventListener('visibilitychange', this.#onDocumentVisibilityChange)
+    this.#listeningDocument = null
   }
 }

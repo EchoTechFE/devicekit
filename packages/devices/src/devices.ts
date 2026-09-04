@@ -12,7 +12,8 @@
  *   its width and height. Everything else that differs between orientations is
  *   stored twice, because it does NOT follow from the portrait value by any
  *   rule: the bottom inset shrinks from 34 to 21, the navigation bar from 44 to
- *   32, and iOS 26 gave landscape a 20px top inset where there used to be none.
+ *   32, and the iPhone 17 line's landscape bottom inset moved from 21 to 20 —
+ *   the top inset stays 0 in landscape on every iOS device.
  * - The status bar height and the top safe-area inset are separate numbers. On
  *   a Dynamic Island phone the status bar is 54 while the inset is 59 or 62 —
  *   one is what the clock is drawn into, the other is what the island and its
@@ -26,12 +27,16 @@
  */
 
 import { deviceUserAgent } from './user-agent.js'
+import { assertDeviceProfile } from './validate.js'
 
 /** The platforms the table covers. */
 export type DeviceOS = 'ios' | 'android' | 'harmony'
 
 /** Which way the device is held. Landscape swaps the screen's two sides. */
 export type Orientation = 'portrait' | 'landscape'
+
+/** A phone or a tablet. Drives the UA's device-compat token and HarmonyOS's DeviceType. */
+export type DeviceFormFactor = 'phone' | 'tablet'
 
 /** A width and a height in CSS px — never physical pixels. */
 export interface ScreenSize {
@@ -92,6 +97,12 @@ export interface DeviceProfile {
   /** The physical screen in CSS px, portrait. Landscape swaps the two. */
   screen: ScreenSize
   pixelRatio: number
+  /**
+   * Phone or tablet. Feeds the generated user agent's device-compat token (an
+   * iPad gets Safari's desktop UA, an Android tablet drops "Mobile") and
+   * HarmonyOS's DeviceType. Omitted = phone.
+   */
+  formFactor?: DeviceFormFactor
   /** Shown in the device picker, e.g. "iOS 18.0". Also feeds the generated user agent. */
   system?: string
   /**
@@ -174,6 +185,7 @@ export interface ResolvedDevice {
   os: DeviceOS
   screen: ScreenSize
   pixelRatio: number
+  formFactor: DeviceFormFactor
   system: string
   userAgent: string
   statusBarHeight: number
@@ -204,8 +216,10 @@ function withInsets(partial: Partial<EdgeInsets> | undefined, fallback: EdgeInse
  * @returns the same device with every field present
  */
 export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
+  assertDeviceProfile(profile, 'device')
   const defaults = PLATFORM_DEFAULTS[profile.os]
   const statusBarHeight = profile.statusBarHeight ?? defaults.statusBarHeight
+  const statusBarHeightLandscape = profile.statusBarHeightLandscape ?? defaults.statusBarHeightLandscape
   const screenRadius = profile.shell?.screenRadius ?? defaults.shell.screenRadius
   const bezel = profile.shell?.bezel ?? defaults.shell.bezel
 
@@ -214,14 +228,15 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
     os: profile.os,
     screen: profile.screen,
     pixelRatio: profile.pixelRatio,
+    formFactor: profile.formFactor ?? 'phone',
     system: profile.system ?? '',
     userAgent: profile.userAgent ?? deviceUserAgent(profile),
     statusBarHeight,
-    statusBarHeightLandscape: profile.statusBarHeightLandscape ?? defaults.statusBarHeightLandscape,
+    statusBarHeightLandscape,
     navigationBarHeight: profile.navigationBarHeight ?? defaults.navigationBarHeight,
     navigationBarHeightLandscape: profile.navigationBarHeightLandscape ?? defaults.navigationBarHeightLandscape,
     safeAreaInsets: withInsets(profile.safeAreaInsets, { ...NO_INSETS, top: statusBarHeight }),
-    safeAreaInsetsLandscape: withInsets(profile.safeAreaInsetsLandscape, NO_INSETS),
+    safeAreaInsetsLandscape: withInsets(profile.safeAreaInsetsLandscape, { ...NO_INSETS, top: statusBarHeightLandscape }),
     cutout: profile.cutout ?? null,
     shell: {
       screenRadius,

@@ -68,7 +68,7 @@ export function profileFromAttributes(
   const cutout = toCutout(element.getAttribute('cutout'))
   const statusBarHeight = toPositiveNumber(element.getAttribute('status-bar-height'))
 
-  return {
+  return withoutUndefined({
     name: named?.name ?? '',
     os: toOS(element.getAttribute('os')) ?? named?.os ?? 'ios',
     screen: {
@@ -76,6 +76,7 @@ export function profileFromAttributes(
       height: toPositiveNumber(element.getAttribute('height')) ?? named?.screen.height ?? fallbackScreen.height,
     },
     pixelRatio: toPositiveNumber(element.getAttribute('pixel-ratio')) ?? named?.pixelRatio ?? 1,
+    formFactor: named?.formFactor,
     system: named?.system,
     userAgent: element.getAttribute('user-agent') ?? named?.userAgent,
     // status-bar-height and safe-area-* apply to both orientations, the same as
@@ -90,5 +91,20 @@ export function profileFromAttributes(
     safeAreaInsetsLandscape: attributeInsets ?? named?.safeAreaInsetsLandscape,
     cutout: cutout === undefined ? named?.cutout : (cutout ?? undefined),
     shell: named?.shell,
+  })
+}
+
+/**
+ * Drops keys whose value is `undefined`, so an optional DeviceProfile field
+ * that neither the attributes nor the named device supply is absent rather
+ * than present-but-undefined. That keeps the object assignable to
+ * DeviceProfile under `exactOptionalPropertyTypes` and lets `'system' in
+ * profile` mean what a reader expects.
+ */
+function withoutUndefined<T extends object>(value: T): { [K in keyof T]: Exclude<T[K], undefined> } {
+  const result: Partial<T> = {}
+  for (const key of Object.keys(value) as (keyof T)[]) {
+    if (value[key] !== undefined) result[key] = value[key]
   }
+  return result as { [K in keyof T]: Exclude<T[K], undefined> }
 }

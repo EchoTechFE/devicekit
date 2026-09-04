@@ -8,6 +8,9 @@ export {
 } from './device-frame.js'
 
 export type { ContentBox, ContentRect } from './content-rect.js'
+export { CONTENT_RECT_EPSILON } from './content-rect.js'
+
+export type { DeviceFrameElementEventMap } from './element-events.js'
 
 export {
   CUTOUT_PRESETS,
@@ -40,6 +43,7 @@ export { frameOuterSize } from './frame-size.js'
 export type {
   CutoutShape,
   CutoutSpec,
+  DeviceFormFactor,
   DeviceOS,
   DeviceProfile,
   DeviceShell,

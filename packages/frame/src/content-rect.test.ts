@@ -259,31 +259,36 @@ describe('the contentrectchange event', () => {
  * which is the case this rectangle exists for, cannot be reached that way.
  */
 describe('projecting the content box onto the page', () => {
-  const box = (left: number, top: number, width: number): DOMRect =>
-    ({ left, top, width, height: 0, right: left + width, bottom: top, x: left, y: top, toJSON: () => ({}) })
+  // height defaults to width, and every call below passes screenHeight === screenWidth
+  // (375): the vertical ratio then always equals the horizontal one, so these cases stay
+  // on the uniform-scale path and keep the numbers a single `scale` described before
+  // per-axis ratios existed. content-rect-anisotropic.test.ts is what exercises scaleX
+  // != scaleY.
+  const box = (left: number, top: number, width: number, height: number = width): DOMRect =>
+    ({ left, top, width, height, right: left + width, bottom: top + height, x: left, y: top, toJSON: () => ({}) })
 
   const content = { x: 0, y: 88, width: 375, height: 724 }
 
   it('leaves the box alone when the frame is drawn at device size', () => {
-    expect(toViewportRect(content, 375, box(0, 0, 375)))
+    expect(toViewportRect(content, 375, 375, box(0, 0, 375)))
       .toEqual({ x: 0, y: 88, width: 375, height: 724, scale: 1 })
   })
 
   it('scales the box and offsets it by where the screen actually is', () => {
     // Half size, and pushed 20px right / 10px down by the host's own layout.
-    expect(toViewportRect(content, 375, box(20, 10, 187.5)))
+    expect(toViewportRect(content, 375, 375, box(20, 10, 187.5)))
       .toEqual({ x: 20, y: 54, width: 187.5, height: 362, scale: 0.5 })
   })
 
   it('reports logical geometry unscaled when the screen cannot be measured', () => {
-    expect(toViewportRect(content, 375, box(0, 0, 0)))
+    expect(toViewportRect(content, 375, 375, box(0, 0, 0)))
       .toEqual({ x: 0, y: 88, width: 375, height: 724, scale: 1 })
   })
 
   it('counts a change of scale alone as a change', () => {
     const empty = { x: 0, y: 0, width: 0, height: 0 }
-    const full = toViewportRect(empty, 375, box(0, 0, 375))
-    const half = toViewportRect(empty, 375, box(0, 0, 187.5))
+    const full = toViewportRect(empty, 375, 375, box(0, 0, 375))
+    const half = toViewportRect(empty, 375, 375, box(0, 0, 187.5))
 
     expect(sameContentRect(full, full)).toBe(true)
     expect(sameContentRect(full, half)).toBe(false)

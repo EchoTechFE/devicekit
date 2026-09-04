@@ -59,10 +59,19 @@ an appointed representative at an online or offline event.
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported by opening a [GitHub issue](https://github.com/EchoTechFE/devicekit/issues)
-on this repository. All complaints will be reviewed and investigated promptly
-and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior should be
+reported privately, never in a public issue or pull request. Two private
+channels reach the maintainers:
+
+- **Report content** on the offending comment, issue or pull request (the
+  `...` menu next to it) sends the report to GitHub and to us.
+- A private report through the
+  [Security tab](https://github.com/EchoTechFE/devicekit/security) →
+  **Report a vulnerability**, which is a private thread between you and the
+  maintainers. Use this one if the report concerns a maintainer, or if it has
+  to reach us directly.
+
+All complaints will be reviewed and investigated promptly and fairly.
 
 All community leaders are obligated to respect the privacy and security of
 the reporter of any incident.

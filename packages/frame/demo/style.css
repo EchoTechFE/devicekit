@@ -117,22 +117,19 @@ code {
    the element publishes ---- */
 
 .page {
-  height: var(--device-height);
-  /* Left/right make room for a landscape cutout's ears; bottom takes whichever
-     is taller, the tab bar or the gesture-bar inset, the way a real page's own
-     bottom padding has to when it sits under both at once. */
-  padding: calc(var(--device-status-bar-height) + var(--device-navigation-bar-height) + 16px)
+  height: 100%;
+  box-sizing: border-box;
+  /* The frame already places the default slot below the status/navigation
+     bars and above the tab bar, so the top needs no padding. Left/right make
+     room for a landscape cutout's ears; the bottom only pads the part of the
+     gesture-bar inset that a tab bar is not already covering. */
+  padding: 16px
     calc(var(--device-safe-area-right) + 16px)
-    calc(max(var(--device-tab-bar-height), var(--device-safe-area-bottom)) + 16px)
+    calc(max(var(--device-safe-area-bottom) - var(--device-tab-bar-height), 0px) + 16px)
     calc(var(--device-safe-area-left) + 16px);
   overflow: auto;
   background: linear-gradient(#dbeafe, #f8fafc 160px);
   color: #0f172a;
-}
-
-/* Under `embedded` there is no screen size to read, so height is the container's. */
-[embedded] .page {
-  height: 100%;
 }
 
 .page h2 {

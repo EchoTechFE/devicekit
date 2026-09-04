@@ -2,7 +2,7 @@ English | [简体中文](./README.zh-CN.md)
 
 # @devicekit/devices
 
-A table of phones and tablets, and the functions that turn one of them into usable sizes. Every device carries a screen size, a pixel ratio, a status bar height, safe-area insets, cutout geometry and a user agent.
+A table of phones and tablets, and the functions that turn one of them into usable sizes. Every device carries a name, an OS, a screen size and a pixel ratio; status bar height, safe-area insets, cutout geometry and an explicit user agent are there for the devices somebody could measure, and fall back to the platform's defaults for the rest. `resolveDevice()` is what hands back a device with no holes in it.
 
 **There is no DOM in this package.** Its `tsconfig` sets `lib` to `ES2022` only, so writing `document` in here is a compile error rather than something a reviewer has to catch. Node scripts, build steps, tests and servers can all use it directly. Drawing the phone is [@devicekit/frame](../frame).
 
@@ -20,9 +20,9 @@ import { DEVICES, DEFAULT_DEVICE, findDevice } from '@devicekit/devices'
 const device = findDevice('iPhone 16 Pro') ?? DEFAULT_DEVICE
 ```
 
-`DEVICES` is the whole table: iPhones, iPads, Android phones and HarmonyOS phones, with both screens of each folding model counted separately. It is the concatenation of `IOS_DEVICES`, `ANDROID_DEVICES` and `HARMONY_DEVICES`, one file per platform, one line per device — import a platform list directly if that is all you need. `findDevice(name)` looks a device up by its exact `name` and returns `undefined` for anything not in the table. `DEFAULT_DEVICE` (an iPhone X) is what to render when nothing asked for a particular device.
+`DEVICES` is the whole table: iPhones, iPads, Android phones and HarmonyOS phones, with both screens of each folding model counted separately. It is the concatenation of `IOS_DEVICES`, `ANDROID_DEVICES` and `HARMONY_DEVICES`, one file per platform, one line per device — import a platform list directly if that is all you need. `findDevice(name)` looks a device up by its exact `name` and returns `undefined` for anything not in the table. `DEFAULT_DEVICE` (an iPhone X) is the fallback when nothing asked for a particular device. Hosts that consume it for its size only — [@devicekit/frame](../frame) is one — take its screen and nothing else, so a frame with no device named is not an iPhone X.
 
-`CLASSIC_DEVICES` is a hand-picked subset of the same objects — fewer than 20, grouped iOS → Android → HarmonyOS — for a device picker that cannot show 171 rows. Hosts that need the full table still read `DEVICES`.
+`CLASSIC_DEVICES` is a hand-picked subset of the same objects — 19 of them, grouped iOS → Android → HarmonyOS — for a device picker that cannot show 171 rows. The pick is a judgement call, not a ranking: iPhones and iPads, Pixel and Galaxy, one Xiaomi and four HUAWEI. Hosts that need the full table still read `DEVICES`.
 
 ## What a device looks like
 
@@ -48,7 +48,7 @@ Five decisions in that shape are what separate it from a hand-written pair of nu
 
 **The screen size is not the usable size.** Take away the status bar and the app's own navigation bar and the two differ by close to a hundred pixels; storing one number would make every preview lie. Only the screen is stored here, and the usable size comes from `resolveWindowSize()`, because it depends on which bars the page asked for.
 
-**Only the screen size flips with orientation — everything else is stored twice.** The rest cannot be derived: the bottom inset shrinks from 34 to 21, the navigation bar from 44 to 32, and iOS 26 adds a 20-pixel top inset in landscape. No rule computes those three from their portrait values.
+**Only the screen size flips with orientation — everything else is stored twice.** The rest cannot be derived: the bottom inset shrinks from 34 to 21, the navigation bar from 44 to 32, and the iPhone 17 line's landscape bottom inset moved from 21 to 20 — the top inset stays 0 in landscape on every iOS device. No rule computes those from their portrait values. `screen` is always the portrait size, including for the `(inner)` rows of a folding phone — the unfolded screen is usually wider than it is tall in real life, but the table stores it as if turned upright, and `orientation: 'landscape'` is what gets its actual, wider-than-tall shape back.
 
 **Status bar height and top inset are two different numbers.** On a Dynamic Island device the status bar is still 54 while the top safe-area inset is 59 or 62: one is the strip the clock and glyphs are drawn into, the other is what the island and the ring of space around it claim. One field cannot serve both.
 
@@ -56,7 +56,7 @@ Five decisions in that shape are what separate it from a hand-written pair of nu
 
 **`shell` is the body**: screen corner radius and bezel thickness. A 2016 phone and a 2025 phone do not have the same corners.
 
-Only `name`, `os`, `screen` and `pixelRatio` are required. Everything else is optional, and omitted fields fall through to the platform defaults.
+Only `name`, `os`, `screen` and `pixelRatio` are required. Everything else is optional, and omitted fields fall through to the platform defaults. `formFactor` (`'phone' | 'tablet'`, default `'phone'`) is one such optional field — it only steers the generated user agent, since screen size and everything else the table stores is measured per device regardless of what shape it is.
 
 ## Filling in the gaps
 
@@ -68,19 +68,21 @@ const resolved = resolveDevice(device)
 
 `resolveDevice(profile)` fills every omitted field from the platform defaults and returns a `ResolvedDevice`, in which nothing is optional — so callers do not each write their own fallbacks. Omitting the safe-area insets means "a status bar on top and nothing anywhere else", which is exactly what a phone with no cutout and no gesture bar reports.
 
+A malformed profile — a missing `os`, a negative or `NaN` screen size, a negative safe-area inset — throws a `TypeError` naming the offending field (`deviceProfile.screen.width must be a finite number greater than 0, got -1`) instead of turning into a resolved device with a lying size. `resolveDevice()` checks this on every call, so a bad profile never gets as far as `PLATFORM_DEFAULTS` lookups.
+
 `PLATFORM_DEFAULTS` is the table those fallbacks come from, keyed by `DeviceOS`: `statusBarHeight`, `statusBarHeightLandscape`, `navigationBarHeight`, `navigationBarHeightLandscape` and `shell` for each of `ios`, `android` and `harmony`. It is exported so a host can show a default the same way it shows a measured value, rather than reimplementing it.
 
 `statusBarHeightFor(device, orientation)`, `navigationBarHeightFor(device, orientation)` and `safeAreaInsetsFor(device, orientation)` take a `ResolvedDevice` and pick the value stored for that orientation. They derive nothing; they choose between the two stored sets.
 
 ### Where the numbers come from, and what is not verified
 
-The table is the union of four device-emulation tables, each of which could supply different things:
+The table was assembled by hand from vendors' published specifications and from the device-emulation tables that ship with mainstream browser developer tools and mini-program toolchains — four of them, each able to supply different things. The originals are not vendored here and are not named individually, because no single one of them is the authority for any field: every number below was taken only where it survived a cross-check. Corrections through a PR are welcome, and the PR is the place to say where your number came from.
 
 - **Screen sizes and pixel ratios** are the vendors' published logical resolutions, cross-checked row by row across all four. Where they disagree, the more recent and more specific one wins — one source stores the browser viewport rather than the screen (it gives iPhone 14 Pro a height of 659; the device is 852), and those values are dropped.
 - **Safe-area insets and cutout geometry** come from the one source that measured them per orientation, covering 37 of the devices here. Status bar heights per iOS generation have their own measured record.
 - **HarmonyOS** sizes, status bars, navigation bars and the iOS bottom insets come from a mini-program toolchain table, which is also the only structured source that covers HarmonyOS devices at all, both screens of each folding model included.
 
-A device with no measurement of its own borrows from **devices with the same screen**: same platform, same size, same pixel ratio, and only when every one of them states the same value. One disagreement inside such a group and none of its members gets that field — iPhone X and iPhone 12 mini are both 375×812@3 with status bars of 44 and 50, so neither lends one. The result: 93 devices with safe-area insets, 94 with a status bar height, 46 with cutout geometry, and 74 with an explicit user agent (the rest generate one from the model and system version).
+A device with no measurement of its own borrows from **devices with the same screen**: same platform, same size, same pixel ratio, and only when every one of them states the same value. One disagreement inside such a group and none of its members gets that field — iPhone X and iPhone 12 mini are both 375×812@3 with status bars of 44 and 50, so neither lends one. The result, out of 171 devices: 93 with safe-area insets, 94 with a status bar height, 46 with cutout geometry, and 74 with an explicit user agent (the rest generate one from the model and system version). The remaining devices are not broken — an omitted field means "this platform's default", which `resolveDevice()` fills in, and `PLATFORM_DEFAULTS` is where those values are.
 
 The values then went through a device-by-device review (2026-09):
 
@@ -91,8 +93,10 @@ The values then went through a device-by-device review (2026-09):
 Explicitly **unverified**, and therefore left at the default rather than guessed:
 
 - HarmonyOS gesture bar heights. No source states them, so these devices report a bottom inset of 0 and draw no gesture bar.
-- Everything about Android and HarmonyOS in landscape, including whether the status bar survives the rotation. Landscape values for these two platforms currently equal their portrait values.
+- Everything about Android and HarmonyOS in landscape, including whether the status bar survives the rotation. A device that leaves its landscape fields unset does not inherit its own portrait values — it falls back to `PLATFORM_DEFAULTS`, which is a flat 24px status bar for Android and 36px for HarmonyOS regardless of what that device reports in portrait (Pixel 7, for instance, has a 52px portrait status bar but falls back to 24 in landscape). A profile that leaves `safeAreaInsetsLandscape` unset still gets a top inset equal to its landscape status bar height, not an empty one — on Android and HarmonyOS the status bar stays visible in landscape, so a 0 top inset there would be wrong in the same way an unmeasured portrait inset would be. Only iOS, whose landscape status bar is 0, can use the empty fallback safely.
 - All cutout geometry is **appearance only**. It takes part in no size calculation, so a wrong one is only drawn wrong; what the screen actually gives up is in the safe-area insets, never derived from the cutout. A device with no measured geometry — which is every HarmonyOS device here — simply draws no cutout.
+
+Brand coverage follows the sources rather than the market: Android is mostly Pixel and Galaxy, with one Xiaomi, and vivo, OPPO and HONOR are not in the table at all. HarmonyOS covers HUAWEI. Adding a missing phone is a one-line PR.
 
 The table is ordinary source code from there on, one device per line. Adding a device means adding a line, and `presets.test.ts` rejects duplicate names, screens out of range, user agents that name the wrong platform, and a device that has already been entered lying down.
 
@@ -111,6 +115,8 @@ resolveWindowSize(iPhoneX, { tabBarHeight: 50 })          // 674
 resolveWindowSize(iPhoneX, { orientation: 'landscape' })  // { width: 812, height: 343 }, no status bar in landscape
 ```
 
+A negative or non-finite `navigationBar` or `tabBarHeight` throws a `RangeError` naming the option and the value it got, rather than subtracting a negative number and returning a window taller than the screen.
+
 **This function is for the host doing the previewing.** Hand 812 straight to the previewed page and every `100vh` in it is 88 pixels taller than the phone allows: it looks right in the preview and overflows on the device.
 
 `resolveSafeAreaInsets(device, orientation)` returns the four insets. `resolveSafeArea(device, orientation)` returns the same information as `{ top, left, right, bottom, width, height }` — a `SafeAreaRect`, the shape `wx.getWindowInfo().safeArea` uses, where the edges are coordinates measured from the screen's top-left rather than distances from each edge. Both read the values stored for that orientation and derive nothing.
@@ -123,7 +129,15 @@ resolveWindowSize(iPhoneX, { orientation: 'landscape' })  // { width: 812, heigh
 import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 ```
 
-`deviceUserAgent(profile)` builds the user agent from `os` and `system` instead of storing one per device, so a preset cannot drift into claiming iOS 18 in its label and iOS 15 in its UA. A profile that needs an exact string — a host pretending to be one specific container, down to its build — sets `userAgent`, and generation is skipped. `systemVersion(profile)` is the version it pulls out of a label like `"iOS 18.0"` or `"HarmonyOS 5.0"`, falling back to a current version rather than leaving a hole in the string.
+`deviceUserAgent(profile)` builds the user agent from `os`, `system` and `formFactor` instead of storing one per device, so a preset cannot drift into claiming iOS 18 in its label and iOS 15 in its UA. A profile that needs an exact string — a host pretending to be one specific container, down to its build — sets `userAgent`, and generation is skipped. `systemVersion(profile)` is the version it pulls out of a label like `"iOS 18.0"` or `"HarmonyOS 5.0"`, falling back to a pinned version — not the current one — rather than leaving a hole in the string.
+
+`formFactor: 'tablet'` changes more than the label:
+
+- On iOS, an iPad reports the desktop UA Safari sends by default from iPadOS 13 on — `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) ...`, not an `(iPad; ...)` platform token. Narrow split-screen/Slide Over widths and "Request Mobile Website" flip real Safari back to a mobile UA; that is not modeled here. Whether iPad mini defaults to the desktop or the mobile UA is unverified.
+- From Safari 26, iOS and iPadOS freeze the platform's OS token at `18_6` regardless of the actual system version — only the `Version/` token keeps climbing. A profile with `system: 'iOS 26.0'` gets `CPU iPhone OS 18_6 like Mac OS X ... Version/26.0`.
+- HarmonyOS's generic `ArkWeb/...` container token does not carry `HuaweiBrowser/...` — that is a token the Huawei Browser app itself appends. A profile emulating that specific app sets an explicit `userAgent`.
+- An Android tablet's UA drops the `Mobile` token that a phone's carries.
+- A HarmonyOS tablet's UA opens with `(Tablet; OpenHarmony ...)` instead of `(Phone; OpenHarmony ...)`.
 
 What comes out names a mobile browser, not a mini-program container: this package knows which phone it is describing, not which app is embedding it. A host that wants `MicroMessenger/...` on the end appends it itself.
 
@@ -147,6 +161,7 @@ What comes out names a mobile browser, not a mini-program container: this packag
 | --- | --- | --- |
 | `findDevice` | `(name: string \| null \| undefined) => DeviceProfile \| undefined` | Exact lookup by name |
 | `resolveDevice` | `(profile: DeviceProfile) => ResolvedDevice` | Fills omitted fields from the platform defaults |
+| `assertDeviceProfile` | `(value: unknown, label?: string) => asserts value is DeviceProfile` | Throws `TypeError` naming the field if `value` is not a usable `DeviceProfile` |
 | `statusBarHeightFor` | `(device: ResolvedDevice, orientation: Orientation) => number` | The status bar height stored for that orientation |
 | `navigationBarHeightFor` | `(device: ResolvedDevice, orientation: Orientation) => number` | The navigation bar height stored for that orientation |
 | `safeAreaInsetsFor` | `(device: ResolvedDevice, orientation: Orientation) => EdgeInsets` | The insets stored for that orientation |
@@ -154,7 +169,7 @@ What comes out names a mobile browser, not a mini-program container: this packag
 | `resolveSafeAreaInsets` | `(device: DeviceProfile, orientation?: Orientation) => EdgeInsets` | Insets, resolving the profile first |
 | `resolveSafeArea` | `(device: DeviceProfile, orientation?: Orientation) => SafeAreaRect` | The same as a rectangle in screen coordinates |
 | `resolveWindowSize` | `(device: DeviceProfile, options?: WindowSizeOptions) => ScreenSize` | The size the page itself gets |
-| `deviceUserAgent` | `(profile: Pick<DeviceProfile, 'os' \| 'system' \| 'name' \| 'userAgent'>) => string` | The user agent a page emulating this device should report |
+| `deviceUserAgent` | `(profile: Pick<DeviceProfile, 'os' \| 'system' \| 'name' \| 'userAgent' \| 'formFactor'>) => string` | The user agent a page emulating this device should report |
 | `systemVersion` | `(profile: Pick<DeviceProfile, 'os' \| 'system'>) => string` | The version out of a system label |
 
 `orientation` defaults to `'portrait'` everywhere it is optional.
@@ -164,8 +179,9 @@ What comes out names a mobile browser, not a mini-program container: this packag
 | Type | What it describes |
 | --- | --- |
 | `DeviceProfile` | A row of the table; only `name`, `os`, `screen` and `pixelRatio` are required |
-| `ResolvedDevice` | The same device with every field filled in |
+| `ResolvedDevice` | The same device with every field filled in — `formFactor` included, defaulting to `'phone'` |
 | `DeviceOS` | `'ios' \| 'android' \| 'harmony'` |
+| `DeviceFormFactor` | `'phone' \| 'tablet'` |
 | `Orientation` | `'portrait' \| 'landscape'` |
 | `ScreenSize` | `{ width, height }` |
 | `EdgeInsets` | `{ top, right, bottom, left }`, distances from each edge, like `env(safe-area-inset-*)` |

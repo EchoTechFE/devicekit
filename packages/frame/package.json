@@ -12,7 +12,7 @@
     "preview"
   ],
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": ["./src/react/index.tsx", "./dist/react/index.js"],
   "engines": {
     "node": ">=20"
   },
@@ -44,7 +44,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "check-types": "tsc --noEmit && tsc --noEmit -p demo/tsconfig.json",
+    "check-types": "tsc --noEmit && tsc --noEmit -p demo/tsconfig.json && tsc --noEmit -p type-tests/tsconfig.json",
     "demo": "vite demo",
     "demo:build": "vite build demo",
     "lint": "eslint . --max-warnings 0",
@@ -79,10 +79,14 @@
     "vitest": "^4.1.4"
   },
   "peerDependencies": {
-    "react": ">=18"
+    "react": ">=18",
+    "@types/react": ">=18"
   },
   "peerDependenciesMeta": {
     "react": {
+      "optional": true
+    },
+    "@types/react": {
       "optional": true
     }
   },
@@ -100,6 +104,11 @@
         "default": "./dist/react/index.js"
       },
       "./package.json": "./package.json"
+    },
+    "typesVersions": {
+      "*": {
+        "react": ["./dist/react/index.d.ts"]
+      }
     }
   }
 }

@@ -31,9 +31,12 @@ export interface ContentBox {
  */
 export interface ContentRect extends ContentBox {
   /**
-   * Rendered px per CSS px of device screen: 1 unless the host scaled the frame
-   * down to fit a panel. A view positioned from this rect has to be scaled by
-   * it too, or it renders at the wrong size inside the right box.
+   * Rendered px per CSS px of device screen, horizontally: 1 unless the host
+   * scaled the frame down to fit a panel. `x` and `width` are always exact
+   * regardless of what stretched the screen box, but a CSS transform that
+   * scales the two axes unevenly makes `y` and `height` use a different,
+   * unreported ratio — a view positioned from this rect only has to be scaled
+   * by `scale` if the transform is uniform.
    */
   scale: number
 }
@@ -44,33 +47,54 @@ export const EMPTY_BOX: ContentBox = { x: 0, y: 0, width: 0, height: 0 }
 /**
  * Projects the content box onto the page using the screen's measured box.
  *
+ * `screenWidth` and `screenHeight` are the device's logical screen size;
+ * `screenBox` is that screen's rendered box. Horizontal and vertical ratios
+ * are computed independently so a non-uniform CSS transform on an ancestor
+ * (`scaleX` ≠ `scaleY`) still projects `y` and `height` correctly — only
+ * `scale`, which callers use to size a single view, stays horizontal-only.
+ *
  * An unmeasurable screen — jsdom, `display: none`, before first layout — reads
  * as unscaled rather than as a zero-size box, so the caller gets the logical
- * geometry instead of a rect that would collapse whatever it positions.
+ * geometry instead of a rect that would collapse whatever it positions. That
+ * fallback is keyed off `screenBox` being 0×0 on *both* axes at once: a host
+ * that folds the frame flat on a single axis (`height: 0; overflow: hidden`)
+ * still measured it, and the native view being positioned from this rect
+ * needs that axis's real collapsed bounds — projecting it back to the logical
+ * height would hand the host a view taller than the space actually has.
  */
-export function toViewportRect(content: ContentBox, screenWidth: number, screenBox: DOMRect): ContentRect {
-  const scale = screenWidth > 0 && screenBox.width > 0 ? screenBox.width / screenWidth : 1
+export function toViewportRect(
+  content: ContentBox,
+  screenWidth: number,
+  screenHeight: number,
+  screenBox: DOMRect,
+): ContentRect {
+  const measurable = screenWidth > 0 && screenHeight > 0
+    && !(screenBox.width === 0 && screenBox.height === 0)
+  const scaleX = measurable ? screenBox.width / screenWidth : 1
+  const scaleY = measurable ? screenBox.height / screenHeight : 1
 
   return {
-    x: screenBox.left + content.x * scale,
-    y: screenBox.top + content.y * scale,
-    width: content.width * scale,
-    height: content.height * scale,
-    scale,
+    x: screenBox.left + content.x * scaleX,
+    y: screenBox.top + content.y * scaleY,
+    width: content.width * scaleX,
+    height: content.height * scaleY,
+    scale: scaleX,
   }
 }
 
 /**
- * Whether the region moved. The frame re-renders on every attribute change,
- * most of which — the clock, the status bar text style — leave the region
- * exactly where it was, and a host that repositions a native view on each of
- * those pays for it.
+ * Whether the region moved, within `CONTENT_RECT_EPSILON` — a `ResizeObserver`
+ * can report the same layout a fraction of a px apart from one callback to the
+ * next, and a host that repositions a native view on that noise pays for it on
+ * every tick without ever seeing the view actually move.
  */
+export const CONTENT_RECT_EPSILON = 1e-3
+
 export function sameContentRect(previous: ContentRect | null, next: ContentRect): boolean {
   return previous !== null
-    && previous.x === next.x
-    && previous.y === next.y
-    && previous.width === next.width
-    && previous.height === next.height
-    && previous.scale === next.scale
+    && Math.abs(previous.x - next.x) < CONTENT_RECT_EPSILON
+    && Math.abs(previous.y - next.y) < CONTENT_RECT_EPSILON
+    && Math.abs(previous.width - next.width) < CONTENT_RECT_EPSILON
+    && Math.abs(previous.height - next.height) < CONTENT_RECT_EPSILON
+    && Math.abs(previous.scale - next.scale) < CONTENT_RECT_EPSILON
 }

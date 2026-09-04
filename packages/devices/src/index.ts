@@ -6,6 +6,7 @@ export {
   statusBarHeightFor,
   type CutoutShape,
   type CutoutSpec,
+  type DeviceFormFactor,
   type DeviceOS,
   type DeviceProfile,
   type DeviceShell,
@@ -14,6 +15,8 @@ export {
   type ResolvedDevice,
   type ScreenSize,
 } from './devices.js'
+
+export { assertDeviceProfile } from './validate.js'
 
 export {
   ANDROID_DEVICES,

@@ -30,88 +30,58 @@
  * content lays itself out against the same numbers the frame drew.
  */
 import {
+  assertDeviceProfile,
   DEFAULT_DEVICE,
   findDevice,
   navigationBarHeightFor,
-  orientedScreen,
   resolveDevice,
-  resolveSafeArea,
-  resolveWindowSize,
-  safeAreaInsetsFor,
-  statusBarHeightFor,
-  type CutoutSpec,
   type DeviceProfile,
-  type DeviceShell,
-  type EdgeInsets,
   type Orientation,
-  type SafeAreaRect,
-  type ScreenSize,
 } from '@devicekit/devices'
 import { profileFromAttributes, toOrientation, toPositiveNumber } from './attributes.js'
-import { EMPTY_BOX, sameContentRect, toViewportRect, type ContentBox, type ContentRect } from './content-rect.js'
+import { sameContentRect, toViewportRect, type ContentRect } from './content-rect.js'
+import {
+  CONTENT_RECT_OSCILLATION_MESSAGE,
+  CONTENT_RECT_OSCILLATION_THRESHOLD,
+  countPublishedRepeats,
+} from './content-rect-oscillation.js'
+import { CONTENT_RECT_CHANGE_EVENT, type DeviceFrameElementEventMap } from './element-events.js'
+import { computeDeviceMetrics, DEFAULT_TAB_BAR_HEIGHT, type DeviceMetrics, type StatusBarTextStyle } from './metrics.js'
+import { reflectAttribute, reflectFlag, reflectMetrics } from './reflect.js'
 import { StatusBar, statusBarTextColor } from './status-bar.js'
-import { DEVICE_FRAME_STYLES } from './styles.js'
+import { adoptDeviceFrameStyles } from './styles.js'
+import { upgradeProperties } from './upgrade-properties.js'
+
+export { CONTENT_RECT_CHANGE_EVENT }
+export type { DeviceFrameElementEventMap, DeviceMetrics, StatusBarTextStyle }
 
 /**
- * What a slotted tab bar costs when the host does not say how tall its own is.
- *
- * Unlike the status bar and the navigation bar, this is **not** device data: no
- * device table states a tab bar height, because a tab bar is the app's chrome
- * rather than the phone's. This is the height mini-program tab bars conventionally
- * use; a host whose bar is a different height sets `tab-bar-height`.
+ * `HTMLElement` is missing when this module is evaluated on a server, and a
+ * class whose `extends` clause throws takes the whole entry point down with it
+ * — including the pure geometry helpers a server render legitimately wants.
+ * The stand-in is never instantiated: nothing constructs the element without a
+ * custom-element registry, which Node has none of either.
  */
-const DEFAULT_TAB_BAR_HEIGHT = 50
-
-const EMPTY_RECT: SafeAreaRect = { top: 0, left: 0, right: 0, bottom: 0, width: 0, height: 0 }
-const EMPTY_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 }
-const EMPTY_SIZE: ScreenSize = { width: 0, height: 0 }
-
-/** Fired when {@link DeviceFrameElement.contentRect} moves or resizes. */
-export const CONTENT_RECT_CHANGE_EVENT = 'contentrectchange'
+const HTMLElementBase = (typeof HTMLElement === 'undefined' ? class {} : HTMLElement) as typeof HTMLElement
 
 /**
- * The ink color of the drawn status bar and home indicator: `black` for a
- * light page under them, `white` for a dark one.
+ * Identifies a class as this package's element, so {@link defineDeviceFrame} can
+ * tell a duplicate of the same implementation — bundled twice, hot-reloaded —
+ * from a foreign element squatting the tag. Exported (rather than module-private)
+ * because define.ts, which registers the element, lives in its own file — see
+ * that file for why the import runs the other way.
  */
-export type StatusBarTextStyle = 'black' | 'white'
-
-/** What the frame resolved from its attributes — the numbers it drew with. */
-export interface DeviceMetrics {
-  /** The screen in the current orientation. */
-  screen: ScreenSize
-  /** Which way the device is held, from the `orientation` attribute. */
-  orientation: Orientation
-  /** Physical pixels per CSS px on the real device — 3 on most iPhones. */
-  pixelRatio: number
-  /** What a page emulating this device should report as `navigator.userAgent`. */
-  userAgent: string
-  statusBarHeight: number
-  /** Zero unless the `navigation-bar` slot has content. */
-  navigationBarHeight: number
-  /** Zero unless the `tab-bar` slot has content. */
-  tabBarHeight: number
-  /** Edges measured from the screen's top-left, like `wx.getWindowInfo().safeArea`. */
-  safeArea: SafeAreaRect
-  /** The same information as distances from each edge, like `env(safe-area-inset-*)`. */
-  safeAreaInsets: EdgeInsets
-  /**
-   * What the previewed page actually gets: the screen minus the status bar, the
-   * navigation bar and the tab bar — or the whole screen when `immersive`, where
-   * the page draws under all three.
-   */
-  window: ScreenSize
-  /** Where that window sits on the screen. */
-  content: ContentBox
-  cutout: CutoutSpec | null
-  shell: Required<DeviceShell>
-}
+export const DEVICE_FRAME_BRAND = Symbol.for('@devicekit/frame')
 
 /**
  * The element `<device-frame>` registers to. Read the resolved numbers off
  * `metrics` and `contentRect`; everything else is driven by attributes, which
  * `observedAttributes` lists.
  */
-export class DeviceFrameElement extends HTMLElement {
+export class DeviceFrameElement extends HTMLElementBase {
+  /** Read by {@link defineDeviceFrame}; subclasses inherit it, which is the point. */
+  static readonly [DEVICE_FRAME_BRAND] = true
+
   /** Every attribute the frame draws from; changing any of them re-renders it. */
   static get observedAttributes(): string[] {
     return [
@@ -139,17 +109,20 @@ export class DeviceFrameElement extends HTMLElement {
   }
 
   /**
-   * A profile that is not in the shared table. Set as a property (there is no
-   * attribute form) when a host carries its own device list; it wins over the
-   * `device` attribute.
+   * A profile that is not in the shared table. Set as a property (no attribute
+   * form) when a host carries its own device list; it wins over `device`.
    */
   get deviceProfile(): DeviceProfile | null {
     return this.#deviceProfile
   }
 
   set deviceProfile(profile: DeviceProfile | null) {
+    // Validated before anything is assigned: this bypasses the shared device
+    // table entirely, so a bad shape has no other gate before it reaches
+    // layout math that reads `os` and `screen` unconditionally.
+    if (profile !== null && profile !== undefined) assertDeviceProfile(profile)
     this.#deviceProfile = profile
-    this.#render()
+    if (this.#ready) this.#render()
   }
 
   #deviceProfile: DeviceProfile | null = null
@@ -162,28 +135,40 @@ export class DeviceFrameElement extends HTMLElement {
   #screenEl: HTMLElement | null = null
   #lastContentRect: ContentRect | null = null
   #resizeObserver: ResizeObserver | null = null
+  // Guards `#publishContentRect` against the reentrant dispatch a listener triggers
+  // by mutating an attribute in response to the event it just received (see that method).
+  #publishingContentRect = false
+  #contentRectPublishPending = false
+  // Caps the oscillation breaker below to one console.error per episode.
+  #oscillationReported = false
+  // attributeChangedCallback can fire before connectedCallback; gates #render().
+  #ready = false
 
   constructor() {
     super()
     const shadow = this.attachShadow({ mode: 'open' })
-    const style = document.createElement('style')
-    style.textContent = DEVICE_FRAME_STYLES
-    // The body (bezel, border, radius) lives inside the shadow tree on purpose:
-    // sizing rules on :host lose to any light-DOM `* { box-sizing: border-box }`
-    // reset, which would shave the border off the screen's width.
+    adoptDeviceFrameStyles(shadow)
+    // The body (bezel, border, radius) lives inside the shadow tree: sizing rules on
+    // :host lose to a light-DOM `* { box-sizing: border-box }` reset, which would shave the border off the screen's width.
     const body = document.createElement('div')
     body.className = 'body'
     body.append(this.#buildScreen())
-    shadow.append(style, body)
+    shadow.append(body)
+    // Replays properties set before define() upgraded this instance (own
+    // properties shadowing the setters) — here, not connectedCallback, since a
+    // getter can run via attributeChangedCallback first. No-op when synchronous.
+    upgradeProperties(this, ['device', 'deviceProfile', 'orientation', 'embedded', 'immersive'])
   }
 
   /** Renders and starts watching the host's box for moves the attributes miss. */
   connectedCallback(): void {
+    this.#ready = true
+    // Re-adopts styles: adoptNode() may have moved this to another Document.
+    if (this.shadowRoot) adoptDeviceFrameStyles(this.shadowRoot)
     this.#render()
-    // The content rect is in viewport coordinates, so it moves when the host
-    // resizes or rescales the frame — neither of which goes through an
-    // attribute. Guarded because jsdom has no ResizeObserver; there, the rect
-    // still updates on every attribute change, which is all a test can observe.
+    // The content rect is in viewport coordinates, so it moves when the host resizes
+    // or rescales the frame — neither goes through an attribute. Guarded because jsdom
+    // has no ResizeObserver; there, the rect still updates on every attribute change.
     if (typeof ResizeObserver === 'undefined') return
     this.#resizeObserver ??= new ResizeObserver(() => this.#publishContentRect())
     this.#resizeObserver.observe(this)
@@ -195,41 +180,66 @@ export class DeviceFrameElement extends HTMLElement {
     this.#resizeObserver?.disconnect()
   }
 
-  /** Any observed attribute changing re-renders from scratch; none is cached. */
+  /**
+   * Any observed attribute changing re-renders from scratch; none is cached.
+   * Ignored before connectedCallback — see `#ready`.
+   */
   attributeChangedCallback(): void {
-    this.#render()
+    if (this.#ready) this.#render()
   }
 
   /**
    * The preset this frame is showing, or null when no attribute names one — the
    * frame then falls back to loose `width` / `height` / `cutout` attributes,
    * which is how a host with a single hardcoded screen size uses this element.
+   * Writing takes a preset's name and reflects it onto the `device` attribute,
+   * while reading returns the resolved profile — see reflect.ts for why both.
    */
   get device(): DeviceProfile | null {
     return this.#deviceProfile ?? findDevice(this.getAttribute('device')) ?? null
   }
 
-  /** Which way the device is held. Anything but `landscape` reads as portrait. */
+  set device(name: string | null | undefined) {
+    reflectAttribute(this, 'device', name)
+  }
+
+  /**
+   * Which way the device is held. Anything but `landscape` reads as portrait.
+   * Writing reflects onto the attribute; reading returns the parsed value.
+   */
   get orientation(): Orientation {
     return toOrientation(this.getAttribute('orientation'))
+  }
+
+  set orientation(value: string | null | undefined) {
+    reflectAttribute(this, 'orientation', value)
   }
 
   /**
    * The frame draws no body, no bezel and no chrome, and stretches to fill its
    * container instead of standing at the device's own size — a bare screen for
-   * a host that supplies its own surround.
+   * a host that supplies its own surround. Writing reflects onto the presence
+   * attribute.
    */
   get embedded(): boolean {
     return this.hasAttribute('embedded')
   }
 
+  set embedded(value: boolean | null | undefined) {
+    reflectFlag(this, 'embedded', value)
+  }
+
   /**
    * The page draws behind the bars instead of below them. The bars stay on
    * screen — the page is expected to keep clear of them itself, using the
-   * heights the frame reports.
+   * heights the frame reports. Writing reflects onto the presence attribute.
    */
   get immersive(): boolean {
     return this.hasAttribute('immersive')
+  }
+
+  set immersive(value: boolean | null | undefined) {
+    reflectFlag(this, 'immersive', value)
   }
 
   /**
@@ -246,61 +256,14 @@ export class DeviceFrameElement extends HTMLElement {
    * and no home indicator to avoid.
    */
   get metrics(): DeviceMetrics {
-    const orientation = this.orientation
-    const profile = this.profile
-    const resolved = resolveDevice(profile)
-
-    if (this.embedded) {
-      return {
-        screen: EMPTY_SIZE,
-        orientation,
-        pixelRatio: resolved.pixelRatio,
-        userAgent: resolved.userAgent,
-        statusBarHeight: 0,
-        navigationBarHeight: 0,
-        tabBarHeight: 0,
-        safeArea: EMPTY_RECT,
-        safeAreaInsets: EMPTY_INSETS,
-        window: EMPTY_SIZE,
-        content: EMPTY_BOX,
-        cutout: null,
-        shell: resolved.shell,
-      }
-    }
-
-    const screen = orientedScreen(profile, orientation)
-    const statusBarHeight = statusBarHeightFor(resolved, orientation)
-    const navigationBarHeight = this.#navigationBarHeight()
-    const tabBarHeight = this.#tabBarHeight()
-
-    // Immersive is the mini-program's `navigationStyle: "custom"` and the
-    // in-app H5 that draws its own title bar: the bars are still on screen, but
-    // the page runs the full height behind them and pads itself using the
-    // heights reported here.
-    const window = this.immersive
-      ? screen
-      : resolveWindowSize(profile, { orientation, navigationBar: navigationBarHeight, tabBarHeight })
-
-    return {
-      screen,
-      orientation,
-      pixelRatio: resolved.pixelRatio,
-      userAgent: resolved.userAgent,
-      statusBarHeight,
-      navigationBarHeight,
-      tabBarHeight,
-      safeArea: resolveSafeArea(profile, orientation),
-      safeAreaInsets: safeAreaInsetsFor(resolved, orientation),
-      window,
-      content: {
-        x: 0,
-        y: this.immersive ? 0 : statusBarHeight + navigationBarHeight,
-        width: window.width,
-        height: window.height,
-      },
-      cutout: resolved.cutout,
-      shell: resolved.shell,
-    }
+    return computeDeviceMetrics(
+      this.profile,
+      this.orientation,
+      this.embedded,
+      this.immersive,
+      this.#navigationBarHeight(),
+      this.#tabBarHeight(),
+    )
   }
 
   /**
@@ -313,7 +276,7 @@ export class DeviceFrameElement extends HTMLElement {
     // The screen, not the host: content coordinates start at the screen's
     // top-left, and the host box also contains the bezel around it.
     const box = (this.#screenEl ?? this).getBoundingClientRect()
-    return toViewportRect(content, screen.width, box)
+    return toViewportRect(content, screen.width, screen.height, box)
   }
 
   /**
@@ -348,7 +311,13 @@ export class DeviceFrameElement extends HTMLElement {
     const screen = document.createElement('div')
     screen.className = 'screen'
 
-    const content = document.createElement('slot')
+    // `.screen` is a flex column and every bar on it is absolutely positioned,
+    // so a bare slot would start at y=0, under the status and navigation bars.
+    // The wrapper is what puts slotted content in the box `metrics.content`
+    // reports — the CSS behind it is in styles.ts.
+    const content = document.createElement('div')
+    content.className = 'content'
+    content.append(document.createElement('slot'))
 
     this.#homeIndicatorEl = document.createElement('div')
     this.#homeIndicatorEl.className = 'home-indicator'
@@ -404,16 +373,19 @@ export class DeviceFrameElement extends HTMLElement {
     if (!this.#statusBar || !this.#homeIndicatorEl) return
 
     const metrics = this.metrics
-    this.#reflectMetrics(metrics)
+    reflectMetrics(this.style, metrics, this.embedded)
 
     const statusBarMode = this.getAttribute('status-bar')
     const showStatusBar = !this.embedded && statusBarMode !== 'hidden' && metrics.statusBarHeight > 0
+    // The live clock is a real timer this element solely owns, so it runs only
+    // while the element is in the document — off-screen it draws a fixed time.
+    const mode = statusBarMode === 'live' && !this.isConnected ? null : statusBarMode
     // Same resolveDevice() the metrics getter already ran — status-bar-layout.ts
     // needs the full resolved shape (os, pixelRatio, both orientations' status
     // bar heights), which the flattened DeviceMetrics doesn't carry.
     this.#statusBar.render({ device: resolveDevice(this.profile), orientation: metrics.orientation }, {
       visible: showStatusBar,
-      mode: statusBarMode,
+      mode,
       textStyle: this.getAttribute('status-bar-text-style'),
       background: this.getAttribute('status-bar-background'),
     })
@@ -427,65 +399,102 @@ export class DeviceFrameElement extends HTMLElement {
     this.#publishContentRect()
   }
 
+  addEventListener<K extends keyof DeviceFrameElementEventMap>(
+    type: K,
+    listener: (this: DeviceFrameElement, ev: DeviceFrameElementEventMap[K]) => unknown,
+    options?: boolean | AddEventListenerOptions,
+  ): void
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void
+  /** Typed so a `contentrectchange` listener reads `detail` without casting past `Event`. */
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void {
+    super.addEventListener(type, listener, options)
+  }
+
+  removeEventListener<K extends keyof DeviceFrameElementEventMap>(
+    type: K,
+    listener: (this: DeviceFrameElement, ev: DeviceFrameElementEventMap[K]) => unknown,
+    options?: boolean | EventListenerOptions,
+  ): void
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
+    super.removeEventListener(type, listener, options)
+  }
+
+  /**
+   * Re-measures the screen and fires `contentrectchange` if the region moved.
+   *
+   * The resize observer covers everything that changes the host's own box, but
+   * a CSS `transform: scale()` on the frame or an ancestor changes no box at
+   * all while moving the viewport rect a native view is positioned against, and
+   * so does scrolling an ancestor. A host that does either calls this; the
+   * "only fire on an actual change" contract is the same one attribute-driven
+   * re-renders already keep. A no-op while disconnected — see `#publishContentRect`.
+   */
+  refreshContentRect(): void {
+    this.#publishContentRect()
+  }
+
   /**
    * Announces the content region, but only when it actually moved. A host that
    * repositions a native view on this event would otherwise do it on every
    * clock tick and every status-bar restyle.
+   *
+   * A `contentrectchange` listener is free to mutate an attribute in
+   * response — flipping `immersive` back off is the common case — which
+   * re-renders synchronously and calls back in here from inside `dispatchEvent`.
+   * Letting that nested call dispatch its own event would run every listener
+   * to completion (including ones registered after the reentrant one) before
+   * the outer dispatch resumes, so a later listener would see the newer state
+   * first and the outer call's now-stale rect second. Instead a reentrant call
+   * just records that another rect is pending and returns; the outer call
+   * loops, so every listener is notified in the order the states actually
+   * occurred, and the loop only stops once a pass computes a rect that turns
+   * out to already be the last one published.
+   *
+   * That loop has no exit of its own for a listener pair that keeps mutating
+   * attributes forever, cycling the rect through a handful of shapes without
+   * settling — see content-rect-oscillation.ts for the breaker that stops it
+   * and leaves `#lastContentRect` on the last dispatched rect, so
+   * `refreshContentRect()` can resync. `#oscillationReported` caps it to one
+   * console.error per episode, resetting when a batch ends without tripping it.
+   *
+   * Disconnected, `getBoundingClientRect()` reports all zeroes — nothing worth
+   * announcing — and `#lastContentRect` stays untouched, so the real rect
+   * computed on (re)connect is never mistaken for a repeat of that zero one.
    */
   #publishContentRect(): void {
-    const rect = this.contentRect
-    if (sameContentRect(this.#lastContentRect, rect)) return
-    this.#lastContentRect = rect
-    this.dispatchEvent(new CustomEvent<ContentRect>(CONTENT_RECT_CHANGE_EVENT, { detail: rect }))
-  }
-
-  /**
-   * Publishes the resolved metrics as custom properties on the host, so slotted
-   * content sizes itself against exactly what the frame drew instead of being
-   * told the same numbers a second time through another channel.
-   *
-   * The safe area is published as insets, matching what `env(safe-area-inset-*)`
-   * would report, rather than as the rectangle's own coordinates.
-   */
-  #reflectMetrics(metrics: DeviceMetrics): void {
-    const { style } = this
-    if (this.embedded) {
-      style.removeProperty('--device-width')
-      style.removeProperty('--device-height')
+    if (!this.#ready || !this.isConnected) return
+    if (this.#publishingContentRect) {
+      this.#contentRectPublishPending = true
+      return
     }
-    else {
-      style.setProperty('--device-width', `${metrics.screen.width}px`)
-      style.setProperty('--device-height', `${metrics.screen.height}px`)
+    this.#publishingContentRect = true
+    try {
+      const published: ContentRect[] = []
+      let oscillated = false
+      do {
+        this.#contentRectPublishPending = false
+        const rect = this.contentRect
+        if (sameContentRect(this.#lastContentRect, rect)) break
+        if (countPublishedRepeats(published, rect) >= CONTENT_RECT_OSCILLATION_THRESHOLD) {
+          oscillated = true
+          if (!this.#oscillationReported) console.error(CONTENT_RECT_OSCILLATION_MESSAGE)
+          this.#oscillationReported = true
+          break
+        }
+        published.push(rect)
+        this.#lastContentRect = rect
+        this.dispatchEvent(new CustomEvent<ContentRect>(CONTENT_RECT_CHANGE_EVENT, { detail: rect }))
+      } while (this.#contentRectPublishPending)
+      if (!oscillated) this.#oscillationReported = false
+    } finally {
+      this.#publishingContentRect = false
     }
-
-    const { safeAreaInsets: insets, shell } = metrics
-    style.setProperty('--device-pixel-ratio', `${metrics.pixelRatio}`)
-    style.setProperty('--device-status-bar-height', `${metrics.statusBarHeight}px`)
-    style.setProperty('--device-navigation-bar-height', `${metrics.navigationBarHeight}px`)
-    style.setProperty('--device-tab-bar-height', `${metrics.tabBarHeight}px`)
-    style.setProperty('--device-window-width', `${metrics.window.width}px`)
-    style.setProperty('--device-window-height', `${metrics.window.height}px`)
-    style.setProperty('--device-safe-area-top', `${insets.top}px`)
-    style.setProperty('--device-safe-area-right', `${insets.right}px`)
-    style.setProperty('--device-safe-area-bottom', `${insets.bottom}px`)
-    style.setProperty('--device-safe-area-left', `${insets.left}px`)
-    style.setProperty('--device-screen-radius', `${shell.screenRadius}px`)
-    style.setProperty('--device-bezel', `${shell.bezel}px`)
-    style.setProperty('--device-body-radius', `${shell.bodyRadius}px`)
   }
 }
 
-/** The tag name defineDeviceFrame() registers unless given another. */
-export const DEVICE_FRAME_TAG = 'device-frame'
-
-/**
- * Registers the element. Safe to call more than once — a host that bundles this
- * package twice, or hot-reloads, must not crash on the duplicate definition.
- *
- * @param tag the custom element name, for a host that already owns
- *   `device-frame` or wants the element under its own prefix
- */
-export function defineDeviceFrame(tag: string = DEVICE_FRAME_TAG): void {
-  if (customElements.get(tag)) return
-  customElements.define(tag, DeviceFrameElement)
-}
+// DEVICE_FRAME_TAG and defineDeviceFrame() live in define.ts, a separate
+// module kept under the 500-line file-length limit; re-exported here because
+// most of this package's own tests, and downstream imports scattered before
+// that split, reach for them via './device-frame.js'.
+export { DEVICE_FRAME_TAG, defineDeviceFrame } from './define.js'

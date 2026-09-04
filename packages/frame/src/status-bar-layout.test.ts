@@ -113,9 +113,10 @@ describe('ios-cutout: an untabled width falls back to the size-derived formula',
       screen: { width: 400, height: 866 },
       pixelRatio: 3,
       statusBarHeight: 54,
-      // Height is not given in the spec's fallback example; the stock pill
-      // height (CUTOUT_PRESETS.pill.height, 37) is used to make the midline
-      // computable — see the spec-ambiguity note in the handoff report.
+      // The fallback derives centerY from the cutout's own box
+      // (top + height / 2), so a pill with no height leaves the midline
+      // undefined. The stock pill height (CUTOUT_PRESETS.pill.height, 37)
+      // stands in — it is also what cutout="pill" resolves to on the element.
       cutout: { shape: 'pill', width: 120, height: 37, top: 12 },
     })
     const layout = computeStatusBarLayout(device, 'portrait')

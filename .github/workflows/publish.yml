@@ -6,7 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: npm dist-tag to publish under
+        # Manual dispatch only ever runs against main (see job-level `if:`
+        # below) — this picks the npm dist-tag for that publish, not the ref.
+        description: npm dist-tag to publish under (manual runs only work from main)
         type: choice
         options:
           - latest
@@ -20,12 +22,28 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    # release: a GitHub Release can point at any branch or old commit, so this
+    # alone doesn't prove main — the "Refuse commits that are not on main"
+    # step below is what actually guards npm.
+    # workflow_dispatch: restrict to main so a feature branch can't be
+    # manually published to npm.
+    if: github.event_name == 'release' || github.ref == 'refs/heads/main'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
 
-      - uses: pnpm/action-setup@v5
+      - name: Refuse commits that are not on main
+        # A Release can point at any branch or old commit; only history that
+        # main already contains may reach npm.
+        run: |
+          git fetch --no-tags --depth=2147483647 origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || {
+            echo "::error::$GITHUB_SHA is not an ancestor of origin/main; refusing to publish"
+            exit 1
+          }
 
-      - uses: actions/setup-node@v6
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6.5.0
         with:
           node-version-file: .node-version
           cache: pnpm
@@ -37,7 +55,19 @@ jobs:
 
       - run: pnpm test
 
+      - run: pnpm run verify:pack
+
+      - name: Resolve npm dist-tag
+        id: dist-tag
+        run: node scripts/npm-dist-tag.mjs
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_TAG: ${{ inputs.tag }}
+          RELEASE_PRERELEASE: ${{ github.event.release.prerelease }}
+
       - run: pnpm publish -r --access public --provenance --no-git-checks --tag "$NPM_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_TAG: ${{ github.event_name == 'release' && 'latest' || inputs.tag }}
+          # The version strings actually being published decide the tag, not
+          # just the release checkbox / dispatch input — see scripts/npm-dist-tag.mjs.
+          NPM_TAG: ${{ steps.dist-tag.outputs.tag }}

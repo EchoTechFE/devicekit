@@ -42,12 +42,16 @@ export const DEVICE_FRAME_STYLES = `
   --device-screen-radius: 38px;
   --device-bezel: 0px;
   --device-body-radius: 38px;
+  --device-frame-border-width: ${DEVICE_FRAME_BORDER_WIDTH}px;
 
   /* Host-overridable skin. --device-frame-radius overrides the body radius the
-     device itself resolved, for a host that wants one shape for every phone.
+     device itself resolved, for a host that wants one shape for every phone —
+     .screen derives its own radius from it below, so the two stay concentric.
      The body defaults to near-black with a hairline border — a real phone's
-     bezel is never the same shade as the page it's showing. */
-  --device-frame-border: ${DEVICE_FRAME_BORDER_WIDTH}px solid rgba(255, 255, 255, 0.08);
+     bezel is never the same shade as the page it's showing. A host that widens
+     --device-frame-border must also update --device-frame-border-width, or the
+     radius math below stays sized for the old, thinner border. */
+  --device-frame-border: var(--device-frame-border-width) solid rgba(255, 255, 255, 0.08);
   --device-frame-background: #0b0b0c;
   --device-frame-shadow: 0 18px 50px rgba(16, 20, 24, 0.22);
   --device-cutout-color: #000;
@@ -75,7 +79,7 @@ export const DEVICE_FRAME_STYLES = `
   min-height: 0;
   overflow: hidden;
   border: var(--device-frame-border);
-  border-radius: var(--device-frame-radius, var(--device-body-radius));
+  border-radius: var(--device-frame-radius, calc(var(--device-body-radius) + var(--device-frame-border-width)));
   background: var(--device-frame-background);
   box-shadow: var(--device-frame-shadow);
 }
@@ -113,7 +117,34 @@ export const DEVICE_FRAME_STYLES = `
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  border-radius: var(--device-screen-radius);
+  /* The screen sits inside both the bezel and the border, so staying concentric
+     with the body needs both subtracted back out — floored at 0 so a small
+     --device-frame-radius override never asks for a negative radius. */
+  border-radius: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
+}
+
+/*
+ * Where the default slot's content goes. The screen is a flex column but every
+ * bar on it is absolutely positioned, so content left in flow would start at
+ * y=0, behind the status and navigation bars. These offsets are the CSS half of
+ * metrics.content: the same status-bar + navigation-bar top and tab-bar bottom
+ * the element reports, taken from the custom properties it reflects. Embedded
+ * mode needs no special case — every one of those variables is 0px there.
+ */
+.content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--device-status-bar-height) + var(--device-navigation-bar-height));
+  bottom: var(--device-tab-bar-height);
+  overflow: hidden;
+}
+
+/* Immersive is the page running the full screen height behind the bars, which
+   is what metrics.content already reports — the wrapper has to match it. */
+:host([immersive]) .content {
+  top: 0;
+  bottom: 0;
 }
 
 /*
@@ -181,7 +212,9 @@ ${STATUS_BAR_STYLES}
   bottom: 0;
   height: var(--device-safe-area-bottom);
   pointer-events: none;
-  z-index: 200;
+  /* Above the slotted tab bar: on a gesture-bar phone the pill floats over the
+     app's own bottom bar rather than being tucked under it. */
+  z-index: 300;
 }
 
 .home-indicator::before {
@@ -209,3 +242,65 @@ ${STATUS_BAR_STYLES}
   pointer-events: none;
 }
 `
+
+/**
+ * The constructed stylesheet each Document gets, once its own `CSSStyleSheet`
+ * has built it — paired with that constructor so a Document whose
+ * `CSSStyleSheet` is swapped out from under it (a test, or a page that
+ * installs a polyfill later) rebuilds rather than adopting an object the new
+ * constructor doesn't recognize as its own. Keyed by Document rather than
+ * held in one module-level variable because a stylesheet is only adoptable
+ * by shadow roots that belong to the same Document as the constructor that
+ * built it — a frame in an iframe, a popup window, or a root moved there via
+ * `adoptNode` has its own `window.CSSStyleSheet`, and assigning a sheet built
+ * by a different one throws `NotAllowedError` (or is silently ignored,
+ * depending on the engine). `WeakMap` lets a closed Document's cached sheet
+ * be collected instead of pinning it forever.
+ */
+const sheetsByDocument = new WeakMap<Document, { sheet: CSSStyleSheet; ctor: typeof CSSStyleSheet }>()
+
+/** Sheets this module built — as opposed to a `<style>`-less sheet a host adopted itself — so a stale one from another Document can be told apart from a host's own and swapped out. */
+const ownedSheets = new WeakSet<CSSStyleSheet>()
+
+/** Marks the fallback `<style>` element so a second call finds and reuses it instead of appending a duplicate. */
+const FALLBACK_STYLE_MARKER = 'data-device-frame-styles'
+
+/**
+ * Puts the element's shadow-DOM CSS onto `root`, preferring a constructed
+ * stylesheet — shared across every instance that lives in the same Document
+ * as `root` — over a `<style>` element that re-parses the same text per
+ * instance. Falls back to the `<style>` element when `root`'s Document has no
+ * constructible-stylesheet support (jsdom, in most configurations, and any
+ * older WebView) — CSP's `style-src` needs to allow inline styles for that
+ * fallback; the adopted-stylesheet path needs no CSP allowance at all.
+ *
+ * Idempotent: calling it again on a `root` that already carries this
+ * Document's sheet (or its fallback `<style>`) is a no-op, so
+ * `connectedCallback` can call it unconditionally to cover a root moved to a
+ * new Document between construction and connection.
+ */
+export function adoptDeviceFrameStyles(root: ShadowRoot): void {
+  const doc = root.ownerDocument
+  const Ctor = doc.defaultView?.CSSStyleSheet
+
+  if (typeof Ctor === 'function' && 'adoptedStyleSheets' in root) {
+    let cached = sheetsByDocument.get(doc)
+    if (!cached || cached.ctor !== Ctor) {
+      const sheet = new Ctor()
+      sheet.replaceSync(DEVICE_FRAME_STYLES)
+      cached = { sheet, ctor: Ctor }
+      sheetsByDocument.set(doc, cached)
+      ownedSheets.add(sheet)
+    }
+    const { sheet } = cached
+    if (root.adoptedStyleSheets.includes(sheet)) return
+    root.adoptedStyleSheets = [...root.adoptedStyleSheets.filter((s) => !ownedSheets.has(s)), sheet]
+    return
+  }
+
+  if (root.querySelector(`style[${FALLBACK_STYLE_MARKER}]`)) return
+  const style = doc.createElement('style')
+  style.setAttribute(FALLBACK_STYLE_MARKER, '')
+  style.textContent = DEVICE_FRAME_STYLES
+  root.append(style)
+}

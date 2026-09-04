@@ -61,7 +61,6 @@ function modeFor(device: ResolvedDevice): StatusBarLayoutMode {
 
 interface CutoutTableRow {
   width: number
-  pixelRatio: number
   statusBarHeight: number
   timeLeft: number
   trailing: number
@@ -71,22 +70,24 @@ interface CutoutTableRow {
 }
 
 /**
- * Measured (width, pixelRatio, statusBarHeight) -> geometry, one row per
- * shipped cutout phone. A pill row omits centerY because it is always the
- * island's own midline (cutout.top + cutout.height / 2), not a fixed number.
+ * Measured (width, statusBarHeight) -> geometry, one row per shipped cutout
+ * phone. The pair is already unique across every shipped device — pixelRatio
+ * decides nothing about this CSS-px geometry, so it is not part of the key.
+ * A pill row omits centerY because it is always the island's own midline
+ * (cutout.top + cutout.height / 2), not a fixed number.
  */
 const CUTOUT_TABLE: CutoutTableRow[] = [
-  { width: 375, pixelRatio: 3, statusBarHeight: 44, timeLeft: 31.3, trailing: 14.3, scale: 1.00, centerY: 23.0 },
-  { width: 375, pixelRatio: 3, statusBarHeight: 50, timeLeft: 26.7, trailing: 24.5, scale: 0.95, centerY: 26.3 },
-  { width: 390, pixelRatio: 3, statusBarHeight: 47, timeLeft: 36.0, trailing: 18.3, scale: 1.02, centerY: 24.8 },
-  { width: 414, pixelRatio: 2, statusBarHeight: 48, timeLeft: 35.0, trailing: 17.0, scale: 1.05, centerY: 25.0 },
-  { width: 414, pixelRatio: 3, statusBarHeight: 44, timeLeft: 40.7, trailing: 21.4, scale: 1.05, centerY: 22.7 },
-  { width: 428, pixelRatio: 3, statusBarHeight: 47, timeLeft: 45.3, trailing: 27.4, scale: 1.11, centerY: 24.3 },
-  { width: 393, pixelRatio: 3, statusBarHeight: 54, timeLeft: 54.3, trailing: 32.7, scale: 1.11 },
-  { width: 402, pixelRatio: 3, statusBarHeight: 54, timeLeft: 56.7, trailing: 35.4, scale: 1.11 },
-  { width: 420, pixelRatio: 3, statusBarHeight: 54, timeLeft: 59.3, trailing: 34.7, scale: 1.17 },
-  { width: 430, pixelRatio: 3, statusBarHeight: 54, timeLeft: 62.3, trailing: 42.6, scale: 1.17 },
-  { width: 440, pixelRatio: 3, statusBarHeight: 54, timeLeft: 65.3, trailing: 40.7, scale: 1.17 },
+  { width: 375, statusBarHeight: 44, timeLeft: 31.3, trailing: 14.3, scale: 1.00, centerY: 23.0 },
+  { width: 375, statusBarHeight: 50, timeLeft: 26.7, trailing: 24.5, scale: 0.95, centerY: 26.3 },
+  { width: 390, statusBarHeight: 47, timeLeft: 36.0, trailing: 18.3, scale: 1.02, centerY: 24.8 },
+  { width: 414, statusBarHeight: 48, timeLeft: 35.0, trailing: 17.0, scale: 1.05, centerY: 25.0 },
+  { width: 414, statusBarHeight: 44, timeLeft: 40.7, trailing: 21.4, scale: 1.05, centerY: 22.7 },
+  { width: 428, statusBarHeight: 47, timeLeft: 45.3, trailing: 27.4, scale: 1.11, centerY: 24.3 },
+  { width: 393, statusBarHeight: 54, timeLeft: 54.3, trailing: 32.7, scale: 1.11 },
+  { width: 402, statusBarHeight: 54, timeLeft: 56.7, trailing: 35.4, scale: 1.11 },
+  { width: 420, statusBarHeight: 54, timeLeft: 59.3, trailing: 34.7, scale: 1.17 },
+  { width: 430, statusBarHeight: 54, timeLeft: 62.3, trailing: 42.6, scale: 1.17 },
+  { width: 440, statusBarHeight: 54, timeLeft: 65.3, trailing: 40.7, scale: 1.17 },
 ]
 
 type OrientationlessLayout = Omit<StatusBarLayout, 'mode' | 'height'>
@@ -100,8 +101,7 @@ function iosCutoutLayout(device: ResolvedDevice, orientation: Orientation, heigh
   // row centers on, not the bar's. A notch sits flush and needs no correction.
   const islandMidline = cutout.top + cutout.height / 2
 
-  const row = CUTOUT_TABLE.find((r) =>
-    r.width === width && r.pixelRatio === device.pixelRatio && r.statusBarHeight === height)
+  const row = CUTOUT_TABLE.find((r) => r.width === width && r.statusBarHeight === height)
   if (row) {
     return {
       timeLeft: row.timeLeft,
@@ -153,7 +153,8 @@ function androidLayout(height: number): OrientationlessLayout {
  * Where to draw this device's status bar.
  *
  * @param device a resolved profile — the mode is picked from `os`, the screen
- *   and the cutout, and the measured rows are keyed on `pixelRatio` too
+ *   and the cutout; the measured rows are keyed on screen width and status
+ *   bar height only, since pixelRatio decides no CSS-px geometry
  * @param orientation which way the device is held
  * @returns the geometry in CSS px, with `height` 0 when this orientation shows
  *   no status bar at all

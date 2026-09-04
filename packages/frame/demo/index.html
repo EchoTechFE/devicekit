@@ -107,7 +107,7 @@
       <device-frame id="frame">
         <div class="page">
           <h2>Page</h2>
-          <p>This block lays itself out against the CSS custom properties the element writes onto its host: <code>--device-height</code> for its height, <code>--device-status-bar-height + --device-navigation-bar-height</code> and <code>--device-tab-bar-height</code> for the room above and below it.</p>
+          <p>This block sits in the default slot, so the element itself keeps it below the status and navigation bars and above the tab bar. It only pads the sides and bottom against <code>--device-safe-area-*</code> for a landscape cutout and the gesture bar.</p>
           <p>The element only publishes numbers (those custom properties and <code>metrics</code>). Real <code>env(safe-area-inset-*)</code> values have to be injected into the previewed webview by the host from those numbers — under Electron that is CDP's <code>Emulation.setSafeAreaInsetsOverride</code>. This package does not do that step.</p>
           <p class="page__size" id="page-size"></p>
         </div>
