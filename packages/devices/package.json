@@ -1,6 +1,6 @@
 {
   "name": "@devicekit/devices",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The device table behind devicekit's previews: phones and tablets with screens, pixel ratios, status bars, safe areas and user agents, plus the arithmetic that turns one into a usable window size. No DOM.",
   "keywords": [
     "device",
@@ -44,6 +44,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "generate:device-names": "pnpm run build && node scripts/generate-device-names.mjs",
     "check-types": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run --reporter=default --reporter=json --outputFile.json=test-report.json --coverage.enabled --coverage.reporter=json-summary --coverage.reportsDirectory=coverage",

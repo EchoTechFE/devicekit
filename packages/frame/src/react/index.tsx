@@ -20,7 +20,7 @@
  */
 import * as React from 'react'
 import { useImperativeHandle, useLayoutEffect, useRef } from 'react'
-import type { CutoutShape, DeviceOS, DeviceProfile, Orientation } from '@devicekit/devices'
+import type { CutoutShape, DeviceName, DeviceOS, DeviceProfile, Orientation } from '@devicekit/devices'
 import { defineDeviceFrame, DEVICE_FRAME_TAG, type DeviceFrameElement } from '../device-frame.js'
 import { CONTENT_RECT_CHANGE_EVENT } from '../element-events.js'
 import { sameContentRect, type ContentRect } from '../content-rect.js'
@@ -51,8 +51,13 @@ if (typeof customElements !== 'undefined') {
  * here — `style`, `id`, `onClick` — is passed through to the element untouched.
  */
 export interface DeviceFrameProps extends React.HTMLAttributes<HTMLElement> {
-  /** A preset's `name`, e.g. `"iPhone 15"`. Unknown names fall back to the defaults. */
-  device?: string | undefined
+  /**
+   * A preset's `name`, e.g. `"iPhone 15"` — or `DEVICE_NAMES.iPhone_15` from
+   * `@devicekit/devices` for autocomplete. Unknown names fall back to the
+   * defaults; the `(string & {})` branch keeps plain strings assignable
+   * without widening the whole type to `string` and losing that autocomplete.
+   */
+  device?: DeviceName | (string & {}) | undefined
   /**
    * A profile that is not in the shared table, for a host carrying its own
    * device list. Wins over `device`; `null` clears it back to the preset.

@@ -48,9 +48,9 @@ pnpm add @devicekit/frame
 只要机型数据和尺寸换算：
 
 ```ts
-import { findDevice, resolveWindowSize } from '@devicekit/devices'
+import { DEVICE_NAMES, findDevice, resolveWindowSize } from '@devicekit/devices'
 
-const device = findDevice('iPhone 16 Pro')
+const device = findDevice(DEVICE_NAMES.iPhone_16_Pro)
 const size = device && resolveWindowSize(device)
 ```
 
@@ -68,7 +68,7 @@ defineDeviceFrame()
 </device-frame>
 ```
 
-React 项目从 `@devicekit/frame/react` 引 `<DeviceFrame device="iPhone 16 Pro">`，渲染的是同一个元素，机型用 props 传。原生 `<device-frame>` 标签的 JSX 类型也在这个子入口里——想在 TSX 里直接写标签，先 `import '@devicekit/frame/react'` 一次就有类型（React 18 和 19 都支持）。
+React 项目从 `@devicekit/frame/react` 引 `<DeviceFrame device={DEVICE_NAMES.iPhone_16_Pro}>`，渲染的是同一个元素，机型用 props 传。原生 `<device-frame>` 标签的 JSX 类型也在这个子入口里——想在 TSX 里直接写标签，先 `import '@devicekit/frame/react'` 一次就有类型（React 18 和 19 都支持）。
 
 ## 机型覆盖
 

@@ -15,12 +15,14 @@ pnpm add @devicekit/devices
 ## The device table
 
 ```ts
-import { DEVICES, DEFAULT_DEVICE, findDevice } from '@devicekit/devices'
+import { DEVICES, DEFAULT_DEVICE, DEVICE_NAMES, findDevice } from '@devicekit/devices'
 
-const device = findDevice('iPhone 16 Pro') ?? DEFAULT_DEVICE
+const device = findDevice(DEVICE_NAMES.iPhone_16_Pro) ?? DEFAULT_DEVICE
 ```
 
 `DEVICES` is the whole table: iPhones, iPads, Android phones and HarmonyOS phones, with both screens of each folding model counted separately. It is the concatenation of `IOS_DEVICES`, `ANDROID_DEVICES` and `HARMONY_DEVICES`, one file per platform, one line per device — import a platform list directly if that is all you need. `findDevice(name)` looks a device up by its exact `name` and returns `undefined` for anything not in the table. `DEFAULT_DEVICE` (an iPhone X) is the fallback when nothing asked for a particular device. Hosts that consume it for its size only — [@devicekit/frame](../frame) is one — take its screen and nothing else, so a frame with no device named is not an iPhone X.
+
+`DEVICE_NAMES` is every `name` in the table, keyed for autocomplete instead of hand-typed: `DEVICE_NAMES.iPhone_16_Pro` is the string `'iPhone 16 Pro'`. A key is the name with every run of characters outside `[A-Za-z0-9]` collapsed to one `_` and trimmed from the ends — `'iPhone 12/13 (Pro)'` becomes `iPhone_12_13_Pro`, `'iPad Pro 10.5-inch'` becomes `iPad_Pro_10_5_inch`. Writing `findDevice(DEVICE_NAMES.iPhone_16_Pro)` still just passes a string; the constant only exists so a typo turns into a missing property instead of a silent lookup miss. `DEVICE_NAMES` lives in a generated file — see the API reference below.
 
 `CLASSIC_DEVICES` is a hand-picked subset of the same objects — 19 of them, grouped iOS → Android → HarmonyOS — for a device picker that cannot show 171 rows. The pick is a judgement call, not a ranking: iPhones and iPads, Pixel and Galaxy, one Xiaomi and four HUAWEI. Hosts that need the full table still read `DEVICES`.
 
@@ -154,12 +156,14 @@ What comes out names a mobile browser, not a mini-program container: this packag
 | `CLASSIC_DEVICES` | `readonly DeviceProfile[]` | Fewer than 20 hand-picked devices, same objects, for short pickers |
 | `DEFAULT_DEVICE` | `DeviceProfile` | What renders when nothing asked for a device (iPhone X) |
 | `PLATFORM_DEFAULTS` | `Record<DeviceOS, {...}>` | Per-platform status bar, navigation bar and shell defaults |
+| `DEVICE_NAMES` | `{ [key: string]: string }` (as const) | Every `DEVICES[number].name`, keyed by `deviceNameKey(name)` — generated, see below |
 
 ### Functions
 
 | Export | Signature | What it does |
 | --- | --- | --- |
 | `findDevice` | `(name: string \| null \| undefined) => DeviceProfile \| undefined` | Exact lookup by name |
+| `deviceNameKey` | `(name: string) => string` | Derives a `DEVICE_NAMES` key from a device name: non-`[A-Za-z0-9]` runs become one `_`, trimmed from the ends, a leading digit gets a `_` prefix |
 | `resolveDevice` | `(profile: DeviceProfile) => ResolvedDevice` | Fills omitted fields from the platform defaults |
 | `assertDeviceProfile` | `(value: unknown, label?: string) => asserts value is DeviceProfile` | Throws `TypeError` naming the field if `value` is not a usable `DeviceProfile` |
 | `statusBarHeightFor` | `(device: ResolvedDevice, orientation: Orientation) => number` | The status bar height stored for that orientation |
@@ -190,6 +194,9 @@ What comes out names a mobile browser, not a mini-program container: this packag
 | `CutoutSpec` | A cutout's shape and geometry: `shape`, `width`, `height`, `top`, optional `centerX` |
 | `DeviceShell` | The body: `screenRadius`, `bezel`, optional `bodyRadius` |
 | `WindowSizeOptions` | `resolveWindowSize` options: `orientation`, `navigationBar`, `tabBarHeight` |
+| `DeviceName` | The union of every `DEVICE_NAMES` value — every real `DeviceProfile.name` |
+
+`src/device-names.generated.ts` — the file `DEVICE_NAMES` comes from — is built from `DEVICES` by `scripts/generate-device-names.mjs`, not hand-edited. Adding, renaming or removing a device regenerates it: `pnpm --filter @devicekit/devices generate:device-names`.
 
 ## License
 

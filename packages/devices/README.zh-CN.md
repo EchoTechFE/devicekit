@@ -15,12 +15,14 @@ pnpm add @devicekit/devices
 ## 机型表
 
 ```ts
-import { DEVICES, DEFAULT_DEVICE, findDevice } from '@devicekit/devices'
+import { DEVICES, DEFAULT_DEVICE, DEVICE_NAMES, findDevice } from '@devicekit/devices'
 
-const device = findDevice('iPhone 16 Pro') ?? DEFAULT_DEVICE
+const device = findDevice(DEVICE_NAMES.iPhone_16_Pro) ?? DEFAULT_DEVICE
 ```
 
 `DEVICES` 是整张表：iPhone、iPad、安卓和鸿蒙，折叠机的内外两块屏各算一台。它是 `IOS_DEVICES`、`ANDROID_DEVICES`、`HARMONY_DEVICES` 三份拼起来的，按平台分成三个文件，一台一行——只要某个平台的，直接引对应那份。`findDevice(name)` 按 `name` 精确查一台，表里没有就返回 `undefined`。`DEFAULT_DEVICE`（一台 iPhone X）是没指定机型时的兜底。只拿它当尺寸用的宿主——[@devicekit/frame](../frame) 就是——只借屏幕，别的都不借，所以那边不写机型画出来的并不是一台 iPhone X。
+
+`DEVICE_NAMES` 把表里每个 `name` 都变成一个能自动补全的常量，不用手打字符串：`DEVICE_NAMES.iPhone_16_Pro` 就是字符串 `'iPhone 16 Pro'`。键的推导规则是把机型名里每一段不属于 `[A-Za-z0-9]` 的字符合并成一个 `_`，再去掉首尾的 `_`——`'iPhone 12/13 (Pro)'` 变成 `iPhone_12_13_Pro`，`'iPad Pro 10.5-inch'` 变成 `iPad_Pro_10_5_inch`。写 `findDevice(DEVICE_NAMES.iPhone_16_Pro)` 传的还是字符串本身，常量的作用只是让手误变成一个不存在的属性报错，而不是查找悄悄落空。`DEVICE_NAMES` 来自一份生成文件，见下面的 API 一览。
 
 `CLASSIC_DEVICES` 是从同一批对象里手选出的精简子集——19 台，按 iOS → Android → HarmonyOS 分组——给放不下 171 行的机型下拉框用。选哪几台是主观判断，不是排名：iPhone 和 iPad、Pixel 和 Galaxy，加一台小米和四台华为。需要完整机型表的宿主仍然读 `DEVICES`。
 
@@ -154,12 +156,14 @@ import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 | `CLASSIC_DEVICES` | `readonly DeviceProfile[]` | 手选的不到 20 台，同一批对象，给短列表用 |
 | `DEFAULT_DEVICE` | `DeviceProfile` | 没指定机型时画的那台（iPhone X） |
 | `PLATFORM_DEFAULTS` | `Record<DeviceOS, {...}>` | 各平台的状态栏、导航栏和机身默认值 |
+| `DEVICE_NAMES` | `{ [key: string]: string }`（as const） | 每个 `DEVICES[number].name`，键是 `deviceNameKey(name)`——生成文件，见下 |
 
 ### 函数
 
 | 导出 | 签名 | 做什么 |
 | --- | --- | --- |
 | `findDevice` | `(name: string \| null \| undefined) => DeviceProfile \| undefined` | 按名字精确查 |
+| `deviceNameKey` | `(name: string) => string` | 从机型名推导出 `DEVICE_NAMES` 的键：非 `[A-Za-z0-9]` 的连续字符合并成一个 `_`，再去掉首尾 `_`，以数字开头则前缀一个 `_` |
 | `resolveDevice` | `(profile: DeviceProfile) => ResolvedDevice` | 用平台默认值补齐省略的字段 |
 | `assertDeviceProfile` | `(value: unknown, label?: string) => asserts value is DeviceProfile` | `value` 不是能用的 `DeviceProfile` 就抛 `TypeError`，消息里点名字段 |
 | `statusBarHeightFor` | `(device: ResolvedDevice, orientation: Orientation) => number` | 该方向存着的状态栏高度 |
@@ -190,6 +194,9 @@ import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 | `CutoutSpec` | 挖孔的形状和几何：`shape`、`width`、`height`、`top`，可选 `centerX` |
 | `DeviceShell` | 机身：`screenRadius`、`bezel`，可选 `bodyRadius` |
 | `WindowSizeOptions` | `resolveWindowSize` 的选项：`orientation`、`navigationBar`、`tabBarHeight` |
+| `DeviceName` | 所有 `DEVICE_NAMES` 值的联合类型——也就是每一个真实的 `DeviceProfile.name` |
+
+`DEVICE_NAMES` 所在的 `src/device-names.generated.ts` 由 `scripts/generate-device-names.mjs` 从 `DEVICES` 生成，不手改。增删或改名机型后重新生成：`pnpm --filter @devicekit/devices generate:device-names`。
 
 ## 许可证
 

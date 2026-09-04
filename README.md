@@ -48,9 +48,9 @@ If you only need the data and the arithmetic, `@devicekit/devices` is enough. `@
 Device data and size arithmetic only:
 
 ```ts
-import { findDevice, resolveWindowSize } from '@devicekit/devices'
+import { DEVICE_NAMES, findDevice, resolveWindowSize } from '@devicekit/devices'
 
-const device = findDevice('iPhone 16 Pro')
+const device = findDevice(DEVICE_NAMES.iPhone_16_Pro)
 const size = device && resolveWindowSize(device)
 ```
 
@@ -68,7 +68,7 @@ defineDeviceFrame()
 </device-frame>
 ```
 
-React hosts can import `<DeviceFrame device="iPhone 16 Pro">` from `@devicekit/frame/react` instead; it renders the same element and takes the device as props. That subpath is also where the JSX types for the raw `<device-frame>` tag live — import it once (React 18 or 19) if you would rather write the tag by hand in TSX.
+React hosts can import `<DeviceFrame device={DEVICE_NAMES.iPhone_16_Pro}>` from `@devicekit/frame/react` instead; it renders the same element and takes the device as props. That subpath is also where the JSX types for the raw `<device-frame>` tag live — import it once (React 18 or 19) if you would rather write the tag by hand in TSX.
 
 ## Device coverage
 

@@ -27,6 +27,17 @@ export default [
     },
   },
   {
+    // The one Node script in this DOM-free package (see tsconfig.json) —
+    // it runs under `node`, not the library's own no-globals lib target.
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        console: "readonly",
+        process: "readonly",
+      },
+    },
+  },
+  {
     ignores: ["coverage/**", "dist/**"],
   },
 ];

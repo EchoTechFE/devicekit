@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-04
+
+### Added
+
+- `@devicekit/devices`: `DEVICE_NAMES` — every device name as a constant, so `DEVICE_NAMES.iPhone_16_Pro` replaces the hand-typed `'iPhone 16 Pro'` and the editor can autocomplete and check it. Keys are derived from the name by `deviceNameKey` (runs of characters outside `[A-Za-z0-9]` become one `_`, so `'iPhone 12/13 (Pro)'` is `iPhone_12_13_Pro`); the table lives in a generated file kept in sync by `pnpm --filter @devicekit/devices generate:device-names` and guarded by a test.
+- `@devicekit/devices`: `DeviceName`, the union of every name in the table.
+- `@devicekit/frame/react`: the `device` prop accepts `DeviceName` for autocomplete while still taking any string.
+
+### Changed
+
+- `@devicekit/frame` now depends on `@devicekit/devices` with a caret range instead of an exact version.
+
 ## [0.1.0] - 2026-09-04
 
 ### Added

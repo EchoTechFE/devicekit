@@ -83,8 +83,9 @@ For a props object, for `deviceProfile` (which has no attribute form), or for a 
 
 ```tsx
 import { DeviceFrame } from '@devicekit/frame/react'
+import { DEVICE_NAMES } from '@devicekit/devices'
 
-<DeviceFrame device="iPhone 16 Pro" orientation={orientation} ref={frameRef}>
+<DeviceFrame device={DEVICE_NAMES.iPhone_16_Pro} orientation={orientation} ref={frameRef}>
   <MiniAppFrame ... />
 </DeviceFrame>
 ```
@@ -93,7 +94,7 @@ import { DeviceFrame } from '@devicekit/frame/react'
 
 | Prop | Type | The attribute it sets |
 | --- | --- | --- |
-| `device` | `string` | `device` |
+| `device` | `DeviceName \| (string & {})` | `device` — `DeviceName` is `@devicekit/devices`'s `DEVICE_NAMES` values, for autocomplete; any other string still works |
 | `deviceProfile` | `DeviceProfile \| null` | none — assigned as a property |
 | `os` | `DeviceOS` | `os` |
 | `orientation` | `Orientation` | `orientation` |
@@ -122,9 +123,9 @@ How large the body ends up (screen + bezel padding + a 1px border) can be comput
 
 ```ts
 import { frameOuterSize } from '@devicekit/frame'
-import { findDevice } from '@devicekit/devices'
+import { DEVICE_NAMES, findDevice } from '@devicekit/devices'
 
-const size = frameOuterSize(findDevice('iPhone 16 Pro')!, 'portrait')
+const size = frameOuterSize(findDevice(DEVICE_NAMES.iPhone_16_Pro)!, 'portrait')
 // { width, height }
 ```
 
@@ -148,7 +149,7 @@ It imports the package by name, which the workspace resolves to `src/` rather th
 
 | Attribute | Values | What it does |
 | --- | --- | --- |
-| `device` | A device name, such as `iPhone 16 Pro` | A name not in the table, or no attribute at all, falls back to the default *size* — not to a default device (see below) |
+| `device` | A device name, such as `iPhone 16 Pro` | A name not in the table, or no attribute at all, falls back to the default *size* — not to a default device (see below). From JS, use `@devicekit/devices`'s `DEVICE_NAMES` constant instead of typing the string |
 | `os` | `ios` (default), `android`, `harmony` | With no device and no explicit heights, the status bar and navigation bar use this platform's defaults |
 | `orientation` | `portrait` (default), `landscape` | Landscape swaps width and height and switches the other numbers to the device's landscape set |
 | `width`, `height` | Numbers, CSS px, **portrait orientation** | Override the device table |

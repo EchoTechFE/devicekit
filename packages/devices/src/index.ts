@@ -18,6 +18,9 @@ export {
 
 export { assertDeviceProfile } from './validate.js'
 
+export { deviceNameKey, type DeviceName } from './device-names.js'
+export { DEVICE_NAMES } from './device-names.generated.js'
+
 export {
   ANDROID_DEVICES,
   CLASSIC_DEVICES,

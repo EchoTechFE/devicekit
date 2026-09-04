@@ -83,8 +83,9 @@ React 18 和 React 19 都能用。两者走的路不一样——React 18 把每�
 
 ```tsx
 import { DeviceFrame } from '@devicekit/frame/react'
+import { DEVICE_NAMES } from '@devicekit/devices'
 
-<DeviceFrame device="iPhone 16 Pro" orientation={orientation} ref={frameRef}>
+<DeviceFrame device={DEVICE_NAMES.iPhone_16_Pro} orientation={orientation} ref={frameRef}>
   <MiniAppFrame ... />
 </DeviceFrame>
 ```
@@ -93,7 +94,7 @@ import { DeviceFrame } from '@devicekit/frame/react'
 
 | Prop | 类型 | 对应属性 |
 | --- | --- | --- |
-| `device` | `string` | `device` |
+| `device` | `DeviceName \| (string & {})` | `device`——`DeviceName` 是 `@devicekit/devices` 的 `DEVICE_NAMES` 取值范围，用于自动补全；其他字符串照样能传 |
 | `deviceProfile` | `DeviceProfile \| null` | 没有属性形式，直接当 property 赋值 |
 | `os` | `DeviceOS` | `os` |
 | `orientation` | `Orientation` | `orientation` |
@@ -122,9 +123,9 @@ ref 拿到的是一个 `DeviceFrameElement`，`metrics`、`contentRect` 和 `ref
 
 ```ts
 import { frameOuterSize } from '@devicekit/frame'
-import { findDevice } from '@devicekit/devices'
+import { DEVICE_NAMES, findDevice } from '@devicekit/devices'
 
-const size = frameOuterSize(findDevice('iPhone 16 Pro')!, 'portrait')
+const size = frameOuterSize(findDevice(DEVICE_NAMES.iPhone_16_Pro)!, 'portrait')
 // { width, height }
 ```
 
@@ -148,7 +149,7 @@ pnpm --filter @devicekit/frame demo
 
 | 属性 | 取值 | 说明 |
 | --- | --- | --- |
-| `device` | 机型名，如 `iPhone 16 Pro` | 表里没有的名字，或者干脆不写这个属性，退回的是默认*尺寸*，不是一台默认机型（见下） |
+| `device` | 机型名，如 `iPhone 16 Pro` | 表里没有的名字，或者干脆不写这个属性，退回的是默认*尺寸*，不是一台默认机型（见下）。在 JS 里请用 `@devicekit/devices` 的 `DEVICE_NAMES` 常量，别手打字符串 |
 | `os` | `ios`（默认）、`android`、`harmony` | 没有机型也没写高度时，状态栏和导航栏走这个平台的默认值 |
 | `orientation` | `portrait`（默认）、`landscape` | 横屏时宽高互换，其余的数字换成机型表里横屏那一套 |
 | `width`、`height` | 数字，CSS px，**竖屏方向** | 给了就盖过机型表里的值 |
