@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-04
+
+### Fixed
+
+- `@devicekit/devices`: the 13 Home-button iPhones (iPhone 4 through iPhone 8 Plus, both SE models) had no `shell`, so they took the iOS default 38px screen radius and the rounded corner clipped the status-bar icons. Their flat LCD panels have square corners; they now resolve to `screenRadius: 0` with a 38px body radius.
+
 ## [0.2.1] - 2026-09-04
 
 ### Fixed

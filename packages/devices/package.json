@@ -1,6 +1,6 @@
 {
   "name": "@devicekit/devices",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "The device table behind devicekit's previews: phones and tablets with screens, pixel ratios, status bars, safe areas and user agents, plus the arithmetic that turns one into a usable window size. No DOM.",
   "keywords": [
     "device",

@@ -1,6 +1,6 @@
 {
   "name": "@devicekit/frame",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "The simulated phone behind devicekit's previews: a framework-agnostic <device-frame> custom element that draws the bezel, status bar and home indicator. Device presets live in @devicekit/devices.",
   "keywords": [
     "device-frame",

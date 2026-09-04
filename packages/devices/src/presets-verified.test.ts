@@ -19,6 +19,16 @@ function device(name: string) {
 const insets = (top: number, right: number, bottom: number, left: number): EdgeInsets => ({ top, right, bottom, left })
 
 describe('A. iOS presets', () => {
+  it('Home-button iPhones — square screen corners, body radius 38 (spec: flat LCD panels, no rounded display until iPhone X)', () => {
+    const homeButtonPhones = IOS_DEVICES.filter(p => p.formFactor !== 'tablet' && p.cutout === undefined)
+    expect(homeButtonPhones.length).toBeGreaterThanOrEqual(13)
+    for (const profile of homeButtonPhones) {
+      const d = resolveDevice(profile)
+      expect(d.shell.screenRadius, `${profile.name} screenRadius`).toBe(0)
+      expect(d.shell.bodyRadius, `${profile.name} bodyRadius`).toBe(38)
+    }
+  })
+
   describe('iPhone XR / iPhone 11 — sb 48, safe area 48/34, landscape 48/48/21 (measured)', () => {
     it.each(['iPhone XR', 'iPhone 11'])('%s', (name) => {
       const d = device(name)
