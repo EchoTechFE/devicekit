@@ -59,5 +59,12 @@ export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetric
   style.setProperty('--device-safe-area-left', `${insets.left}px`)
   style.setProperty('--device-screen-radius', `${shell.screenRadius}px`)
   style.setProperty('--device-bezel', `${shell.bezel}px`)
+  const shellInsets = metrics.orientation === 'portrait'
+    ? shell.bezelInsets
+    : { top: shell.bezelInsets.left, right: shell.bezelInsets.top, bottom: shell.bezelInsets.right, left: shell.bezelInsets.bottom }
+  style.setProperty('--device-bezel-top', `${shellInsets.top}px`)
+  style.setProperty('--device-bezel-right', `${shellInsets.right}px`)
+  style.setProperty('--device-bezel-bottom', `${shellInsets.bottom}px`)
+  style.setProperty('--device-bezel-left', `${shellInsets.left}px`)
   style.setProperty('--device-body-radius', `${shell.bodyRadius}px`)
 }

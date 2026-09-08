@@ -13,6 +13,12 @@ import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
  */
 export function frameOuterSize(profile: DeviceProfile, orientation: Orientation): ScreenSize {
   const screen = orientedScreen(profile, orientation)
-  const margin = 2 * (resolveDevice(profile).shell.bezel + DEVICE_FRAME_BORDER_WIDTH)
-  return { width: screen.width + margin, height: screen.height + margin }
+  const { bezelInsets } = resolveDevice(profile).shell
+  const insets = orientation === 'portrait'
+    ? bezelInsets
+    : { top: bezelInsets.left, right: bezelInsets.top, bottom: bezelInsets.right, left: bezelInsets.bottom }
+  return {
+    width: screen.width + insets.left + insets.right + 2 * DEVICE_FRAME_BORDER_WIDTH,
+    height: screen.height + insets.top + insets.bottom + 2 * DEVICE_FRAME_BORDER_WIDTH,
+  }
 }

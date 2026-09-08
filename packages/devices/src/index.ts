@@ -11,8 +11,10 @@ export {
   type DeviceProfile,
   type DeviceShell,
   type EdgeInsets,
+  type HomeButtonSpec,
   type Orientation,
   type ResolvedDevice,
+  type ResolvedDeviceShell,
   type ScreenSize,
 } from './devices.js'
 

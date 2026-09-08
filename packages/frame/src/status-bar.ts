@@ -31,6 +31,8 @@ export interface StatusBarRenderOptions {
   textStyle: string | null
   /** The `status-bar-background` attribute, or null to stay transparent. */
   background: string | null
+  /** Embedded frames draw no physical screen hardware. */
+  embedded: boolean
 }
 
 function currentClockText(now: Date): string {
@@ -52,6 +54,7 @@ export class StatusBar {
   readonly element: HTMLElement
 
   #timeEl: HTMLElement
+  #iconsEl: HTMLElement
   #cutoutEl: HTMLElement
   // Either the one-shot alignment timeout or the steady-state interval that
   // replaces it — never both at once, so a single field and clearing both
@@ -85,6 +88,7 @@ export class StatusBar {
 
     const icons = document.createElement('div')
     icons.className = 'status-bar__icons'
+    this.#iconsEl = icons
     for (const glyph of ['signal', 'wifi', 'battery']) {
       const span = document.createElement('span')
       span.className = `status-bar__${glyph}`
@@ -111,14 +115,17 @@ export class StatusBar {
   render(metrics: StatusBarMetrics, options: StatusBarRenderOptions): void {
     const { device, orientation } = metrics
     const { visible, mode, textStyle, background } = options
-    this.element.hidden = !visible
-    if (background) this.element.style.backgroundColor = background
+    const cutoutVisible = !options.embedded && orientation === 'portrait' && device.cutout !== null
+    this.element.hidden = !visible && !cutoutVisible
+    this.#timeEl.hidden = !visible
+    this.#iconsEl.hidden = !visible
+    if (background && visible) this.element.style.backgroundColor = background
     else this.element.style.removeProperty('background-color')
 
     // Ahead of the early return: the cutout and the layout variables have to
     // follow orientation even when the whole bar is gone, or they keep the
     // previous orientation's state on an element anyone can read.
-    this.#renderCutout(device, orientation)
+    this.#renderCutout(device, orientation, cutoutVisible)
     const layout = computeStatusBarLayout(device, orientation)
     this.#renderLayout(layout)
 
@@ -170,8 +177,8 @@ export class StatusBar {
    * place than the one this bar draws, while the screen it costs is reported
    * through the landscape insets all the same.
    */
-  #renderCutout(device: ResolvedDevice, orientation: Orientation): void {
-    const cutout = orientation === 'portrait' ? device.cutout : null
+  #renderCutout(device: ResolvedDevice, orientation: Orientation, visible: boolean): void {
+    const cutout = visible && orientation === 'portrait' ? device.cutout : null
     this.#cutoutEl.hidden = cutout === null
 
     if (!cutout) {

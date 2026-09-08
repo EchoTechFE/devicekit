@@ -357,9 +357,11 @@ describe('status bar time', () => {
     expect(vi.getTimerCount()).toBe(1)
   })
 
-  it('hides the whole bar on request and runs no clock behind it', () => {
+  it('hides status-bar content on request and runs no clock behind it', () => {
     const el = mountFrame({ device: 'iPhone X', 'status-bar': 'hidden' })
-    expect(statusBar(el).hidden).toBe(true)
+    expect(statusBar(el).hidden).toBe(false)
+    expect(el.shadowRoot!.querySelector<HTMLElement>('.status-bar__time')!.hidden).toBe(true)
+    expect(el.shadowRoot!.querySelector<HTMLElement>('.status-bar__icons')!.hidden).toBe(true)
     expect(vi.getTimerCount()).toBe(0)
   })
 

@@ -141,5 +141,17 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
         expectFiniteAtLeast(`${label}.shell.${field}`, shell[field], 0, false)
       }
     }
+    if (shell.bezelInsets !== undefined) {
+      if (!isPlainObject(shell.bezelInsets)) throw new TypeError(`${label}.shell.bezelInsets must be an object`)
+      for (const edge of EDGES) {
+        if (shell.bezelInsets[edge] !== undefined) {
+          expectFiniteAtLeast(`${label}.shell.bezelInsets.${edge}`, shell.bezelInsets[edge], 0, false)
+        }
+      }
+    }
+    if (shell.homeButton !== undefined && shell.homeButton !== null) {
+      if (!isPlainObject(shell.homeButton)) throw new TypeError(`${label}.shell.homeButton must be an object`)
+      expectFiniteAtLeast(`${label}.shell.homeButton.diameter`, shell.homeButton.diameter, 0, true)
+    }
   }
 }

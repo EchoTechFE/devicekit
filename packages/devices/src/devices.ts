@@ -81,8 +81,21 @@ export interface DeviceShell {
   screenRadius: number
   /** Body thickness around the screen on every side. 0 = a bezel-less preview. */
   bezel: number
+  /** Per-edge body thickness. Omitted edges keep the uniform `bezel` value. */
+  bezelInsets?: Partial<EdgeInsets>
+  /** A physical Home button centered in the bottom bezel. */
+  homeButton?: HomeButtonSpec | null
   /** Body corner radius. Omitted = screenRadius + bezel, which keeps the two concentric. */
   bodyRadius?: number
+}
+
+export interface HomeButtonSpec {
+  diameter: number
+}
+
+export interface ResolvedDeviceShell extends Required<Omit<DeviceShell, 'bezelInsets' | 'homeButton'>> {
+  bezelInsets: EdgeInsets
+  homeButton: HomeButtonSpec | null
 }
 
 /**
@@ -195,7 +208,7 @@ export interface ResolvedDevice {
   safeAreaInsets: EdgeInsets
   safeAreaInsetsLandscape: EdgeInsets
   cutout: CutoutSpec | null
-  shell: Required<DeviceShell>
+  shell: ResolvedDeviceShell
 }
 
 function withInsets(partial: Partial<EdgeInsets> | undefined, fallback: EdgeInsets): EdgeInsets {
@@ -222,6 +235,17 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
   const statusBarHeightLandscape = profile.statusBarHeightLandscape ?? defaults.statusBarHeightLandscape
   const screenRadius = profile.shell?.screenRadius ?? defaults.shell.screenRadius
   const bezel = profile.shell?.bezel ?? defaults.shell.bezel
+  const uniformBezelInsets = { top: bezel, right: bezel, bottom: bezel, left: bezel }
+  const profileInsets = profile.shell?.bezelInsets
+  const bezelInsets = profileInsets !== undefined
+    ? withInsets(profileInsets, uniformBezelInsets)
+    : profile.shell?.bezel !== undefined
+      ? uniformBezelInsets
+      : withInsets(defaults.shell.bezelInsets, uniformBezelInsets)
+  const profileHomeButton = profile.shell?.homeButton
+  const homeButton = profileHomeButton !== undefined
+    ? profileHomeButton
+    : defaults.shell.homeButton ?? null
 
   return {
     name: profile.name,
@@ -241,6 +265,8 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
     shell: {
       screenRadius,
       bezel,
+      bezelInsets,
+      homeButton,
       bodyRadius: profile.shell?.bodyRadius ?? screenRadius + bezel,
     },
   }

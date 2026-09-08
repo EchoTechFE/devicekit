@@ -8,7 +8,7 @@
 import {
   type CutoutSpec,
   type DeviceProfile,
-  type DeviceShell,
+  type ResolvedDeviceShell,
   type EdgeInsets,
   type Orientation,
   orientedScreen,
@@ -71,7 +71,7 @@ export interface DeviceMetrics {
   /** Where that window sits on the screen. */
   content: ContentBox
   cutout: CutoutSpec | null
-  shell: Required<DeviceShell>
+  shell: ResolvedDeviceShell
 }
 
 /**
