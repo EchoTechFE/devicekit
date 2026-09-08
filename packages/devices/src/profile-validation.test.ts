@@ -320,6 +320,17 @@ describe('assertDeviceProfile checks shell when present', () => {
   it.each(['screenRadius', 'bezel', 'bodyRadius'] as const)('a negative %s is rejected', (field) => {
     expectRejects({ ...VALID, shell: { [field]: -1 } }, undefined, `deviceProfile.shell.${field}`)
   })
+
+  it('rejects null or a negative edge in bezelInsets with the bad value named', () => {
+    expectRejects({ ...VALID, shell: { bezelInsets: null } }, undefined, 'deviceProfile.shell.bezelInsets', 'got null')
+    expectRejects({ ...VALID, shell: { bezelInsets: { top: -1 } } }, undefined, 'deviceProfile.shell.bezelInsets.top', 'got -1')
+  })
+
+  it('rejects an incomplete or zero-diameter Home button', () => {
+    expectRejects({ ...VALID, shell: { homeButton: 'button' } }, undefined, 'deviceProfile.shell.homeButton', 'got string')
+    expectRejects({ ...VALID, shell: { homeButton: {} } }, undefined, 'deviceProfile.shell.homeButton.diameter')
+    expectRejects({ ...VALID, shell: { homeButton: { diameter: 0 } } }, undefined, 'deviceProfile.shell.homeButton.diameter', 'got 0')
+  })
 })
 
 describe('a profile with a full cutout and shell passes and resolves cleanly', () => {

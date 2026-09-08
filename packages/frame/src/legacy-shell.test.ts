@@ -53,6 +53,27 @@ describe('legacy iPhone shell', () => {
     expect(landscape.style.getPropertyValue('--device-bezel-left')).toBe('48px')
     expect(DEVICE_FRAME_STYLES).toMatch(/padding:\s*var\(--device-bezel-top\)/)
   })
+
+  it('restores the Home button and shell variables after legacy → modern → legacy', () => {
+    const el = mount({ device: 'iPhone SE' })
+    expect(el.shadowRoot!.querySelector<HTMLElement>('.home-button')?.dataset.edge).toBe('bottom')
+    el.setAttribute('device', 'iPhone 15')
+    expect(el.shadowRoot!.querySelector('.home-button')).toBeNull()
+    el.setAttribute('device', 'iPhone SE')
+    const button = el.shadowRoot!.querySelector<HTMLElement>('.home-button')!
+    expect(button.parentElement?.className).toBe('body')
+    expect(button.dataset.edge).toBe('bottom')
+    expect(el.style.getPropertyValue('--device-bezel-bottom')).toBe('48px')
+  })
+
+  it('restores the Home button after embedded mode is removed', () => {
+    const el = mount({ device: 'iPhone SE' })
+    el.embedded = true
+    expect(el.shadowRoot!.querySelector('.home-button')).toBeNull()
+    el.embedded = false
+    expect(el.shadowRoot!.querySelector<HTMLElement>('.home-button')?.parentElement?.className).toBe('body')
+    expect(el.style.getPropertyValue('--device-bezel-top')).toBe('44px')
+  })
 })
 
 describe('hidden status-bar retains physical cutouts', () => {

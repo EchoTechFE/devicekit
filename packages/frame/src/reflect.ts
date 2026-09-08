@@ -12,6 +12,7 @@
  * disagree.
  */
 import type { DeviceMetrics } from './metrics.js'
+import { orientedShellInsets } from './shell-insets.js'
 
 /** A value-carrying attribute. `null`/`undefined` clear it, matching `removeAttribute`. */
 export function reflectAttribute(el: Element, name: string, value: string | null | undefined): void {
@@ -59,9 +60,7 @@ export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetric
   style.setProperty('--device-safe-area-left', `${insets.left}px`)
   style.setProperty('--device-screen-radius', `${shell.screenRadius}px`)
   style.setProperty('--device-bezel', `${shell.bezel}px`)
-  const shellInsets = metrics.orientation === 'portrait'
-    ? shell.bezelInsets
-    : { top: shell.bezelInsets.left, right: shell.bezelInsets.top, bottom: shell.bezelInsets.right, left: shell.bezelInsets.bottom }
+  const shellInsets = orientedShellInsets(shell.bezelInsets, metrics.orientation)
   style.setProperty('--device-bezel-top', `${shellInsets.top}px`)
   style.setProperty('--device-bezel-right', `${shellInsets.right}px`)
   style.setProperty('--device-bezel-bottom', `${shellInsets.bottom}px`)

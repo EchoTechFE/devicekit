@@ -163,7 +163,9 @@ const version = systemVersion(profile)
 | `SafeAreaRect` | `{ top, left, right, bottom, width, height }` |
 | `CutoutShape` | `'notch' \| 'pill' \| 'circle'` |
 | `CutoutSpec` | Cutout shape and geometry |
-| `DeviceShell` | Screen radius, bezel, and optional body radius |
+| `DeviceShell` | Screen radius and uniform `bezel`; `bezelInsets` can override individual edges, `homeButton` describes physical hardware, and per-edge profiles should set `bodyRadius` explicitly |
+| `HomeButtonSpec` | `{ diameter }`, the physical Home button centered in the body bezel |
+| `ResolvedDeviceShell` | A shell with every edge resolved and `homeButton` set to a spec or `null` |
 | `WindowSizeOptions` | Options for `resolveWindowSize()` |
 | `DeviceName` | Union of the values in `DEVICE_NAMES` |
 

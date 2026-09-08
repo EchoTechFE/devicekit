@@ -85,7 +85,7 @@ export interface DeviceShell {
   bezelInsets?: Partial<EdgeInsets>
   /** A physical Home button centered in the bottom bezel. */
   homeButton?: HomeButtonSpec | null
-  /** Body corner radius. Omitted = screenRadius + bezel, which keeps the two concentric. */
+  /** Body corner radius. Omitted = screenRadius + uniform bezel; profiles with per-edge insets should set this explicitly. */
   bodyRadius?: number
 }
 
