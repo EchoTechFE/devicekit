@@ -176,14 +176,16 @@ Resolved layout values are published on the element:
 | `--device-navigation-bar-height` | Navigation slot height, or zero |
 | `--device-tab-bar-height` | Tab slot height, or zero |
 | `--device-safe-area-top`, `--device-safe-area-right`, `--device-safe-area-bottom`, `--device-safe-area-left` | Safe-area insets |
-| `--device-screen-radius`, `--device-bezel`, `--device-body-radius` | Shell geometry |
+| `--device-screen-radius`, `--device-body-radius` | Shell geometry |
+| `--device-bezel` | Uniform bezel fallback when an edge is not specified separately |
+| `--device-bezel-top`, `--device-bezel-right`, `--device-bezel-bottom`, `--device-bezel-left` | Oriented bezel thickness on each physical edge |
 | `--device-frame-border-width` | Body border width in device CSS pixels |
 
 Use these variables to change the frame appearance:
 
 | Variable | Purpose |
 | --- | --- |
-| `--device-frame-radius` | Overrides the body radius with a CSS length |
+| `--device-frame-radius` | Overrides the body radius with a CSS length; the concentric screen calculation assumes a uniform bezel |
 | `--device-frame-border` | Body border |
 | `--device-frame-background` | Body background |
 | `--device-frame-shadow` | Body shadow |

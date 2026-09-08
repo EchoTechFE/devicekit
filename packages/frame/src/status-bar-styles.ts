@@ -107,6 +107,10 @@ export const STATUS_BAR_STYLES = `
   gap: calc(5.5px * var(--sb-scale, 1));
 }
 
+.status-bar__icons[hidden] {
+  display: none;
+}
+
 /*
  * ios-classic splits this cluster the way a real pre-notch status bar does:
  * signal+Wi-Fi sit next to the carrier name on the left, battery on the

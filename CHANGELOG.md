@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `@devicekit/frame`: hiding status-bar text no longer hides a phone's physical cutout; Dynamic Island and notch devices retain the screen obstruction outside embedded and landscape frames.
+- `@devicekit/devices` and `@devicekit/frame`: Home-button iPhones now describe their asymmetric chassis and physical button, so square LCDs sit inside thick top and bottom bezels instead of reaching the rounded body corners.
+
 ## [0.2.2] - 2026-09-04
 
 ### Fixed

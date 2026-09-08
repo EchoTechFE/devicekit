@@ -1,5 +1,6 @@
 import { type DeviceProfile, type Orientation, type ScreenSize, orientedScreen, resolveDevice } from '@devicekit/devices'
 import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
+import { orientedShellInsets } from './shell-insets.js'
 
 /**
  * The frame's outer footprint for a given profile and orientation — what a
@@ -13,6 +14,10 @@ import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
  */
 export function frameOuterSize(profile: DeviceProfile, orientation: Orientation): ScreenSize {
   const screen = orientedScreen(profile, orientation)
-  const margin = 2 * (resolveDevice(profile).shell.bezel + DEVICE_FRAME_BORDER_WIDTH)
-  return { width: screen.width + margin, height: screen.height + margin }
+  const { bezelInsets } = resolveDevice(profile).shell
+  const insets = orientedShellInsets(bezelInsets, orientation)
+  return {
+    width: screen.width + insets.left + insets.right + 2 * DEVICE_FRAME_BORDER_WIDTH,
+    height: screen.height + insets.top + insets.bottom + 2 * DEVICE_FRAME_BORDER_WIDTH,
+  }
 }

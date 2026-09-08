@@ -41,6 +41,10 @@ export const DEVICE_FRAME_STYLES = `
   --device-safe-area-left: 0px;
   --device-screen-radius: 38px;
   --device-bezel: 0px;
+  --device-bezel-top: 0px;
+  --device-bezel-right: 0px;
+  --device-bezel-bottom: 0px;
+  --device-bezel-left: 0px;
   --device-body-radius: 38px;
   --device-frame-border-width: ${DEVICE_FRAME_BORDER_WIDTH}px;
 
@@ -80,7 +84,7 @@ export const DEVICE_FRAME_STYLES = `
   box-sizing: content-box;
   width: var(--device-width);
   height: var(--device-height);
-  padding: var(--device-bezel);
+  padding: var(--device-bezel-top) var(--device-bezel-right) var(--device-bezel-bottom) var(--device-bezel-left);
   min-height: 0;
   overflow: hidden;
   border: var(--device-frame-border);
@@ -235,6 +239,30 @@ ${STATUS_BAR_STYLES}
   /* currentColor, not a fixed shade — the pill follows the inline color the
      element sets from status-bar-text-style, same switch the status bar uses. */
   background: currentColor;
+}
+
+/* A Home button is body hardware, separate from the screen's gesture indicator. */
+.home-button {
+  position: absolute;
+  z-index: 10;
+  width: var(--device-home-button-diameter);
+  height: var(--device-home-button-diameter);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.home-button[data-edge="bottom"] {
+  left: 50%;
+  bottom: calc((var(--device-bezel-bottom) - var(--device-home-button-diameter)) / 2);
+  transform: translateX(-50%);
+}
+
+.home-button[data-edge="left"] {
+  top: 50%;
+  left: calc((var(--device-bezel-left) - var(--device-home-button-diameter)) / 2);
+  transform: translateY(-50%);
 }
 
 /* Host-owned layers that ride above the screen (extension mount points, chrome

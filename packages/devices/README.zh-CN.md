@@ -192,7 +192,9 @@ import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 | `SafeAreaRect` | `{ top, left, right, bottom, width, height }`，边是屏幕坐标，跟 `wx.getWindowInfo().safeArea` 一回事 |
 | `CutoutShape` | `'notch' \| 'pill' \| 'circle'` |
 | `CutoutSpec` | 挖孔的形状和几何：`shape`、`width`、`height`、`top`，可选 `centerX` |
-| `DeviceShell` | 机身：`screenRadius`、`bezel`，可选 `bodyRadius` |
+| `DeviceShell` | 机身：`screenRadius`、统一的 `bezel`；`bezelInsets` 可单独指定四边，`homeButton` 描述实体 Home 键；用了分边 inset 时应显式设置 `bodyRadius` |
+| `HomeButtonSpec` | `{ diameter }`，机身 bezel 中央的实体 Home 键 |
+| `ResolvedDeviceShell` | 四边都已补齐、`homeButton` 为规格或 `null` 的机身数据 |
 | `WindowSizeOptions` | `resolveWindowSize` 的选项：`orientation`、`navigationBar`、`tabBarHeight` |
 | `DeviceName` | 所有 `DEVICE_NAMES` 值的联合类型——也就是每一个真实的 `DeviceProfile.name` |
 

@@ -128,6 +128,7 @@ export class DeviceFrameElement extends HTMLElementBase {
   #deviceProfile: DeviceProfile | null = null
   #statusBar: StatusBar | null = null
   #homeIndicatorEl: HTMLElement | null = null
+  #homeButtonEl: HTMLElement | null = null
   #navigationBarEl: HTMLElement | null = null
   #navigationBarSlot: HTMLSlotElement | null = null
   #tabBarEl: HTMLElement | null = null
@@ -323,6 +324,10 @@ export class DeviceFrameElement extends HTMLElementBase {
     this.#homeIndicatorEl.className = 'home-indicator'
     this.#homeIndicatorEl.setAttribute('aria-hidden', 'true')
 
+    this.#homeButtonEl = document.createElement('div')
+    this.#homeButtonEl.className = 'home-button'
+    this.#homeButtonEl.setAttribute('aria-hidden', 'true')
+
     this.#statusBar = new StatusBar()
     this.#navigationBarEl = this.#buildSlottedBar('navigation-bar')
     this.#navigationBarSlot = this.#navigationBarEl.firstElementChild as HTMLSlotElement
@@ -370,7 +375,7 @@ export class DeviceFrameElement extends HTMLElementBase {
    * platforms that keep theirs get one either way.
    */
   #render(): void {
-    if (!this.#statusBar || !this.#homeIndicatorEl) return
+    if (!this.#statusBar || !this.#homeIndicatorEl || !this.#homeButtonEl) return
 
     const metrics = this.metrics
     reflectMetrics(this.style, metrics, this.embedded)
@@ -388,12 +393,22 @@ export class DeviceFrameElement extends HTMLElementBase {
       mode,
       textStyle: this.getAttribute('status-bar-text-style'),
       background: this.getAttribute('status-bar-background'),
+      embedded: this.embedded,
     })
 
     // Unconditional, not gated on showStatusBar: iOS landscape hides the status
     // bar but the home indicator still has to track status-bar-text-style.
     this.#homeIndicatorEl.style.color = statusBarTextColor(this.getAttribute('status-bar-text-style'))
     this.#homeIndicatorEl.hidden = this.embedded || metrics.safeAreaInsets.bottom <= 0
+    const homeButton = metrics.shell.homeButton
+    if (homeButton && !this.embedded) {
+      if (!this.#homeButtonEl.isConnected) this.shadowRoot?.querySelector('.body')?.append(this.#homeButtonEl)
+      this.#homeButtonEl.hidden = false
+      this.#homeButtonEl.style.setProperty('--device-home-button-diameter', `${homeButton.diameter}px`)
+      this.#homeButtonEl.dataset.edge = metrics.orientation === 'portrait' ? 'bottom' : 'left'
+    } else {
+      this.#homeButtonEl.remove()
+    }
     if (this.#navigationBarEl) this.#navigationBarEl.hidden = metrics.navigationBarHeight <= 0
     if (this.#tabBarEl) this.#tabBarEl.hidden = metrics.tabBarHeight <= 0
     this.#publishContentRect()
