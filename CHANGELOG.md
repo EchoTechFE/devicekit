@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-09-08
+
 ### Fixed
 
 - `@devicekit/frame`: hiding status-bar text no longer hides a phone's physical cutout; Dynamic Island and notch devices retain the screen obstruction outside embedded and landscape frames.
