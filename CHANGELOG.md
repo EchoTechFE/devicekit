@@ -109,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 
+- `@devicekit/frame`: clarified that safe-area attributes and `deviceProfile.safeAreaInsets` update frame metrics, CSS custom properties and rendering, but do not inject native CSS `env(safe-area-inset-*)` values into slotted or separately hosted pages; Electron/Chromium hosts must apply their own CDP override when they need native `env()` simulation.
 - Corrected the direction of `ContentRect.scale`, what `embedded` zeroes, what a `<device-frame>` with no `device` renders, what `tab-bar-height="0"` does, and which device fields every device actually carries.
 - Spelled out that `embedded` and `immersive` behave like `hidden`: presence is truth as an attribute, but a JS-truthy check as a property, so `embedded=""` reads as false through the property setter — pass `embedded={true}` (or the bare `embedded` shorthand) in React, not `embedded=""`, since React 18 and React 19 disagree on what an empty string means there.
 - Documented that without a `ResizeObserver` (old WebViews, jsdom by default) the element does not re-measure on its own; call `refreshContentRect()` after layout changes.
