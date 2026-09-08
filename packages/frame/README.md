@@ -192,7 +192,9 @@ Use these variables to change the frame appearance:
 
 If `--device-frame-border` changes the border width, set `--device-frame-border-width` to the same width so the radius calculation remains aligned.
 
-These variables do not change browser values such as `env(safe-area-inset-top)`. A page in the default slot must read the `--device-safe-area-*` variables or receive the values from its host.
+`<device-frame safe-area-bottom="30">` overrides the bottom safe-area inset. Setting `safeAreaInsets.bottom: 30` in `deviceProfile` does the same. Both update `metrics.safeAreaInsets.bottom` and `--device-safe-area-bottom`, and change the element's own bottom safe-area and home-indicator rendering.
+
+This does not change native CSS `env()`. Content in the default slot can read `var(--device-safe-area-bottom)`, but `env(safe-area-inset-bottom)` there does not become `30px`. A separate document, such as a page in an iframe or `WebContentsView`, cannot read the host element's custom property, so its host must pass the value to it. To change native `env()` in an Electron/Chromium page, the host can inject the value with CDP `Emulation.setSafeAreaInsetsOverride`. `@devicekit/frame` neither manages those pages nor performs CDP injection; a web-only host has no equivalent.
 
 ## Content rectangle events
 
