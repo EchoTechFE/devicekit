@@ -20,7 +20,7 @@ const insets = (top: number, right: number, bottom: number, left: number): EdgeI
 
 describe('A. iOS presets', () => {
   it('Home-button iPhones — square screen corners, body radius 38 (spec: flat LCD panels, no rounded display until iPhone X)', () => {
-    const homeButtonPhones = IOS_DEVICES.filter(p => p.formFactor !== 'tablet' && p.cutout === undefined)
+    const homeButtonPhones = IOS_DEVICES.filter(p => p.formFactor !== 'tablet' && resolveDevice(p).shell.homeButton !== null)
     expect(homeButtonPhones.length).toBeGreaterThanOrEqual(13)
     for (const profile of homeButtonPhones) {
       const d = resolveDevice(profile)
@@ -208,11 +208,10 @@ describe('A. iOS presets', () => {
     })
   })
 
-  // No iPhone shows a status bar in landscape, legacy/SE included. The iPhone X/8/8 Plus row
-  // can only be checked against spec (marked "unverified"), but the assertion itself holds
-  // uniformly across every iPhone.
-  it('every iPhone preset hides its status bar in landscape (statusBarHeightLandscape 0)', () => {
-    const iphones = IOS_DEVICES.filter((d) => d.name.startsWith('iPhone'))
+  // Traditional top-edge iPhones hide their status bar in landscape. Duo's right-edge status
+  // bar is covered by the dedicated status-bar-edge tests instead of weakening this invariant.
+  it('every traditional top-edge iPhone hides its status bar in landscape', () => {
+    const iphones = IOS_DEVICES.filter((d) => d.name.startsWith('iPhone') && device(d.name).statusBarEdgeLandscape === 'top')
     expect(iphones.length).toBeGreaterThan(0)
     const offenders = iphones.filter((d) => device(d.name).statusBarHeightLandscape !== 0)
     expect(offenders.map((d) => d.name)).toEqual([])

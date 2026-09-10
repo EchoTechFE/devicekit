@@ -8,7 +8,7 @@
  * "ear" widths either side of the cutout — computes position, so there is one
  * place to fix when a measurement is wrong instead of two that can drift.
  */
-import { statusBarHeightFor, type Orientation, type ResolvedDevice } from '@devicekit/devices'
+import { cutoutFor, statusBarEdgeFor, statusBarHeightFor, type Orientation, type ResolvedDevice, type StatusBarEdge } from '@devicekit/devices'
 
 /**
  * The device's screen width in this orientation. Not orientedScreen() itself:
@@ -20,14 +20,17 @@ function screenWidthFor(device: ResolvedDevice, orientation: Orientation): numbe
 }
 
 /**
- * Which of the four status bar arrangements a device uses: an iPhone with a
- * cutout, one without, an iPad, or Android's (which HarmonyOS borrows).
+ * Which status bar arrangement a device uses: an iPhone with a cutout, one
+ * without, Duo's compact indicator, an iPad, or Android's (which HarmonyOS
+ * borrows).
  */
-export type StatusBarLayoutMode = 'ios-cutout' | 'ios-classic' | 'ipad' | 'android'
+export type StatusBarLayoutMode = 'ios-cutout' | 'ios-classic' | 'ios-duo' | 'ipad' | 'android'
 
 /** Status bar geometry for one device in one orientation, all in CSS px. */
 export interface StatusBarLayout {
   mode: StatusBarLayoutMode
+  /** The screen edge occupied by this status-bar strip. */
+  edge: StatusBarEdge
   /** This orientation's status bar height; 0 means the bar itself is hidden. */
   height: number
   /** Glyph row's vertical center, relative to the screen's top edge. */
@@ -48,11 +51,12 @@ const IPAD_SHORT_SIDE = 744
 const BASE_WIDTH = 375
 const MAX_SCALE = 1.17
 
-function modeFor(device: ResolvedDevice): StatusBarLayoutMode {
+function modeFor(device: ResolvedDevice, orientation: Orientation): StatusBarLayoutMode {
   if (device.os === 'ios') {
+    if (device.formFactor === 'foldable') return 'ios-duo'
     const shortSide = Math.min(device.screen.width, device.screen.height)
     if (shortSide >= IPAD_SHORT_SIDE) return 'ipad'
-    return device.cutout ? 'ios-cutout' : 'ios-classic'
+    return cutoutFor(device, orientation) ? 'ios-cutout' : 'ios-classic'
   }
   // android and harmony: harmony has no layout of its own measured yet, so it
   // borrows android's until someone measures a real device.
@@ -90,11 +94,11 @@ const CUTOUT_TABLE: CutoutTableRow[] = [
   { width: 440, statusBarHeight: 54, timeLeft: 65.3, trailing: 40.7, scale: 1.17 },
 ]
 
-type OrientationlessLayout = Omit<StatusBarLayout, 'mode' | 'height'>
+type OrientationlessLayout = Omit<StatusBarLayout, 'mode' | 'edge' | 'height'>
 
 function iosCutoutLayout(device: ResolvedDevice, orientation: Orientation, height: number): OrientationlessLayout {
-  // Non-null: modeFor only picks ios-cutout when the device has one.
-  const cutout = device.cutout!
+  // Non-null: modeFor only picks ios-cutout when this orientation has one.
+  const cutout = cutoutFor(device, orientation)!
   const width = screenWidthFor(device, orientation)
   const isPill = cutout.shape === 'pill'
   // A pill floats clear of the top edge; its own midline is what the glyph
@@ -132,6 +136,24 @@ function iosClassicLayout(height: number): OrientationlessLayout {
   return { timeLeft: null, leadingIcons: 6, trailing: 14, centerY: height / 2, scale: 1 }
 }
 
+/**
+ * Duo keeps one circular connectivity indicator beside the time, rather than
+ * inheriting the phone's signal/Wi-Fi/battery cluster. The right-edge rules in
+ * status-bar-styles.ts rotate this same semantic order below its camera.
+ */
+function iosDuoLayout(device: ResolvedDevice, orientation: Orientation, height: number): OrientationlessLayout {
+  const width = screenWidthFor(device, orientation)
+  const indicator = 44
+  const trailing = 12
+  return {
+    timeLeft: width - trailing - indicator - 10 - 41,
+    leadingIcons: null,
+    trailing,
+    centerY: height / 2,
+    scale: 1,
+  }
+}
+
 function ipadLayout(height: number): OrientationlessLayout {
   // Full-screen iPads report a 24pt status bar; the home-button generation
   // reports 20. Nothing in between ships, so the split is a plain threshold.
@@ -160,17 +182,20 @@ function androidLayout(height: number): OrientationlessLayout {
  *   no status bar at all
  */
 export function computeStatusBarLayout(device: ResolvedDevice, orientation: Orientation): StatusBarLayout {
-  const mode = modeFor(device)
+  const mode = modeFor(device, orientation)
   const height = statusBarHeightFor(device, orientation)
+  const edge = statusBarEdgeFor(device, orientation)
 
   switch (mode) {
     case 'ios-cutout':
-      return { mode, height, ...iosCutoutLayout(device, orientation, height) }
+      return { mode, edge, height, ...iosCutoutLayout(device, orientation, height) }
     case 'ios-classic':
-      return { mode, height, ...iosClassicLayout(height) }
+      return { mode, edge, height, ...iosClassicLayout(height) }
+    case 'ios-duo':
+      return { mode, edge, height, ...iosDuoLayout(device, orientation, height) }
     case 'ipad':
-      return { mode, height, ...ipadLayout(height) }
+      return { mode, edge, height, ...ipadLayout(height) }
     case 'android':
-      return { mode, height, ...androidLayout(height) }
+      return { mode, edge, height, ...androidLayout(height) }
   }
 }

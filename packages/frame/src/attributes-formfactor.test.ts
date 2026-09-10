@@ -1,5 +1,5 @@
 /**
- * `formFactor` distinguishes a phone from a tablet, and it has to survive the
+ * `formFactor` distinguishes a phone, tablet, or foldable, and it has to survive the
  * whole path from a device preset through the frame's own attribute-merging
  * to the generated user agent: a tablet-shaped profile that quietly resolves
  * back to the default `'phone'` would draw the wrong chrome and lie about its
@@ -25,7 +25,7 @@ function defineFrame(tag: string): void {
 
 describe('DeviceFormFactor type re-export', () => {
   it('is importable from the package entry and matches the devices package', () => {
-    expectTypeOf<DeviceFormFactor>().toEqualTypeOf<'phone' | 'tablet'>()
+    expectTypeOf<DeviceFormFactor>().toEqualTypeOf<'phone' | 'tablet' | 'foldable'>()
   })
 })
 

@@ -13,9 +13,10 @@ import { findDevice } from './presets/index.js'
 /**
  * Expected numbers, transcribed from the external device tables and published
  * measurements this package's presets were built from — deliberately not read
- * back out of those presets or their formulas. The status bar
+ * back out of those presets or their formulas, except for provisional fallbacks
+ * called out inline. The status bar
  * height and the portrait top inset are kept as two separate fields on
- * purpose: from the Dynamic Island onward (14 Pro / 16 Pro / 17 Pro) they are
+ * purpose: from the Dynamic Island onward (14 Pro / 16 Pro / 17 Pro / 18 Pro) they are
  * different numbers, and a regression that collapses them back into one
  * should fail here.
  */
@@ -70,7 +71,25 @@ const IOS_TABLE: Record<string, {
     // whole 17 series: no top inset, and a 20pt (not 21pt) home-indicator inset.
     landscapeInsets: { top: 0, right: 62, bottom: 20, left: 62 },
   },
+  // Until an iOS 27 simulator is available, these insets follow the same-sized
+  // iPhone 17 Pro series fallback documented in the presets.
+  'iPhone 18 Pro': {
+    screen: { width: 402, height: 874 },
+    pixelRatio: 3,
+    statusBarHeight: 54,
+    portraitInsets: { top: 62, right: 0, bottom: 34, left: 0 },
+    landscapeInsets: { top: 0, right: 62, bottom: 20, left: 62 },
+  },
+  'iPhone 18 Pro Max': {
+    screen: { width: 440, height: 956 },
+    pixelRatio: 3,
+    statusBarHeight: 54,
+    portraitInsets: { top: 62, right: 0, bottom: 34, left: 0 },
+    landscapeInsets: { top: 0, right: 62, bottom: 20, left: 62 },
+  },
 }
+
+const IPHONE_18_PRO_NAMES = ['iPhone 18 Pro', 'iPhone 18 Pro Max'] as const
 
 const HARMONY_TABLE: Record<string, {
   screen: { width: number, height: number }
@@ -108,6 +127,10 @@ describe('iOS presets resolve to the external table', () => {
       expect(safeAreaInsetsFor(resolved, 'landscape')).toEqual(expected.landscapeInsets)
     })
   }
+
+  it.each(IPHONE_18_PRO_NAMES)('%s carries its release system and year', (name) => {
+    expect(preset(name)).toMatchObject({ system: 'iOS 27.0', releaseYear: 2026 })
+  })
 })
 
 describe('HarmonyOS presets resolve to the external HarmonyOS table', () => {

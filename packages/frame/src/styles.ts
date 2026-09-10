@@ -145,7 +145,7 @@ export const DEVICE_FRAME_STYLES = `
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(var(--device-status-bar-height) + var(--device-navigation-bar-height));
+  top: calc(var(--device-status-bar-inset-top, var(--device-status-bar-height)) + var(--device-navigation-bar-height));
   bottom: var(--device-tab-bar-height);
   overflow: hidden;
 }
@@ -154,6 +154,7 @@ export const DEVICE_FRAME_STYLES = `
    is what metrics.content already reports — the wrapper has to match it. */
 :host([immersive]) .content {
   top: 0;
+  right: 0;
   bottom: 0;
 }
 
@@ -170,7 +171,7 @@ export const DEVICE_FRAME_STYLES = `
   top: 0;
   left: 0;
   right: 0;
-  height: calc(var(--device-status-bar-height) + var(--device-navigation-bar-height));
+  height: calc(var(--device-status-bar-inset-top) + var(--device-navigation-bar-height));
   z-index: 250;
   box-sizing: border-box;
 }
@@ -188,7 +189,7 @@ export const DEVICE_FRAME_STYLES = `
 ::slotted([slot="navigation-bar"]) {
   box-sizing: border-box !important;
   height: 100% !important;
-  padding-top: var(--device-status-bar-height) !important;
+  padding-top: var(--device-status-bar-inset-top) !important;
 }
 
 /*

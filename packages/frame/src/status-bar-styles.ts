@@ -32,6 +32,15 @@ export const STATUS_BAR_STYLES = `
   display: none;
 }
 
+/* Duo's status strip occupies the trailing edge. Its own width limits any
+   status-bar background paint to that strip. */
+.status-bar[data-edge="right"] {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: auto;
+}
+
 /* Left-anchored at --sb-time-left; ios-classic leaves that variable unset, so
    the var() fallback (50%) plus the translateX below centers it instead. */
 .status-bar__time {
@@ -47,6 +56,47 @@ export const STATUS_BAR_STYLES = `
 
 .status-bar[data-layout="ios-classic"] .status-bar__time {
   transform: translate(-50%, -50%);
+}
+
+/* Duo uses a dedicated open-ring connectivity glyph next to time. The four
+   dots close its lower edge; they are part of the glyph, not privacy lights. */
+.status-bar[data-layout="ios-duo"] .status-bar__battery {
+  display: none;
+}
+
+.status-bar[data-layout="ios-duo"] .status-bar__signal {
+  display: none;
+}
+
+.status-bar[data-layout="ios-duo"] .status-bar__wifi {
+  position: relative;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  -webkit-mask: none;
+  mask: none;
+}
+
+.status-bar[data-layout="ios-duo"] .status-bar__wifi::after {
+  content: none;
+}
+
+.status-bar[data-layout="ios-duo"] .status-bar__wifi::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 2px;
+  width: 36px;
+  height: 40px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 40'><g fill='none' stroke='black' stroke-width='3' stroke-linecap='round'><path d='M4 29.5A16 16 0 1 1 32 29.5'/><path d='M10.5 17.5c4.2-3.8 10.8-3.8 15 0'/><path d='M14.2 21.7c2.1-1.9 5.5-1.9 7.6 0'/></g><g fill='black'><circle cx='18' cy='25.8' r='2'/><circle cx='9' cy='35' r='2'/><circle cx='15' cy='37.8' r='2'/><circle cx='21' cy='37.8' r='2'/><circle cx='27' cy='35' r='2'/></g></svg>") no-repeat center / contain;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 40'><g fill='none' stroke='black' stroke-width='3' stroke-linecap='round'><path d='M4 29.5A16 16 0 1 1 32 29.5'/><path d='M10.5 17.5c4.2-3.8 10.8-3.8 15 0'/><path d='M14.2 21.7c2.1-1.9 5.5-1.9 7.6 0'/></g><g fill='black'><circle cx='18' cy='25.8' r='2'/><circle cx='9' cy='35' r='2'/><circle cx='15' cy='37.8' r='2'/><circle cx='21' cy='37.8' r='2'/><circle cx='27' cy='35' r='2'/></g></svg>") no-repeat center / contain;
 }
 
 /* iPad's own time ink runs narrower than an iPhone's at the same nominal
@@ -66,6 +116,13 @@ export const STATUS_BAR_STYLES = `
 .status-bar__notch {
   position: absolute;
   background: var(--device-cutout-color);
+}
+
+/* Apple's outer-display render exposes a small lens reflection inside the
+   punch-hole instead of a featureless black disc. */
+.status-bar[data-layout="ios-duo"] .status-bar__notch[data-shape="circle"] {
+  background: radial-gradient(circle at 52% 48%, #65719a 0 4%, #151721 10% 24%, #050509 30% 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
 /*
@@ -128,6 +185,89 @@ export const STATUS_BAR_STYLES = `
 
 .status-bar[data-layout="android"] .status-bar__icons {
   gap: 7.5px;
+}
+
+/* Keep generic right-edge strips independent of the ios-classic/iPad/Android
+   arrangements above: status glyphs occupy the first 56px, then the vertical
+   time starts at 80px. Duo overrides this below with horizontal time. */
+.status-bar[data-edge="right"][data-layout] .status-bar__icons {
+  top: 12px;
+  right: auto;
+  left: 50%;
+  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 5px;
+}
+
+.status-bar[data-edge="right"][data-layout] .status-bar__time {
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  writing-mode: vertical-rl;
+}
+
+/* Without a camera in the upper track, Duo's compact side status begins near
+   the corner. The outer portrait override below makes room for its camera. */
+.status-bar[data-edge="right"][data-layout="ios-duo"] .status-bar__time {
+  top: 33px;
+  right: auto;
+  left: calc(50% - 24px);
+  font-size: 15px;
+  writing-mode: horizontal-tb;
+}
+
+.status-bar[data-edge="right"][data-layout="ios-duo"] .status-bar__icons {
+  top: 53px;
+  right: auto;
+  left: calc(50% - 24px);
+}
+
+.status-bar[data-edge="right"][data-layout="ios-duo"][data-top-cutout="true"] .status-bar__time {
+  top: 77px;
+  left: calc(50% - 26px);
+  font-size: 16px;
+}
+
+.status-bar[data-edge="right"][data-layout="ios-duo"][data-top-cutout="true"] .status-bar__icons {
+  top: 100px;
+  left: calc(50% - 25px);
+}
+
+.status-bar[data-edge="right"][data-layout="ios-duo"] .status-bar__wifi::before {
+  left: 2px;
+  width: 40px;
+  height: 43px;
+}
+
+.status-bar[data-edge="right"][data-layout="ios-duo"][data-top-cutout="true"] .status-bar__wifi::before {
+  top: 1px;
+  left: 1px;
+  width: 42px;
+  height: 46px;
+}
+
+/* Inner Duo's 24px top strip is shorter than its 44px indicator. Pin the
+   indicator to the screen instead of centering it on the strip, so it stays
+   wholly inside the screen and the time remains in the same top row. */
+.status-bar[data-edge="top"][data-layout="ios-duo"] .status-bar__icons {
+  top: 22px;
+  right: 22px;
+  left: auto;
+  transform: none;
+}
+
+.status-bar[data-edge="top"][data-layout="ios-duo"] .status-bar__time {
+  top: 48px;
+  right: 72px;
+  left: auto;
+  transform: translateY(-50%);
+}
+
+.status-bar[data-edge="top"][data-layout="ios-duo"] .status-bar__wifi::before {
+  top: 1px;
+  left: 3px;
+  width: 39px;
+  height: 43px;
 }
 
 /* Glyph stand-ins drawn from the current foreground color, which follows the

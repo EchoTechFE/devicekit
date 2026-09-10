@@ -7,6 +7,7 @@
  */
 import {
   type CutoutSpec,
+  cutoutFor,
   type DeviceProfile,
   type ResolvedDeviceShell,
   type EdgeInsets,
@@ -19,6 +20,8 @@ import {
   type SafeAreaRect,
   type ScreenSize,
   statusBarHeightFor,
+  statusBarEdgeFor,
+  type StatusBarEdge,
 } from '@devicekit/devices'
 import { EMPTY_BOX, type ContentBox } from './content-rect.js'
 
@@ -54,6 +57,8 @@ export interface DeviceMetrics {
   /** What a page emulating this device should report as `navigator.userAgent`. */
   userAgent: string
   statusBarHeight: number
+  /** The edge occupied by the resolved status-bar strip. */
+  statusBarEdge: StatusBarEdge
   /** Zero unless the `navigation-bar` slot has content. */
   navigationBarHeight: number
   /** Zero unless the `tab-bar` slot has content. */
@@ -98,6 +103,7 @@ export function computeDeviceMetrics(
       pixelRatio: resolved.pixelRatio,
       userAgent: resolved.userAgent,
       statusBarHeight: 0,
+      statusBarEdge: statusBarEdgeFor(resolved, orientation),
       navigationBarHeight: 0,
       tabBarHeight: 0,
       safeArea: EMPTY_RECT,
@@ -111,6 +117,7 @@ export function computeDeviceMetrics(
 
   const screen = orientedScreen(profile, orientation)
   const statusBarHeight = statusBarHeightFor(resolved, orientation)
+  const statusBarEdge = statusBarEdgeFor(resolved, orientation)
 
   // Immersive is the mini-program's `navigationStyle: "custom"` and the
   // in-app H5 that draws its own title bar: the bars are still on screen, but
@@ -126,6 +133,7 @@ export function computeDeviceMetrics(
     pixelRatio: resolved.pixelRatio,
     userAgent: resolved.userAgent,
     statusBarHeight,
+    statusBarEdge,
     navigationBarHeight,
     tabBarHeight,
     safeArea: resolveSafeArea(profile, orientation),
@@ -133,11 +141,11 @@ export function computeDeviceMetrics(
     window,
     content: {
       x: 0,
-      y: immersive ? 0 : statusBarHeight + navigationBarHeight,
+      y: immersive ? 0 : (statusBarEdge === 'top' ? statusBarHeight : 0) + navigationBarHeight,
       width: window.width,
       height: window.height,
     },
-    cutout: resolved.cutout,
+    cutout: cutoutFor(resolved, orientation),
     shell: resolved.shell,
   }
 }

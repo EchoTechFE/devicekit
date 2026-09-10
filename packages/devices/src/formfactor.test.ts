@@ -42,14 +42,16 @@ describe('DeviceProfile.formFactor', () => {
     const bad = { ...baseProfile, formFactor: 'tv' }
     expect(() => assertDeviceProfile(bad, 'deviceProfile')).toThrow(TypeError)
     expect(() => assertDeviceProfile(bad, 'deviceProfile')).toThrow(
-      'deviceProfile.formFactor must be one of "phone", "tablet", got "tv"',
+      'deviceProfile.formFactor must be one of "phone", "tablet", "foldable", got "tv"',
     )
   })
 
-  it('the DeviceFormFactor type accepts "phone" and "tablet"', () => {
+  it('the DeviceFormFactor type accepts phone, tablet, and foldable', () => {
     const phone: DeviceFormFactor = 'phone'
     const tablet: DeviceFormFactor = 'tablet'
+    const foldable: DeviceFormFactor = 'foldable'
     expect(phone).toBe('phone')
     expect(tablet).toBe('tablet')
+    expect(foldable).toBe('foldable')
   })
 })

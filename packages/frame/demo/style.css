@@ -99,7 +99,20 @@ code {
 }
 
 .stage__scaler {
-  transform-origin: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+}
+
+.stage__viewport {
+  position: relative;
+  flex: none;
+}
+
+.stage--overflow {
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 /* Under `embedded` the element carries no size of its own; the container
@@ -128,7 +141,7 @@ code {
     calc(max(var(--device-safe-area-bottom) - var(--device-tab-bar-height), 0px) + 16px)
     calc(var(--device-safe-area-left) + 16px);
   overflow: auto;
-  background: linear-gradient(#dbeafe, #f8fafc 160px);
+  background: transparent;
   color: #0f172a;
 }
 
@@ -286,15 +299,16 @@ code {
 
 /* ---- Dark page: makes both status-bar-text-style values readable at a glance ---- */
 
+device-frame {
+  --device-screen-background: linear-gradient(#dbeafe, #f8fafc 160px);
+}
+
 body.demo-dark-page .page {
-  background: linear-gradient(#0f172a, #1e293b 160px);
   color: #e2e8f0;
 }
 
-/* The screen behind a transparent status bar has to match the page, or white
-   status-bar text disappears against the frame's default white screen. */
 body.demo-dark-page device-frame {
-  --device-screen-background: #0f172a;
+  --device-screen-background: linear-gradient(#0f172a, #1e293b 160px);
 }
 
 body.demo-dark-page .mp-title-bar {

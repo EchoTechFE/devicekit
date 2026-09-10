@@ -24,7 +24,7 @@ afterEach(() => {
 
 /*
  * The navigation-bar slot wrapper currently starts below the status bar
- * (`top: var(--device-status-bar-height)`), so a host title bar can never
+ * (`top: var(--device-status-bar-inset-top)`), so a host title bar can never
  * paint behind the status bar the way a real app's does. It needs to cover
  * the status bar too, with the slotted content itself padded down to clear
  * it — the wrapper's height and position, not the content's own layout,
@@ -34,15 +34,18 @@ describe('the navigation-bar slot wrapper covers the status bar', () => {
   it('starts at the top of the frame and spans both bars, not just its own', () => {
     const rule = DEVICE_FRAME_STYLES.split('.navigation-bar {')[1]?.split('}')[0] ?? ''
     expect(rule).toMatch(/\btop\s*:\s*0\b/)
-    expect(rule).not.toMatch(/top\s*:\s*var\(--device-status-bar-height\)/)
-    expect(rule).toMatch(/height\s*:\s*calc\(\s*var\(--device-status-bar-height\)\s*\+\s*var\(--device-navigation-bar-height\)\s*\)/)
+    expect(rule).not.toMatch(/top\s*:\s*var\(--device-status-bar-inset-top\)/)
+    // A transparent trailing status strip overlays the chrome; backgrounds
+    // therefore still reach the physical right edge.
+    expect(rule).toMatch(/right\s*:\s*0\b/)
+    expect(rule).toMatch(/height\s*:\s*calc\(\s*var\(--device-status-bar-inset-top\)\s*\+\s*var\(--device-navigation-bar-height\)\s*\)/)
   })
 
   it('pads the slotted content itself down past the status bar', () => {
     const rule = DEVICE_FRAME_STYLES.split('::slotted([slot="navigation-bar"])')[1]?.split('}')[0] ?? ''
     // !important on all three: a host's own `padding: 0 12px` shorthand would
     // otherwise beat the shadow rule and zero the top inset.
-    expect(rule).toMatch(/padding-top\s*:\s*var\(--device-status-bar-height\)\s*!important/)
+    expect(rule).toMatch(/padding-top\s*:\s*var\(--device-status-bar-inset-top\)\s*!important/)
     expect(rule).toMatch(/box-sizing\s*:\s*border-box\s*!important/)
     expect(rule).toMatch(/height\s*:\s*100%\s*!important/)
   })

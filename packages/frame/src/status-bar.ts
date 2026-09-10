@@ -9,7 +9,7 @@
  */
 import { cutoutBorderRadius, cutoutLeft } from './cutout.js'
 import { computeStatusBarLayout, type StatusBarLayout } from './status-bar-layout.js'
-import type { Orientation, ResolvedDevice } from '@devicekit/devices'
+import { cutoutFor, type Orientation, type ResolvedDevice } from '@devicekit/devices'
 
 /** The canonical Apple marketing time, and this element's default. */
 const DEFAULT_STATUS_BAR_TIME = '9:41'
@@ -115,19 +115,40 @@ export class StatusBar {
   render(metrics: StatusBarMetrics, options: StatusBarRenderOptions): void {
     const { device, orientation } = metrics
     const { visible, mode, textStyle, background } = options
-    const cutoutVisible = !options.embedded && orientation === 'portrait' && device.cutout !== null
+    const orientationCutout = cutoutFor(device, orientation)
+    const cutoutVisible = !options.embedded && orientationCutout !== null
+    // Side chrome only moves down when a camera actually occupies its upper
+    // track. The outer landscape camera sits at the bottom, while the inner
+    // display has no visible cutout at all.
+    this.element.dataset.topCutout = String(
+      orientationCutout !== null && orientationCutout.top < 100,
+    )
     this.element.hidden = !visible && !cutoutVisible
     this.#timeEl.hidden = !visible
     this.#iconsEl.hidden = !visible
     if (background && visible) this.element.style.backgroundColor = background
     else this.element.style.removeProperty('background-color')
 
+    const layout = computeStatusBarLayout(device, orientation)
     // Ahead of the early return: the cutout and the layout variables have to
     // follow orientation even when the whole bar is gone, or they keep the
     // previous orientation's state on an element anyone can read.
-    this.#renderCutout(device, orientation, cutoutVisible)
-    const layout = computeStatusBarLayout(device, orientation)
+    this.#renderCutout(device, orientation, layout, cutoutVisible)
     this.#renderLayout(layout)
+
+    const needsRightStripForCutout = cutoutVisible && layout.edge === 'right'
+    if (visible || needsRightStripForCutout) {
+      if (layout.edge === 'right') {
+        this.element.style.width = `${layout.height}px`
+        this.element.style.removeProperty('height')
+      } else {
+        this.element.style.height = `${layout.height}px`
+        this.element.style.removeProperty('width')
+      }
+    } else {
+      this.element.style.removeProperty('height')
+      this.element.style.removeProperty('width')
+    }
 
     if (!visible) {
       this.stop()
@@ -136,12 +157,9 @@ export class StatusBar {
       // keeps showing the last clock tick and sizing through a re-show that
       // never touches these properties again.
       this.#timeEl.textContent = ''
-      this.element.style.removeProperty('height')
       this.element.style.removeProperty('color')
       return
     }
-
-    this.element.style.height = `${layout.height}px`
     this.element.style.color = statusBarTextColor(textStyle)
 
     if (mode === 'live') {
@@ -161,6 +179,7 @@ export class StatusBar {
    */
   #renderLayout(layout: StatusBarLayout): void {
     this.element.dataset.layout = layout.mode
+    this.element.dataset.edge = layout.edge
     this.element.style.setProperty('--sb-trailing', `${layout.trailing}px`)
     this.element.style.setProperty('--sb-center-y', `${layout.centerY}px`)
     this.element.style.setProperty('--sb-scale', `${layout.scale}`)
@@ -173,12 +192,11 @@ export class StatusBar {
   }
 
   /**
-   * The cutout is portrait-only: rotated, it is a different shape in a different
-   * place than the one this bar draws, while the screen it costs is reported
-   * through the landscape insets all the same.
+   * A profile can provide separate geometry for each orientation. Omitted
+   * landscape geometry stays hidden, so existing iPhones do not gain one.
    */
-  #renderCutout(device: ResolvedDevice, orientation: Orientation, visible: boolean): void {
-    const cutout = visible && orientation === 'portrait' ? device.cutout : null
+  #renderCutout(device: ResolvedDevice, orientation: Orientation, layout: StatusBarLayout, visible: boolean): void {
+    const cutout = visible ? cutoutFor(device, orientation) : null
     this.#cutoutEl.hidden = cutout === null
 
     if (!cutout) {
@@ -200,8 +218,9 @@ export class StatusBar {
     this.#cutoutEl.style.width = `${cutout.width}px`
     this.#cutoutEl.style.height = `${cutout.height}px`
     this.#cutoutEl.style.top = `${cutout.top}px`
-    // Portrait only, so the device's own screen width is the current one.
-    this.#cutoutEl.style.left = `${cutoutLeft(cutout, device.screen.width)}px`
+    const screenWidth = orientation === 'landscape' ? device.screen.height : device.screen.width
+    const left = cutoutLeft(cutout, screenWidth)
+    this.#cutoutEl.style.left = `${layout.edge === 'right' ? left - (screenWidth - layout.height) : left}px`
     this.#cutoutEl.style.borderRadius = cutoutBorderRadius(cutout)
   }
 

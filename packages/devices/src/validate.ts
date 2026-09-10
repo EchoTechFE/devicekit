@@ -9,7 +9,7 @@
  * nested field (a bogus `cutout.shape`, a negative `shell.bezel`) is rejected
  * here rather than surfacing later as a NaN in computed CSS.
  */
-import type { CutoutShape, DeviceFormFactor, DeviceOS, DeviceProfile } from './devices.js'
+import type { CutoutShape, DeviceFormFactor, DeviceOS, DeviceProfile, StatusBarEdge } from './devices.js'
 
 type UnknownRecord = Record<string, unknown>
 
@@ -51,6 +51,7 @@ const STRING_FIELDS = ['system', 'userAgent'] as const
 const INSET_FIELDS = ['safeAreaInsets', 'safeAreaInsetsLandscape'] as const
 const SHELL_FIELDS = ['screenRadius', 'bezel', 'bodyRadius'] as const
 const CUTOUT_SHAPES: readonly CutoutShape[] = ['notch', 'pill', 'circle']
+const STATUS_BAR_EDGES: readonly StatusBarEdge[] = ['top', 'right']
 
 /**
  * Throws `TypeError` if `value` is not a usable DeviceProfile. `label` names
@@ -72,8 +73,14 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
 
   if (value.formFactor !== undefined) {
     const formFactor = value.formFactor as DeviceFormFactor
-    if (formFactor !== 'phone' && formFactor !== 'tablet') {
-      throw new TypeError(`${label}.formFactor must be one of "phone", "tablet", got ${JSON.stringify(formFactor)}`)
+    if (formFactor !== 'phone' && formFactor !== 'tablet' && formFactor !== 'foldable') {
+      throw new TypeError(`${label}.formFactor must be one of "phone", "tablet", "foldable", got ${JSON.stringify(formFactor)}`)
+    }
+  }
+
+  for (const field of ['statusBarEdge', 'statusBarEdgeLandscape'] as const) {
+    if (value[field] !== undefined && !STATUS_BAR_EDGES.includes(value[field] as StatusBarEdge)) {
+      throw new TypeError(`${label}.${field} must be one of "top", "right", got ${JSON.stringify(value[field])}`)
     }
   }
 
@@ -118,22 +125,23 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
     }
   }
 
-  if (value.cutout !== undefined) {
-    const cutout = value.cutout
+  for (const field of ['cutout', 'cutoutLandscape'] as const) {
+    const cutout = value[field]
+    if (cutout === undefined || (field === 'cutoutLandscape' && cutout === null)) continue
     if (!isPlainObject(cutout)) {
-      throw new TypeError(`${label}.cutout must be an object, got ${cutout === null ? 'null' : typeof cutout}`)
+      throw new TypeError(`${label}.${field} must be an object, got ${cutout === null ? 'null' : typeof cutout}`)
     }
     const shape = cutout.shape as CutoutShape | undefined
     if (!CUTOUT_SHAPES.includes(shape as CutoutShape)) {
       throw new TypeError(
-        `${label}.cutout.shape must be one of "notch", "pill", "circle", got ${JSON.stringify(shape)}`,
+        `${label}.${field}.shape must be one of "notch", "pill", "circle", got ${JSON.stringify(shape)}`,
       )
     }
-    expectFiniteAtLeast(`${label}.cutout.width`, cutout.width, 0, false)
-    expectFiniteAtLeast(`${label}.cutout.height`, cutout.height, 0, false)
-    expectFiniteAtLeast(`${label}.cutout.top`, cutout.top, 0, false)
+    expectFiniteAtLeast(`${label}.${field}.width`, cutout.width, 0, false)
+    expectFiniteAtLeast(`${label}.${field}.height`, cutout.height, 0, false)
+    expectFiniteAtLeast(`${label}.${field}.top`, cutout.top, 0, false)
     if (cutout.centerX !== undefined) {
-      expectFiniteBetween(`${label}.cutout.centerX`, cutout.centerX, 0, 1)
+      expectFiniteBetween(`${label}.${field}.centerX`, cutout.centerX, 0, 1)
     }
   }
 
