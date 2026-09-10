@@ -7,7 +7,7 @@
  * rather than the build output, so an edit to the source shows up on the next
  * refresh — and the demo exercises the same entry point a consumer gets.
  */
-import { DEFAULT_DEVICE, DEVICES, type DeviceOS } from '@devicekit/devices'
+import { DEVICES, type DeviceOS } from '@devicekit/devices'
 import {
   CONTENT_RECT_CHANGE_EVENT,
   defineDeviceFrame,
@@ -15,6 +15,7 @@ import {
   type DeviceFrameElement,
 } from '@devicekit/frame'
 import { overflowsViewport, scaleFor, scaleLabel, scaledViewport, type DemoScaleMode } from '../src/demo-scale.js'
+import { DEMO_DEFAULT_DEVICE_NAME, newestDevicesFirst } from '../src/demo-device-order.js'
 
 defineDeviceFrame()
 
@@ -75,7 +76,7 @@ function fillDevices(): void {
   for (const os of ['ios', 'android', 'harmony'] as const) {
     const group = document.createElement('optgroup')
     group.label = OS_LABEL[os]
-    for (const device of DEVICES.filter((candidate) => candidate.os === os)) {
+    for (const device of newestDevicesFirst(DEVICES.filter((candidate) => candidate.os === os))) {
       const option = document.createElement('option')
       option.value = device.name
       option.textContent = `${device.name} · ${device.screen.width}×${device.screen.height}@${device.pixelRatio}`
@@ -83,7 +84,7 @@ function fillDevices(): void {
     }
     deviceSelect.append(group)
   }
-  deviceSelect.value = DEFAULT_DEVICE.name
+  deviceSelect.value = DEMO_DEFAULT_DEVICE_NAME
 }
 
 function setOrRemove(name: string, value: string): void {
