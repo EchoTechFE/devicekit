@@ -66,20 +66,20 @@ The package READMEs contain the full API references.
 
 171 profiles: 63 iOS, 86 Android, 22 HarmonyOS. Folding phones get one entry per screen.
 
-| Manufacturer | Devices |
-| --- | ---: |
-| Apple | 63 |
-| Samsung | 42 |
-| Google | 34 |
-| Huawei | 22 |
-| Motorola | 3 |
-| Microsoft | 2 |
-| OnePlus | 2 |
-| LG | 1 |
-| Nothing | 1 |
-| Xiaomi | 1 |
+| Manufacturer | Profiles | Representative models |
+| --- | ---: | --- |
+| Apple | 63 | iPhone 17 Pro, iPhone 16 Pro, iPhone X, iPad Pro M4 |
+| Samsung | 42 | Galaxy S24 Ultra, Galaxy Z Fold 7, Galaxy Z Flip 7 |
+| Google | 34 | Pixel 10 Pro, Pixel 9 Pro Fold, Pixel Tablet |
+| Huawei | 22 | HUAWEI Mate 80, HUAWEI Pura 80 Pro, HUAWEI Mate X6 (inner), HUAWEI Mate X6 (outer) |
+| Motorola | 3 | Motorola Razr+, Moto G4, Moto G Power |
+| Microsoft | 2 | Surface Duo |
+| OnePlus | 2 | OnePlus 12, OnePlus Open |
+| LG | 1 | LG Optimus L70 |
+| Nothing | 1 | Nothing Phone 2 |
+| Xiaomi | 1 | Xiaomi 14 |
 
-Manufacturer counts are derived from device names because profiles do not have a manufacturer field. `CLASSIC_DEVICES` contains 19 commonly used profiles for shorter selectors.
+Every preset includes a `releaseYear`, so a picker can sort models chronologically. Manufacturer counts are derived from device names because profiles do not have a manufacturer field. `CLASSIC_DEVICES` contains 19 commonly used profiles for shorter selectors.
 
 ## Browser and framework support
 

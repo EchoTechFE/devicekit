@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `@devicekit/devices`: bundled profiles now include `releaseYear`, and the preset exports use `PresetDeviceProfile` so selectors can sort models chronologically without handling a missing year.
+
 ## [0.2.3] - 2026-09-08
 
 ### Fixed

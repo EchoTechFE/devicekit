@@ -9,6 +9,7 @@ export {
   type DeviceFormFactor,
   type DeviceOS,
   type DeviceProfile,
+  type PresetDeviceProfile,
   type DeviceShell,
   type EdgeInsets,
   type HomeButtonSpec,

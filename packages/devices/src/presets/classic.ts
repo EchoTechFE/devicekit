@@ -1,4 +1,4 @@
-import type { DeviceProfile } from '../devices.js'
+import type { PresetDeviceProfile } from '../devices.js'
 import { ANDROID_DEVICES } from './android.js'
 import { HARMONY_DEVICES } from './harmony.js'
 import { IOS_DEVICES } from './ios.js'
@@ -7,7 +7,7 @@ import { IOS_DEVICES } from './ios.js'
 // DEVICES in ./index.js, so this module has no circular dependency on it.
 const BY_NAME = new Map([...IOS_DEVICES, ...ANDROID_DEVICES, ...HARMONY_DEVICES].map((device) => [device.name, device]))
 
-function pick(name: string): DeviceProfile {
+function pick(name: string): PresetDeviceProfile {
   const device = BY_NAME.get(name)
   if (!device) throw new Error(`CLASSIC_DEVICES: no device named ${JSON.stringify(name)} in DEVICES`)
   return device
@@ -19,7 +19,7 @@ function pick(name: string): DeviceProfile {
  * objects as in the full table (never copies), grouped iOS → Android →
  * HarmonyOS so a grouped dropdown needs no sorting of its own.
  */
-export const CLASSIC_DEVICES: readonly DeviceProfile[] = [
+export const CLASSIC_DEVICES: readonly PresetDeviceProfile[] = [
   pick('iPhone SE (3rd gen)'),
   pick('iPhone X'),
   pick('iPhone 12/13 (Pro)'),
