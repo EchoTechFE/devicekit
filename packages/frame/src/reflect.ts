@@ -50,6 +50,9 @@ export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetric
   const { safeAreaInsets: insets, shell } = metrics
   style.setProperty('--device-pixel-ratio', `${metrics.pixelRatio}`)
   style.setProperty('--device-status-bar-height', `${metrics.statusBarHeight}px`)
+  style.setProperty('--device-status-bar-edge', metrics.statusBarEdge)
+  style.setProperty('--device-status-bar-inset-top', `${metrics.statusBarEdge === 'top' ? metrics.statusBarHeight : 0}px`)
+  style.setProperty('--device-status-bar-inset-right', `${metrics.statusBarEdge === 'right' ? metrics.statusBarHeight : 0}px`)
   style.setProperty('--device-navigation-bar-height', `${metrics.navigationBarHeight}px`)
   style.setProperty('--device-tab-bar-height', `${metrics.tabBarHeight}px`)
   style.setProperty('--device-window-width', `${metrics.window.width}px`)

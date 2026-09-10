@@ -78,18 +78,22 @@ export function profileFromAttributes(
     pixelRatio: toPositiveNumber(element.getAttribute('pixel-ratio')) ?? named?.pixelRatio ?? 1,
     formFactor: named?.formFactor,
     system: named?.system,
+    releaseYear: named?.releaseYear,
     userAgent: element.getAttribute('user-agent') ?? named?.userAgent,
     // status-bar-height and safe-area-* apply to both orientations, the same as
     // navigation-bar-height already does (see device-frame.ts's #navigationBarHeight):
     // an attribute speaks for the device regardless of which way it is held.
     statusBarHeight: statusBarHeight ?? named?.statusBarHeight,
     statusBarHeightLandscape: statusBarHeight ?? named?.statusBarHeightLandscape,
+    statusBarEdge: named?.statusBarEdge,
+    statusBarEdgeLandscape: named?.statusBarEdgeLandscape,
     navigationBarHeight:
       toPositiveNumber(element.getAttribute('navigation-bar-height')) ?? named?.navigationBarHeight,
     navigationBarHeightLandscape: named?.navigationBarHeightLandscape,
     safeAreaInsets: attributeInsets ?? named?.safeAreaInsets,
     safeAreaInsetsLandscape: attributeInsets ?? named?.safeAreaInsetsLandscape,
     cutout: cutout === undefined ? named?.cutout : (cutout ?? undefined),
+    cutoutLandscape: cutout === null ? null : named?.cutoutLandscape,
     shell: named?.shell,
   })
 }

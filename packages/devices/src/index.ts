@@ -1,8 +1,10 @@
 export {
   PLATFORM_DEFAULTS,
+  cutoutFor,
   navigationBarHeightFor,
   resolveDevice,
   safeAreaInsetsFor,
+  statusBarEdgeFor,
   statusBarHeightFor,
   type CutoutShape,
   type CutoutSpec,
@@ -17,6 +19,7 @@ export {
   type ResolvedDevice,
   type ResolvedDeviceShell,
   type ScreenSize,
+  type StatusBarEdge,
 } from './devices.js'
 
 export { assertDeviceProfile } from './validate.js'

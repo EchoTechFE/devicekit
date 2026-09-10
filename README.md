@@ -44,7 +44,7 @@ defineDeviceFrame()
 
 ## Features
 
-- Choose from 171 iOS, Android, and HarmonyOS device profiles, including separate entries for both screens of folding devices.
+- Choose from 175 iOS, Android, and HarmonyOS device profiles, including separate entries for both screens of folding devices.
 - Render the device body, cutout, status bar, safe areas, and home indicator with `<device-frame>`.
 - Add application chrome through the `navigation-bar`, `tab-bar`, and `overlay` slots.
 - Read resolved layout values through CSS custom properties, element properties, or the `contentrectchange` event.
@@ -55,29 +55,32 @@ defineDeviceFrame()
 
 ## Packages
 
-| Package | Description |
-| --- | --- |
+| Package                                                                                                      | Description                                                                                                             |
+| ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | [`@devicekit/devices`](packages/devices/README.md) ([npm](https://www.npmjs.com/package/@devicekit/devices)) | Device profiles, safe-area calculations, viewport sizes, and user-agent generation. This package has no DOM dependency. |
-| [`@devicekit/frame`](packages/frame/README.md) ([npm](https://www.npmjs.com/package/@devicekit/frame)) | The `<device-frame>` custom element and its React wrapper. |
+| [`@devicekit/frame`](packages/frame/README.md) ([npm](https://www.npmjs.com/package/@devicekit/frame))       | The `<device-frame>` custom element and its React wrapper.                                                              |
 
 The package READMEs contain the full API references.
 
 ## Device coverage
 
-171 profiles: 63 iOS, 86 Android, 22 HarmonyOS. Folding phones get one entry per screen.
+175 profiles: 67 iOS, 86 Android, 22 HarmonyOS. Folding phones get one entry per screen.
 
-| Manufacturer | Profiles | Representative models |
-| --- | ---: | --- |
-| Apple | 63 | iPhone 17 Pro, iPhone 16 Pro, iPhone X, iPad Pro M4 |
-| Samsung | 42 | Galaxy S24 Ultra, Galaxy Z Fold 7, Galaxy Z Flip 7 |
-| Google | 34 | Pixel 10 Pro, Pixel 9 Pro Fold, Pixel Tablet |
-| Huawei | 22 | HUAWEI Mate 80, HUAWEI Pura 80 Pro, HUAWEI Mate X6 (inner), HUAWEI Mate X6 (outer) |
-| Motorola | 3 | Motorola Razr+, Moto G4, Moto G Power |
-| Microsoft | 2 | Surface Duo |
-| OnePlus | 2 | OnePlus 12, OnePlus Open |
-| LG | 1 | LG Optimus L70 |
-| Nothing | 1 | Nothing Phone 2 |
-| Xiaomi | 1 | Xiaomi 14 |
+> [!IMPORTANT]
+> **iPhone Duo support is currently in beta.** DeviceKit includes separate outer- and inner-display profiles, but the Duo-specific status bar is a visual approximation. Native NavigationBar, toolbars, and tab bars differ substantially from ordinary iPhone chrome and are not yet accurately simulated. Apple DeviceHub and public documentation do not yet provide enough precise data to verify every CSS viewport, pixel ratio, safe-area inset, and camera position. Do not use Duo previews for pixel-perfect acceptance.
+
+| Manufacturer | Profiles | Representative models                                                              |
+| ------------ | -------: | ---------------------------------------------------------------------------------- |
+| Apple        |       67 | iPhone Duo, iPhone 18 Pro, iPhone 16 Pro, iPhone X, iPad Pro M4                    |
+| Samsung      |       42 | Galaxy S24 Ultra, Galaxy Z Fold 7, Galaxy Z Flip 7                                 |
+| Google       |       34 | Pixel 10 Pro, Pixel 9 Pro Fold, Pixel Tablet                                       |
+| Huawei       |       22 | HUAWEI Mate 80, HUAWEI Pura 80 Pro, HUAWEI Mate X6 (inner), HUAWEI Mate X6 (outer) |
+| Motorola     |        3 | Motorola Razr+, Moto G4, Moto G Power                                              |
+| Microsoft    |        2 | Surface Duo                                                                        |
+| OnePlus      |        2 | OnePlus 12, OnePlus Open                                                           |
+| LG           |        1 | LG Optimus L70                                                                     |
+| Nothing      |        1 | Nothing Phone 2                                                                    |
+| Xiaomi       |        1 | Xiaomi 14                                                                          |
 
 Every preset includes a `releaseYear`, so a picker can sort models chronologically. Manufacturer counts are derived from device names because profiles do not have a manufacturer field. `CLASSIC_DEVICES` contains 19 commonly used profiles for shorter selectors.
 

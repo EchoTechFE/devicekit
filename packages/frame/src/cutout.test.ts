@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { statusBarEars } from './cutout.js'
-import { DEVICES, findDevice, resolveDevice } from '@devicekit/devices'
+import { DEVICES, findDevice, resolveDevice, statusBarEdgeFor } from '@devicekit/devices'
 import type { CutoutSpec } from '@devicekit/devices'
 
 describe('statusBarEars', () => {
@@ -22,14 +22,18 @@ describe('statusBarEars', () => {
   })
 })
 
-describe('every tabled cutout leaves room for the status bar icon group', () => {
+describe('every top-edge tabled cutout leaves room for the horizontal status bar icon group', () => {
   // .status-bar__icons is signal(17) + gap(6) + wifi(16) + gap(6) + battery(25) = 70px,
   // and it needs an 8px margin from the ear's inner edge not to touch the cutout.
+  // Duo's right-edge camera and vertical icon layout are covered by status-bar-edge and Chromium tests.
   const MIN_RIGHT_EAR = 70 + 8
 
-  it('holds the icon group in the right ear for every device with a cutout', () => {
+  it('holds the icon group in the right ear for every top-edge device with a cutout', () => {
     const tooNarrow = DEVICES
-      .filter((d) => d.cutout !== undefined)
+      .filter((d) => {
+        const resolved = resolveDevice(d)
+        return resolved.cutout !== null && statusBarEdgeFor(resolved, 'portrait') === 'top'
+      })
       .filter((d) => {
         const resolved = resolveDevice(d)
         const ears = statusBarEars(resolved.cutout, d.screen.width)

@@ -100,6 +100,8 @@ const windowSize = resolveWindowSize(profile, {
 
 `resolveSafeAreaInsets()` returns distances from the four screen edges. `resolveSafeArea()` returns `{ top, left, right, bottom, width, height }` in screen coordinates. `resolveWindowSize()` subtracts the status bar, the requested navigation bar, and `tabBarHeight` from the oriented screen.
 
+The iPhone Duo rows are provisional: camera and status chrome are pixel-calibrated against Apple's website renders, while points, DPR, and safe-area values still await Xcode 27.1 DeviceHub verification.
+
 `navigationBar` accepts `true`, `false`, or a non-negative number. `tabBarHeight` accepts a non-negative number. Invalid numeric options throw a `RangeError`.
 
 ## User agents

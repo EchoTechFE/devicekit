@@ -88,6 +88,7 @@ describe('profileFromAttributes', () => {
     statusBarHeight: 30,
     safeAreaInsets: { top: 30, bottom: 10 },
     cutout: { shape: 'notch', width: 50, height: 10, top: 0 },
+    cutoutLandscape: { shape: 'circle', width: 20, height: 20, top: 40, centerX: 0.8 },
   }
   const fallbackScreen = { width: 1, height: 1 }
 
@@ -121,12 +122,14 @@ describe('profileFromAttributes', () => {
     expect(profile.pixelRatio).toBe(1)
   })
 
-  it('cutout="none" clears the preset cutout, where a missing attribute keeps it', () => {
+  it('cutout="none" clears both preset cutouts, where a missing attribute keeps both', () => {
     const cleared = profileFromAttributes(elementWith({ cutout: 'none' }), preset, fallbackScreen)
     expect(cleared.cutout).toBeUndefined()
+    expect(cleared.cutoutLandscape).toBeNull()
 
     const kept = profileFromAttributes(elementWith({}), preset, fallbackScreen)
     expect(kept.cutout).toEqual(preset.cutout)
+    expect(kept.cutoutLandscape).toEqual(preset.cutoutLandscape)
   })
 
   it('ignores an invalid numeric attribute instead of poisoning the profile with NaN', () => {

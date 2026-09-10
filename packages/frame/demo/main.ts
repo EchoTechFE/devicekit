@@ -14,6 +14,7 @@ import {
   type ContentRect,
   type DeviceFrameElement,
 } from '@devicekit/frame'
+import { overflowsViewport, scaleFor, scaleLabel, scaledViewport, type DemoScaleMode } from '../src/demo-scale.js'
 
 defineDeviceFrame()
 
@@ -35,6 +36,7 @@ function templateChild(id: string): HTMLElement {
 
 const frame = need<HTMLElement>('frame') as DeviceFrameElement
 const stage = need('stage')
+const viewport = need('viewport')
 const scaler = need('scaler')
 const deviceSelect = need<HTMLSelectElement>('device')
 const orientationSelect = need<HTMLSelectElement>('orientation')
@@ -48,7 +50,7 @@ const immersiveInput = need<HTMLInputElement>('immersive')
 const embeddedInput = need<HTMLInputElement>('embedded')
 const safeAreaInput = need<HTMLInputElement>('show-safe-area')
 const darkPageInput = need<HTMLInputElement>('dark-page')
-const zoomInput = need<HTMLInputElement>('zoom')
+const zoomSelect = need<HTMLSelectElement>('zoom')
 const zoomValue = need<HTMLOutputElement>('zoom-value')
 const eventsValue = need<HTMLOutputElement>('events')
 const contentRectPre = need('content-rect')
@@ -119,18 +121,27 @@ function report(rect: ContentRect = frame.contentRect): void {
   }
 }
 
-/** Scale down to fit the stage first, then multiply by the slider. */
+/** Fit is one mode; explicit percentages use host CSS pixels directly. */
 function layout(): void {
-  const zoom = Number(zoomInput.value)
-  zoomValue.value = `${Math.round(zoom * 100)}%`
-
   scaler.style.transform = 'none'
   const fit = Math.min(
     1,
     (stage.clientWidth - STAGE_MARGIN) / scaler.offsetWidth,
     (stage.clientHeight - STAGE_MARGIN) / scaler.offsetHeight,
   )
-  scaler.style.transform = `scale(${(fit > 0 ? fit : 1) * zoom})`
+  const mode = zoomSelect.value as DemoScaleMode
+  const scale = scaleFor(mode, fit > 0 ? fit : 1)
+  const footprint = scaledViewport({ width: scaler.offsetWidth, height: scaler.offsetHeight }, scale)
+  const overflow = overflowsViewport(footprint, { width: stage.clientWidth, height: stage.clientHeight })
+  zoomValue.value = scaleLabel(mode, fit > 0 ? fit : 1)
+  stage.classList.toggle('stage--overflow', overflow)
+  viewport.style.width = `${footprint.width}px`
+  viewport.style.height = `${footprint.height}px`
+  scaler.style.transform = `scale(${scale})`
+  if (!overflow) {
+    stage.scrollLeft = 0
+    stage.scrollTop = 0
+  }
 
   // Zooming is a transform the host applies on its own side: the element's box
   // is not resized, so its ResizeObserver stays quiet. The rect did move, so
@@ -198,7 +209,7 @@ for (const control of [
 }
 statusBarBackgroundInput.addEventListener('input', apply)
 tabBarHeightInput.addEventListener('input', apply)
-zoomInput.addEventListener('input', layout)
+zoomSelect.addEventListener('change', layout)
 window.addEventListener('resize', layout)
 
 fillDevices()

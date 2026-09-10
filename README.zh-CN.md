@@ -44,7 +44,7 @@ defineDeviceFrame()
 
 ## 功能
 
-- 从 171 个 iOS、Android 和 HarmonyOS 机型中选择，折叠设备的内外屏分别列出。
+- 从 175 个 iOS、Android 和 HarmonyOS 机型中选择，折叠设备的内外屏分别列出。
 - 用 `<device-frame>` 绘制机身、挖孔、状态栏、安全区域和底部 Home 指示条。
 - 通过 `navigation-bar`、`tab-bar` 和 `overlay` slot 加入应用自己的界面元素。
 - 通过 CSS 自定义属性、元素属性或 `contentrectchange` 事件读取布局结果。
@@ -64,11 +64,14 @@ defineDeviceFrame()
 
 ## 机型覆盖
 
-共 171 个机型：iOS 63、Android 86、HarmonyOS 22。折叠机内外屏各算一条。
+共 175 个机型：iOS 67、Android 86、HarmonyOS 22。折叠机内外屏各算一条。
+
+> [!IMPORTANT]
+> **iPhone Duo 支持目前仍是 beta 版。** DeviceKit 已分别提供外屏和内屏预设，摄像头孔与专用状态栏按 Apple 官网营销图做了像素校准，但 CSS 视口、像素比和安全区仍未经过 Xcode 27.1 DeviceHub 实测。Duo 原生 NavigationBar、工具栏和标签栏也与普通 iPhone 差异很大，目前尚未准确模拟，请勿把 Duo 预览用于像素级验收。
 
 | 厂商 | 数量 | 代表机型 |
 | --- | ---: | --- |
-| Apple | 63 | iPhone 17 Pro、iPhone 16 Pro、iPhone X、iPad Pro M4 |
+| Apple | 67 | iPhone Duo、iPhone 18 Pro、iPhone 16 Pro、iPhone X、iPad Pro M4 |
 | Samsung | 42 | Galaxy S24 Ultra、Galaxy Z Fold 7、Galaxy Z Flip 7 |
 | Google | 34 | Pixel 10 Pro、Pixel 9 Pro Fold、Pixel Tablet |
 | Huawei | 22 | HUAWEI Mate 80、HUAWEI Pura 80 Pro、HUAWEI Mate X6 (inner)、HUAWEI Mate X6 (outer) |

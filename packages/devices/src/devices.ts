@@ -35,8 +35,11 @@ export type DeviceOS = 'ios' | 'android' | 'harmony'
 /** Which way the device is held. Landscape swaps the screen's two sides. */
 export type Orientation = 'portrait' | 'landscape'
 
-/** A phone or a tablet. Drives the UA's device-compat token and HarmonyOS's DeviceType. */
-export type DeviceFormFactor = 'phone' | 'tablet'
+/** Which screen edge owns the status-bar strip in this orientation. */
+export type StatusBarEdge = 'top' | 'right'
+
+/** A phone, tablet, or foldable. Drives the UA's device-compat token and HarmonyOS's DeviceType. */
+export type DeviceFormFactor = 'phone' | 'tablet' | 'foldable'
 
 /** A width and a height in CSS px — never physical pixels. */
 export interface ScreenSize {
@@ -130,6 +133,10 @@ export interface DeviceProfile {
   statusBarHeight?: number
   /** Landscape status bar height. Omitted = the platform default (0 on iOS, unchanged elsewhere). */
   statusBarHeightLandscape?: number
+  /** Portrait status-bar edge. Omitted = the platform default, currently top. */
+  statusBarEdge?: StatusBarEdge
+  /** Landscape status-bar edge. Omitted = the platform default, currently top. */
+  statusBarEdgeLandscape?: StatusBarEdge
   /**
    * Height of the app's own top bar — a mini-program's navigation bar. It sits
    * in the device table because it varies by platform, not just by app.
@@ -147,6 +154,8 @@ export interface DeviceProfile {
   safeAreaInsetsLandscape?: Partial<EdgeInsets>
 
   cutout?: CutoutSpec
+  /** Landscape cutout geometry. Omitted means this orientation draws none. */
+  cutoutLandscape?: CutoutSpec | null
   shell?: Partial<DeviceShell>
 }
 
@@ -167,6 +176,8 @@ export interface PresetDeviceProfile extends DeviceProfile {
 export const PLATFORM_DEFAULTS: Record<DeviceOS, {
   statusBarHeight: number
   statusBarHeightLandscape: number
+  statusBarEdge: StatusBarEdge
+  statusBarEdgeLandscape: StatusBarEdge
   navigationBarHeight: number
   navigationBarHeightLandscape: number
   shell: DeviceShell
@@ -174,6 +185,8 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
   ios: {
     statusBarHeight: 44,
     statusBarHeightLandscape: 0,
+    statusBarEdge: 'top',
+    statusBarEdgeLandscape: 'top',
     navigationBarHeight: 44,
     navigationBarHeightLandscape: 32,
     shell: { screenRadius: 38, bezel: 6 },
@@ -181,6 +194,8 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
   android: {
     statusBarHeight: 24,
     statusBarHeightLandscape: 24,
+    statusBarEdge: 'top',
+    statusBarEdgeLandscape: 'top',
     navigationBarHeight: 48,
     navigationBarHeightLandscape: 48,
     shell: { screenRadius: 16, bezel: 4 },
@@ -188,6 +203,8 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
   harmony: {
     statusBarHeight: 36,
     statusBarHeightLandscape: 36,
+    statusBarEdge: 'top',
+    statusBarEdgeLandscape: 'top',
     navigationBarHeight: 28,
     navigationBarHeightLandscape: 28,
     shell: { screenRadius: 34, bezel: 4 },
@@ -211,11 +228,14 @@ export interface ResolvedDevice {
   userAgent: string
   statusBarHeight: number
   statusBarHeightLandscape: number
+  statusBarEdge: StatusBarEdge
+  statusBarEdgeLandscape: StatusBarEdge
   navigationBarHeight: number
   navigationBarHeightLandscape: number
   safeAreaInsets: EdgeInsets
   safeAreaInsetsLandscape: EdgeInsets
   cutout: CutoutSpec | null
+  cutoutLandscape: CutoutSpec | null
   shell: ResolvedDeviceShell
 }
 
@@ -241,6 +261,8 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
   const defaults = PLATFORM_DEFAULTS[profile.os]
   const statusBarHeight = profile.statusBarHeight ?? defaults.statusBarHeight
   const statusBarHeightLandscape = profile.statusBarHeightLandscape ?? defaults.statusBarHeightLandscape
+  const statusBarEdge = profile.statusBarEdge ?? defaults.statusBarEdge
+  const statusBarEdgeLandscape = profile.statusBarEdgeLandscape ?? defaults.statusBarEdgeLandscape
   const screenRadius = profile.shell?.screenRadius ?? defaults.shell.screenRadius
   const bezel = profile.shell?.bezel ?? defaults.shell.bezel
   const uniformBezelInsets = { top: bezel, right: bezel, bottom: bezel, left: bezel }
@@ -266,11 +288,14 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
     userAgent: profile.userAgent ?? deviceUserAgent(profile),
     statusBarHeight,
     statusBarHeightLandscape,
+    statusBarEdge,
+    statusBarEdgeLandscape,
     navigationBarHeight: profile.navigationBarHeight ?? defaults.navigationBarHeight,
     navigationBarHeightLandscape: profile.navigationBarHeightLandscape ?? defaults.navigationBarHeightLandscape,
-    safeAreaInsets: withInsets(profile.safeAreaInsets, { ...NO_INSETS, top: statusBarHeight }),
-    safeAreaInsetsLandscape: withInsets(profile.safeAreaInsetsLandscape, { ...NO_INSETS, top: statusBarHeightLandscape }),
+    safeAreaInsets: withInsets(profile.safeAreaInsets, { ...NO_INSETS, [statusBarEdge]: statusBarHeight }),
+    safeAreaInsetsLandscape: withInsets(profile.safeAreaInsetsLandscape, { ...NO_INSETS, [statusBarEdgeLandscape]: statusBarHeightLandscape }),
     cutout: profile.cutout ?? null,
+    cutoutLandscape: profile.cutoutLandscape ?? null,
     shell: {
       screenRadius,
       bezel,
@@ -287,6 +312,16 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
  */
 export function statusBarHeightFor(device: ResolvedDevice, orientation: Orientation): number {
   return orientation === 'landscape' ? device.statusBarHeightLandscape : device.statusBarHeight
+}
+
+/** The edge occupied by the status-bar strip in this orientation. */
+export function statusBarEdgeFor(device: ResolvedDevice, orientation: Orientation): StatusBarEdge {
+  return orientation === 'landscape' ? device.statusBarEdgeLandscape : device.statusBarEdge
+}
+
+/** The cutout visible in this orientation, if this device stores one. */
+export function cutoutFor(device: ResolvedDevice, orientation: Orientation): CutoutSpec | null {
+  return orientation === 'landscape' ? device.cutoutLandscape : device.cutout
 }
 
 /**

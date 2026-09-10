@@ -16,6 +16,7 @@ import {
   navigationBarHeightFor,
   resolveDevice,
   safeAreaInsetsFor,
+  statusBarEdgeFor,
   statusBarHeightFor,
   type DeviceProfile,
   type EdgeInsets,
@@ -111,8 +112,9 @@ function assertWindowSizeOptions(options: WindowSizeOptions): void {
 }
 
 /**
- * The box the page's own content gets: the screen minus the status bar, minus
- * the app's navigation bar, minus its tab bar. This is what a page sees as
+ * The box the page's own content gets: the screen minus the status-bar strip,
+ * minus the app's navigation bar, minus its tab bar. A top strip costs height;
+ * a transparent right strip overlays the page and costs no viewport width. This is what a page sees as
  * `windowWidth` / `windowHeight`, and what an emulated viewport should be sized
  * to so that `100vh` means the same thing in the preview and on the device.
  */
@@ -123,12 +125,13 @@ export function resolveWindowSize(device: DeviceProfile, options: WindowSizeOpti
   const screen = orientedScreen(device, orientation)
 
   const statusBar = statusBarHeightFor(resolved, orientation)
+  const statusBarEdge = statusBarEdgeFor(resolved, orientation)
   const navBar = navigationBar === true
     ? navigationBarHeightFor(resolved, orientation)
     : navigationBar === false ? 0 : navigationBar
 
   return {
     width: screen.width,
-    height: Math.max(0, screen.height - statusBar - navBar - tabBarHeight),
+    height: Math.max(0, screen.height - (statusBarEdge === 'top' ? statusBar : 0) - navBar - tabBarHeight),
   }
 }

@@ -135,6 +135,32 @@ describe('ios-cutout is portrait-only: landscape has no status bar to lay out', 
   })
 })
 
+describe('ios-cutout selects the current orientation geometry', () => {
+  it('uses a landscape-only centered pill to place the time on that pill’s midline', () => {
+    const device = withOverrides('iPhone SE', {
+      screen: { width: 200, height: 400 },
+      statusBarHeightLandscape: 54,
+      cutout: null,
+      cutoutLandscape: { shape: 'pill', width: 120, height: 37, top: 12 },
+    })
+    const layout = computeStatusBarLayout(device, 'landscape')
+    expect(layout.mode).toBe('ios-cutout')
+    expect(layout.centerY).toBe(30.5)
+  })
+
+  it('switches between differently shaped portrait and landscape cutouts', () => {
+    const device = withOverrides('iPhone SE', {
+      screen: { width: 200, height: 400 },
+      statusBarHeight: 44,
+      statusBarHeightLandscape: 54,
+      cutout: { shape: 'notch', width: 100, height: 30, top: 0 },
+      cutoutLandscape: { shape: 'pill', width: 120, height: 37, top: 20 },
+    })
+    expect(computeStatusBarLayout(device, 'portrait').centerY).toBe(23)
+    expect(computeStatusBarLayout(device, 'landscape').centerY).toBe(38.5)
+  })
+})
+
 describe('ios-classic: SE/legacy iPhones center the time and space icons by a fixed rule', () => {
   it('iPhone SE has a centered time, a 6px leading icon margin, 14px trailing, and no scaling', () => {
     const device = resolveDevice(findDevice('iPhone SE')!)

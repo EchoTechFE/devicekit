@@ -48,6 +48,25 @@ describe('resolving which phone to draw', () => {
     expect(el.metrics.screen.height).toBe(812)
   })
 
+  it('clears both named cutouts for cutout="none" through portrait/landscape rotation, then restores both', () => {
+    const el = mountFrame({ device: 'iPhone Duo (outer)' })
+    expect(cutoutEl(el).hidden).toBe(false)
+    el.setAttribute('orientation', 'landscape')
+    expect(cutoutEl(el).hidden).toBe(false)
+
+    el.setAttribute('cutout', 'none')
+    expect(el.metrics.cutout).toBeNull()
+    expect(cutoutEl(el).hidden).toBe(true)
+    el.setAttribute('orientation', 'portrait')
+    expect(el.metrics.cutout).toBeNull()
+    expect(cutoutEl(el).hidden).toBe(true)
+
+    el.removeAttribute('cutout')
+    expect(cutoutEl(el).hidden).toBe(false)
+    el.setAttribute('orientation', 'landscape')
+    expect(cutoutEl(el).hidden).toBe(false)
+  })
+
   it('ignores an unknown preset name and a malformed dimension rather than drawing nothing', () => {
     const el = mountFrame({ device: 'Nokia 3310', width: 'wide', height: '-5' })
     expect(el.device).toBeNull()
@@ -156,7 +175,7 @@ describe('the navigation-bar slot', () => {
   })
 })
 
-describe('the cutout draws only in portrait', () => {
+describe('the cutout follows the current orientation', () => {
   it('shows the cutout in portrait, wired to the resolved metrics', () => {
     const el = mountFrame({ device: 'iPhone X' })
     expect(cutoutEl(el).hidden).toBe(false)
@@ -168,7 +187,7 @@ describe('the cutout draws only in portrait', () => {
   // portrait-only check with the bar still on screen.
   it('hides the cutout in landscape even though the device has one, and the status bar stays up', () => {
     const el = mountFrame({ device: 'Pixel 9 Pro', orientation: 'landscape' })
-    expect(el.metrics.cutout).not.toBeNull()
+    expect(el.metrics.cutout).toBeNull()
     expect(statusBar(el).hidden).toBe(false)
     expect(cutoutEl(el).hidden).toBe(true)
   })
@@ -178,7 +197,7 @@ describe('the cutout draws only in portrait', () => {
   // ancestor's.
   it('hides the cutout in landscape on iOS, where the whole status bar is gone', () => {
     const el = mountFrame({ device: 'iPhone X', orientation: 'landscape' })
-    expect(el.metrics.cutout).not.toBeNull()
+    expect(el.metrics.cutout).toBeNull()
     expect(statusBar(el).hidden).toBe(true)
     expect(cutoutEl(el).hidden).toBe(true)
   })
