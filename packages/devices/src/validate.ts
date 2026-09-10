@@ -86,6 +86,12 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
 
   expectString(`${label}.name`, value.name)
   expectFiniteAtLeast(`${label}.pixelRatio`, value.pixelRatio, 0, true)
+  if (value.releaseYear !== undefined) {
+    const releaseYear = value.releaseYear
+    if (typeof releaseYear !== 'number' || !Number.isInteger(releaseYear) || releaseYear < 2000 || releaseYear > 2100) {
+      throw new TypeError(`${label}.releaseYear must be an integer between 2000 and 2100, got ${releaseYear}`)
+    }
+  }
 
   for (const field of NONNEGATIVE_HEIGHT_FIELDS) {
     if (value[field] !== undefined) {

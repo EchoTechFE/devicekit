@@ -4,12 +4,13 @@
  * One line per device. Omitted fields fall back to the platform defaults in
  * devices.ts — see the README for what each source could and could not tell us.
  */
-import type { DeviceProfile } from '../devices.js'
+import type { PresetDeviceProfile } from '../devices.js'
+import { withReleaseYears } from './release-year.js'
 
 const LEGACY_IPHONE_SHELL = { screenRadius: 0, bodyRadius: 38, bezelInsets: { top: 44, bottom: 48 }, homeButton: { diameter: 30 } }
 
 /** iPhones and iPads. Part of DEVICES; listed here so a host can offer one platform alone. */
-export const IOS_DEVICES: readonly DeviceProfile[] = [
+export const IOS_DEVICES: readonly PresetDeviceProfile[] = withReleaseYears([
   { name: 'iPhone SE', os: 'ios', screen: { width: 375, height: 667 }, pixelRatio: 2, system: 'iOS 15.0', statusBarHeight: 20, navigationBarHeight: 44, navigationBarHeightLandscape: 32, safeAreaInsets: { top: 20 }, shell: LEGACY_IPHONE_SHELL },
   { name: 'iPhone XR', os: 'ios', screen: { width: 414, height: 896 }, pixelRatio: 2, system: 'iOS 18.5', statusBarHeight: 48, navigationBarHeight: 44, navigationBarHeightLandscape: 32, safeAreaInsets: { top: 48, bottom: 34 }, safeAreaInsetsLandscape: { left: 48, right: 48, bottom: 21 }, cutout: { shape: 'notch', width: 231, height: 33, top: 0 } },
   { name: 'iPhone 12 Pro', os: 'ios', screen: { width: 390, height: 844 }, pixelRatio: 3, system: 'iOS 18.5', statusBarHeight: 47, navigationBarHeight: 44, navigationBarHeightLandscape: 32, safeAreaInsets: { top: 47, bottom: 34 }, safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 }, cutout: { shape: 'notch', width: 210, height: 32, top: 0 } },
@@ -73,4 +74,4 @@ export const IOS_DEVICES: readonly DeviceProfile[] = [
   { name: 'iPhone 17 Air', os: 'ios', screen: { width: 420, height: 912 }, pixelRatio: 3, system: 'iOS 18.0', statusBarHeight: 54, safeAreaInsets: { top: 68, bottom: 34 }, safeAreaInsetsLandscape: { left: 68, right: 68, bottom: 20 }, cutout: { shape: 'pill', width: 125, height: 37, top: 20 } },
   { name: 'iPad Pro M4', os: 'ios', formFactor: 'tablet', screen: { width: 834, height: 1210 }, pixelRatio: 2, system: 'iOS 17.5', statusBarHeight: 24, statusBarHeightLandscape: 24, safeAreaInsets: { top: 24, bottom: 25 }, safeAreaInsetsLandscape: { top: 24, bottom: 25 }, shell: { screenRadius: 18 } },
   { name: 'iPad Air M2', os: 'ios', formFactor: 'tablet', screen: { width: 820, height: 1180 }, pixelRatio: 2, system: 'iOS 17.4', statusBarHeight: 24, statusBarHeightLandscape: 24, safeAreaInsets: { top: 24, bottom: 25 }, safeAreaInsetsLandscape: { top: 24, bottom: 25 }, shell: { screenRadius: 18 } },
-]
+])

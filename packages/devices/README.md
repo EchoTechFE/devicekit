@@ -61,6 +61,7 @@ const profile = {
   os: 'ios',
   screen: { width: 402, height: 874 },
   pixelRatio: 3,
+  releaseYear: 2024,
   system: 'iOS 18.5',
   statusBarHeight: 54,
   safeAreaInsets: { top: 62, bottom: 34 },
@@ -70,7 +71,7 @@ const profile = {
 }
 ```
 
-Only `name`, `os`, `screen`, and `pixelRatio` are required. `screen` uses CSS pixels and is stored in portrait orientation. `orientedScreen()` swaps its dimensions for landscape.
+Only `name`, `os`, `screen`, and `pixelRatio` are required. Presets also include `releaseYear`, which is the model's release year and can be used to sort a picker. `screen` uses CSS pixels and is stored in portrait orientation. `orientedScreen()` swaps its dimensions for landscape.
 
 Orientation-specific status bars, navigation bars, and safe-area insets are stored separately. The status bar height and the top safe-area inset are separate fields because they can differ on devices with a cutout. `cutout` describes the rendered shape; safe-area fields describe the space available to content.
 
@@ -120,12 +121,12 @@ const version = systemVersion(profile)
 
 | Export | Type | Description |
 | --- | --- | --- |
-| `DEVICES` | `readonly DeviceProfile[]` | Complete table in iOS, Android, HarmonyOS order |
-| `IOS_DEVICES` | `readonly DeviceProfile[]` | iOS profiles |
-| `ANDROID_DEVICES` | `readonly DeviceProfile[]` | Android profiles |
-| `HARMONY_DEVICES` | `readonly DeviceProfile[]` | HarmonyOS profiles |
-| `CLASSIC_DEVICES` | `readonly DeviceProfile[]` | 19 profiles for short selectors |
-| `DEFAULT_DEVICE` | `DeviceProfile` | iPhone X profile |
+| `DEVICES` | `readonly PresetDeviceProfile[]` | Complete table in iOS, Android, HarmonyOS order |
+| `IOS_DEVICES` | `readonly PresetDeviceProfile[]` | iOS profiles |
+| `ANDROID_DEVICES` | `readonly PresetDeviceProfile[]` | Android profiles |
+| `HARMONY_DEVICES` | `readonly PresetDeviceProfile[]` | HarmonyOS profiles |
+| `CLASSIC_DEVICES` | `readonly PresetDeviceProfile[]` | 19 profiles for short selectors |
+| `DEFAULT_DEVICE` | `PresetDeviceProfile` | iPhone X profile |
 | `PLATFORM_DEFAULTS` | `Record<DeviceOS, ...>` | Default bar and shell values by platform |
 | `DEVICE_NAMES` | `const object` | Typed name constants generated from `DEVICES` |
 
@@ -154,6 +155,7 @@ const version = systemVersion(profile)
 | Type | Description |
 | --- | --- |
 | `DeviceProfile` | A stored profile with optional device-specific fields |
+| `PresetDeviceProfile` | A bundled profile with a required `releaseYear` |
 | `ResolvedDevice` | A profile with defaults applied |
 | `DeviceOS` | `'ios' \| 'android' \| 'harmony'` |
 | `DeviceFormFactor` | `'phone' \| 'tablet'` |

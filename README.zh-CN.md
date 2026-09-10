@@ -66,20 +66,20 @@ defineDeviceFrame()
 
 共 171 个机型：iOS 63、Android 86、HarmonyOS 22。折叠机内外屏各算一条。
 
-| 厂商 | 数量 |
-| --- | ---: |
-| Apple | 63 |
-| Samsung | 42 |
-| Google | 34 |
-| Huawei | 22 |
-| Motorola | 3 |
-| Microsoft | 2 |
-| OnePlus | 2 |
-| LG | 1 |
-| Nothing | 1 |
-| Xiaomi | 1 |
+| 厂商 | 数量 | 代表机型 |
+| --- | ---: | --- |
+| Apple | 63 | iPhone 17 Pro、iPhone 16 Pro、iPhone X、iPad Pro M4 |
+| Samsung | 42 | Galaxy S24 Ultra、Galaxy Z Fold 7、Galaxy Z Flip 7 |
+| Google | 34 | Pixel 10 Pro、Pixel 9 Pro Fold、Pixel Tablet |
+| Huawei | 22 | HUAWEI Mate 80、HUAWEI Pura 80 Pro、HUAWEI Mate X6 (inner)、HUAWEI Mate X6 (outer) |
+| Motorola | 3 | Motorola Razr+、Moto G4、Moto G Power |
+| Microsoft | 2 | Surface Duo |
+| OnePlus | 2 | OnePlus 12、OnePlus Open |
+| LG | 1 | LG Optimus L70 |
+| Nothing | 1 | Nothing Phone 2 |
+| Xiaomi | 1 | Xiaomi 14 |
 
-机型数据没有厂商字段，因此厂商数量按机型名称统计。`CLASSIC_DEVICES` 另提供 19 个常用机型，适合空间较小的选择器。
+每个预设都有 `releaseYear`，机型选择器可以按年份排序。机型数据没有厂商字段，因此厂商数量按机型名称统计。`CLASSIC_DEVICES` 另提供 19 个常用机型，适合空间较小的选择器。
 
 ## 浏览器和框架支持
 

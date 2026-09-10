@@ -41,6 +41,11 @@ describe('the table is well formed', () => {
     expect(broken.map((d) => d.name)).toEqual([])
   })
 
+  it('records the release year for every device so consumers can sort the table chronologically', () => {
+    const missingOrInvalid = DEVICES.filter((d) => !Number.isInteger(d.releaseYear) || d.releaseYear! < 2000 || d.releaseYear! > 2100)
+    expect(missingOrInvalid.map((d) => d.name)).toEqual([])
+  })
+
   // Rotating is what the orientation argument is for. A source table that also
   // ships a pre-rotated copy of a device leaves two rows here where one turns
   // into the other, and the pre-rotated one then rotates backwards.

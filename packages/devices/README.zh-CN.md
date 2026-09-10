@@ -36,6 +36,7 @@ const device = findDevice(DEVICE_NAMES.iPhone_16_Pro) ?? DEFAULT_DEVICE
   os: 'ios',
   screen: { width: 402, height: 874 },   // 物理屏，竖屏方向
   pixelRatio: 3,
+  releaseYear: 2024,                     // 机型发布年份
   system: 'iOS 18.5',
   statusBarHeight: 54,                    // 画出来的那条状态栏
   safeAreaInsets: { top: 62, bottom: 34 },              // 竖屏，实测值
@@ -149,12 +150,12 @@ import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 
 | 导出 | 类型 | 是什么 |
 | --- | --- | --- |
-| `DEVICES` | `readonly DeviceProfile[]` | 整张表，iOS、Android、HarmonyOS 顺序 |
-| `IOS_DEVICES` | `readonly DeviceProfile[]` | iOS 那部分 |
-| `ANDROID_DEVICES` | `readonly DeviceProfile[]` | Android 那部分 |
-| `HARMONY_DEVICES` | `readonly DeviceProfile[]` | HarmonyOS 那部分 |
-| `CLASSIC_DEVICES` | `readonly DeviceProfile[]` | 手选的不到 20 台，同一批对象，给短列表用 |
-| `DEFAULT_DEVICE` | `DeviceProfile` | 没指定机型时画的那台（iPhone X） |
+| `DEVICES` | `readonly PresetDeviceProfile[]` | 整张表，iOS、Android、HarmonyOS 顺序 |
+| `IOS_DEVICES` | `readonly PresetDeviceProfile[]` | iOS 那部分 |
+| `ANDROID_DEVICES` | `readonly PresetDeviceProfile[]` | Android 那部分 |
+| `HARMONY_DEVICES` | `readonly PresetDeviceProfile[]` | HarmonyOS 那部分 |
+| `CLASSIC_DEVICES` | `readonly PresetDeviceProfile[]` | 手选的不到 20 台，同一批对象，给短列表用 |
+| `DEFAULT_DEVICE` | `PresetDeviceProfile` | 没指定机型时画的那台（iPhone X） |
 | `PLATFORM_DEFAULTS` | `Record<DeviceOS, {...}>` | 各平台的状态栏、导航栏和机身默认值 |
 | `DEVICE_NAMES` | `{ [key: string]: string }`（as const） | 每个 `DEVICES[number].name`，键是 `deviceNameKey(name)`——生成文件，见下 |
 

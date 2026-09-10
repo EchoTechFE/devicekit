@@ -4,10 +4,11 @@
  * One line per device. Omitted fields fall back to the platform defaults in
  * devices.ts — see the README for what each source could and could not tell us.
  */
-import type { DeviceProfile } from '../devices.js'
+import type { PresetDeviceProfile } from '../devices.js'
+import { withReleaseYears } from './release-year.js'
 
 /** HarmonyOS phones, including both screens of each folding model. Part of DEVICES; listed here so a host can offer one platform alone. */
-export const HARMONY_DEVICES: readonly DeviceProfile[] = [
+export const HARMONY_DEVICES: readonly PresetDeviceProfile[] = withReleaseYears([
   { name: 'HUAWEI Mate 80', os: 'harmony', screen: { width: 366, height: 809 }, pixelRatio: 3.5, system: 'HarmonyOS 5.0', statusBarHeight: 39, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 39 } },
   { name: 'HUAWEI Mate 70', os: 'harmony', screen: { width: 374, height: 827 }, pixelRatio: 3.25, system: 'HarmonyOS 5.0', statusBarHeight: 34, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 34 } },
   { name: 'HUAWEI Mate 70 Pro', os: 'harmony', screen: { width: 376, height: 809 }, pixelRatio: 3.5, system: 'HarmonyOS 5.0', statusBarHeight: 39, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 39 } },
@@ -31,4 +32,4 @@ export const HARMONY_DEVICES: readonly DeviceProfile[] = [
   { name: 'HUAWEI Pura X Max (outer)', os: 'harmony', screen: { width: 460, height: 672 }, pixelRatio: 2.75, system: 'HarmonyOS 5.0', statusBarHeight: 66, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 66 } },
   // Table stores portrait; the unfolded (wider-than-tall) screen is what orientation=landscape reads out.
   { name: 'HUAWEI Pura X Max (inner)', os: 'harmony', screen: { width: 665, height: 940 }, pixelRatio: 2.75, system: 'HarmonyOS 5.0', statusBarHeight: 72, navigationBarHeight: 28, navigationBarHeightLandscape: 28, safeAreaInsets: { top: 72 } },
-]
+])

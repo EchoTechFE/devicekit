@@ -118,6 +118,8 @@ export interface DeviceProfile {
   formFactor?: DeviceFormFactor
   /** Shown in the device picker, e.g. "iOS 18.0". Also feeds the generated user agent. */
   system?: string
+  /** Calendar year in which this model was released. */
+  releaseYear?: number
   /**
    * What a page emulating this device should report as `navigator.userAgent`.
    * Omitted = generated from `os` and `system` — see deviceUserAgent().
@@ -146,6 +148,11 @@ export interface DeviceProfile {
 
   cutout?: CutoutSpec
   shell?: Partial<DeviceShell>
+}
+
+/** A bundled profile, whose release year is known and always present. */
+export interface PresetDeviceProfile extends DeviceProfile {
+  releaseYear: number
 }
 
 /**
@@ -200,6 +207,7 @@ export interface ResolvedDevice {
   pixelRatio: number
   formFactor: DeviceFormFactor
   system: string
+  releaseYear?: number
   userAgent: string
   statusBarHeight: number
   statusBarHeightLandscape: number
@@ -254,6 +262,7 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
     pixelRatio: profile.pixelRatio,
     formFactor: profile.formFactor ?? 'phone',
     system: profile.system ?? '',
+    ...(profile.releaseYear === undefined ? {} : { releaseYear: profile.releaseYear }),
     userAgent: profile.userAgent ?? deviceUserAgent(profile),
     statusBarHeight,
     statusBarHeightLandscape,

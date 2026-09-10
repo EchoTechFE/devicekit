@@ -118,6 +118,10 @@ describe('assertDeviceProfile only checks the optional numeric fields when they 
   it.each(['name', 'system', 'userAgent'] as const)('a numeric %s is rejected', (field) => {
     expectRejects({ ...VALID, [field]: 42 }, undefined, `deviceProfile.${field}`)
   })
+
+  it.each([2024.5, 1999, 2101])('an invalid release year (%s) is rejected', (releaseYear) => {
+    expectRejects({ ...VALID, releaseYear }, undefined, 'deviceProfile.releaseYear')
+  })
 })
 
 describe('the label argument replaces the "deviceProfile" prefix in every message', () => {
