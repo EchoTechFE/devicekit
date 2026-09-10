@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@devicekit/devices`: bundled profiles now include `releaseYear`, and the preset exports use `PresetDeviceProfile` so selectors can sort models chronologically without handling a missing year.
 - `@devicekit/devices` and `@devicekit/frame`: add iPhone 18 Pro, iPhone 18 Pro Max, and beta iPhone Duo inner/outer profiles with foldable geometry, orientation-aware camera cutouts, Duo status chrome, and 1:1 CSS scaling in the frame demo.
 
+### Changed
+
+- `@devicekit/frame`: sort each demo device group by release year, newest first, and select iPhone 18 Pro by default.
+
 ## [0.2.3] - 2026-09-08
 
 ### Fixed
