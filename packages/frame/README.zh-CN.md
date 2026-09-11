@@ -98,7 +98,7 @@ import { DEVICE_NAMES } from '@devicekit/devices'
 | `deviceProfile` | `DeviceProfile \| null` | 没有属性形式，直接当 property 赋值 |
 | `os` | `DeviceOS` | `os` |
 | `orientation` | `Orientation` | `orientation` |
-| `inputMode` | `DeviceInputMode` | `input-mode` |
+| `interactionMode` | `DeviceInteractionMode` | `interaction-mode` |
 | `width`、`height` | `number` | `width`、`height` |
 | `pixelRatio` | `number` | `pixel-ratio` |
 | `cutout` | `CutoutShape \| 'none'` | `cutout` |
@@ -153,7 +153,7 @@ pnpm --filter @devicekit/frame demo
 | `device` | 机型名，如 `iPhone 16 Pro` | 表里没有的名字，或者干脆不写这个属性，退回的是默认*尺寸*，不是一台默认机型（见下）。在 JS 里请用 `@devicekit/devices` 的 `DEVICE_NAMES` 常量，别手打字符串 |
 | `os` | `ios`（默认）、`android`、`harmony` | 没有机型也没写高度时，状态栏和导航栏走这个平台的默认值 |
 | `orientation` | `portrait`（默认）、`landscape` | 横屏时宽高互换，其余的数字换成机型表里横屏那一套 |
-| `input-mode` | `mobile`（默认）、`mobile-no-touch`、`desktop`、`desktop-touch` | 决定预览屏幕显示触控圆环还是普通鼠标；解析后的模式也会公布给插槽内容 |
+| `interaction-mode` | `mobile`（默认）、`mobile-no-touch`、`desktop`、`desktop-touch` | 决定预览屏幕显示触控圆环还是普通鼠标；解析后的模式也会公布给插槽内容 |
 | `width`、`height` | 数字，CSS px，**竖屏方向** | 给了就盖过机型表里的值 |
 | `pixel-ratio` | 数字 | 同上 |
 | `cutout` | `none`、`notch`、`pill`、`circle` | 按形状取一套通用几何。要精确的挖孔用 `deviceProfile` 传 |
@@ -168,9 +168,9 @@ pnpm --filter @devicekit/frame demo
 | `immersive` | 布尔属性 | 见“页面自己画标题栏” |
 | `embedded` | 布尔属性 | 见 `embedded` |
 
-## 输入模式
+## 交互模式
 
-`input-mode` 决定桌面预览如何表达输入方式。`mobile` 和 `desktop-touch` 显示以圆心为热点的触控圆环；`mobile-no-touch` 和 `desktop` 显示普通光标。解析后的值可以从 `frame.inputMode` 读取，也会写到 frame 的 `data-devicekit-input-mode`，插槽里的内容可据此切换自己的交互提示。
+`interaction-mode` 决定桌面预览如何表达输入方式。`mobile` 和 `desktop-touch` 显示以圆心为热点的触控圆环；`mobile-no-touch` 和 `desktop` 显示普通光标。解析后的值可以从 `frame.interactionMode` 读取，也会写到 frame 的 `data-devicekit-interaction-mode`，插槽里的内容可据此切换自己的交互提示。
 
 这只改变预览外观并提供模式信息，不会伪造浏览器触摸事件，也不会修改 `navigator.maxTouchPoints` 等页面 API。需要让业务代码真正观察到这些差异时，请使用真机、iframe/运行时适配层或浏览器模拟。
 
@@ -185,7 +185,7 @@ pnpm --filter @devicekit/frame demo
 | `deviceProfile` | `DeviceProfile \| null` | 机型表以外的机型，优先于 `device` 属性。可读可写，没有对应的属性写法；写 `null` 就是清掉 |
 | `device` | 读出 `DeviceProfile \| null`，写入 `string \| null \| undefined` | `device` 属性点名的那条机型，没有就是 `null`；写机型名会设上属性，写 `null` 或 `undefined` 就把属性去掉 |
 | `orientation` | 读出 `Orientation`，写入 `string \| null \| undefined` | 当前方向；写入会设上 `orientation` 属性，写 `null` 或 `undefined` 就把属性去掉 |
-| `inputMode` | 读出 `DeviceInputMode`，写入 `DeviceInputMode \| string \| null \| undefined` | 反射 `input-mode`；不支持的值按 `mobile` 生效 |
+| `interactionMode` | 读出 `DeviceInteractionMode`，写入 `DeviceInteractionMode \| string \| null \| undefined` | 反射 `interaction-mode`；不支持的值按 `mobile` 生效 |
 | `embedded` | `boolean` | 是不是在 embedded 模式；写入会加上或去掉属性 |
 | `immersive` | `boolean` | 页面是不是跑在几条栏后面；写入会加上或去掉属性 |
 | `profile` | `DeviceProfile` | 只读：真正生效的那条机型，属性覆盖已经折进去了 |

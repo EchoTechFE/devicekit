@@ -23,7 +23,7 @@ function nextTag(): string {
 interface MutableFrameProps {
   device: string | null | undefined
   orientation: string | null | undefined
-  inputMode: string | null | undefined
+  interactionMode: string | null | undefined
   embedded: boolean | null | undefined
   immersive: boolean | null | undefined
   deviceProfile: DeviceProfile | null | undefined
@@ -65,17 +65,17 @@ describe('properties set before customElements.define() survive the upgrade', ()
     expect(el.hasAttribute('orientation')).toBe(true)
   })
 
-  it('inputMode: reflects onto the attribute and reads back through the getter', () => {
+  it('interactionMode: reflects onto the attribute and reads back through the getter', () => {
     const tag = nextTag()
     const el = document.createElement(tag)
-    asMutable(el).inputMode = 'desktop-touch'
+    asMutable(el).interactionMode = 'desktop-touch'
 
     customElements.define(tag, class extends DeviceFrameElement {})
     document.body.append(el)
 
     const frame = el as unknown as DeviceFrameElement
-    expect(frame.inputMode).toBe('desktop-touch')
-    expect(el.getAttribute('input-mode')).toBe('desktop-touch')
+    expect(frame.interactionMode).toBe('desktop-touch')
+    expect(el.getAttribute('interaction-mode')).toBe('desktop-touch')
   })
 
   it('embedded: reflects onto the presence attribute and reads back true', () => {
@@ -135,7 +135,7 @@ describe('properties set before customElements.define() survive the upgrade', ()
     const mutable = asMutable(el)
     mutable.device = 'iPhone 15'
     mutable.orientation = 'landscape'
-    mutable.inputMode = 'desktop'
+    mutable.interactionMode = 'desktop'
     mutable.embedded = true
     mutable.immersive = true
     mutable.deviceProfile = profile
@@ -144,7 +144,7 @@ describe('properties set before customElements.define() survive the upgrade', ()
     document.body.append(el)
 
     const frame = el as unknown as DeviceFrameElement
-    expect(frame.inputMode).toBe('desktop')
+    expect(frame.interactionMode).toBe('desktop')
     expect(() => frame.metrics).not.toThrow()
     expect(() => frame.contentRect).not.toThrow()
   })

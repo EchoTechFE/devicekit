@@ -56,9 +56,9 @@ export { CONTENT_RECT_CHANGE_EVENT }
 export type { DeviceFrameElementEventMap, DeviceMetrics, StatusBarTextStyle }
 
 /** How a desktop host should present input over the simulated device screen. */
-export type DeviceInputMode = 'mobile' | 'mobile-no-touch' | 'desktop' | 'desktop-touch'
+export type DeviceInteractionMode = 'mobile' | 'mobile-no-touch' | 'desktop' | 'desktop-touch'
 
-function toInputMode(value: string | null): DeviceInputMode {
+function toInteractionMode(value: string | null): DeviceInteractionMode {
   switch (value) {
     case 'mobile':
     case 'mobile-no-touch':
@@ -103,7 +103,7 @@ export class DeviceFrameElement extends HTMLElementBase {
       'device',
       'os',
       'orientation',
-      'input-mode',
+      'interaction-mode',
       'embedded',
       'immersive',
       'width',
@@ -174,7 +174,7 @@ export class DeviceFrameElement extends HTMLElementBase {
     // Replays properties set before define() upgraded this instance (own
     // properties shadowing the setters) — here, not connectedCallback, since a
     // getter can run via attributeChangedCallback first. No-op when synchronous.
-    upgradeProperties(this, ['device', 'deviceProfile', 'orientation', 'inputMode', 'embedded', 'immersive'])
+    upgradeProperties(this, ['device', 'deviceProfile', 'orientation', 'interactionMode', 'embedded', 'immersive'])
   }
 
   /** Renders and starts watching the host's box for moves the attributes miss. */
@@ -234,17 +234,17 @@ export class DeviceFrameElement extends HTMLElementBase {
 
   /**
    * Whether the preview should look touch-first or mouse-first. This controls
-   * the screen cursor and is also reflected as data-devicekit-input-mode for
+   * the screen cursor and is also reflected as data-devicekit-interaction-mode for
    * slotted content that needs to choose its own interaction affordances.
    * It does not synthesize browser touch events; the page still runs in the
    * host document's real input environment.
    */
-  get inputMode(): DeviceInputMode {
-    return toInputMode(this.getAttribute('input-mode'))
+  get interactionMode(): DeviceInteractionMode {
+    return toInteractionMode(this.getAttribute('interaction-mode'))
   }
 
-  set inputMode(value: DeviceInputMode | string | null | undefined) {
-    reflectAttribute(this, 'input-mode', value)
+  set interactionMode(value: DeviceInteractionMode | string | null | undefined) {
+    reflectAttribute(this, 'interaction-mode', value)
   }
 
   /**
@@ -408,7 +408,7 @@ export class DeviceFrameElement extends HTMLElementBase {
   #render(): void {
     if (!this.#statusBar || !this.#homeIndicatorEl || !this.#homeButtonEl) return
 
-    this.dataset.devicekitInputMode = this.inputMode
+    this.dataset.devicekitInteractionMode = this.interactionMode
     const metrics = this.metrics
     reflectMetrics(this.style, metrics, this.embedded, this.profile)
 

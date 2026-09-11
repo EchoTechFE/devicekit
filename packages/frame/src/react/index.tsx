@@ -21,7 +21,7 @@
 import * as React from 'react'
 import { useImperativeHandle, useLayoutEffect, useRef } from 'react'
 import type { CutoutShape, DeviceName, DeviceOS, DeviceProfile, Orientation } from '@devicekit/devices'
-import { defineDeviceFrame, DEVICE_FRAME_TAG, type DeviceFrameElement, type DeviceInputMode } from '../device-frame.js'
+import { defineDeviceFrame, DEVICE_FRAME_TAG, type DeviceFrameElement, type DeviceInteractionMode } from '../device-frame.js'
 import { CONTENT_RECT_CHANGE_EVENT } from '../element-events.js'
 import { sameContentRect, type ContentRect } from '../content-rect.js'
 import type { StatusBarTextStyle } from '../metrics.js'
@@ -50,7 +50,7 @@ if (typeof customElements !== 'undefined') {
  * Everything the element takes, plus the usual DOM props. Anything not listed
  * here — `style`, `id`, `onClick` — is passed through to the element untouched.
  */
-export interface DeviceFrameProps extends Omit<React.HTMLAttributes<HTMLElement>, 'inputMode'> {
+export interface DeviceFrameProps extends React.HTMLAttributes<HTMLElement> {
   /**
    * A preset's `name`, e.g. `"iPhone 15"` — or `DEVICE_NAMES.iPhone_15` from
    * `@devicekit/devices` for autocomplete. Unknown names fall back to the
@@ -68,7 +68,7 @@ export interface DeviceFrameProps extends Omit<React.HTMLAttributes<HTMLElement>
   /** Which way the device is held. Default portrait. */
   orientation?: Orientation | undefined
   /** Whether the preview presents touch or mouse input affordances. Default mobile. */
-  inputMode?: DeviceInputMode | undefined
+  interactionMode?: DeviceInteractionMode | undefined
   /** Draw a bare screen with no body or chrome, stretched to fill the container. */
   embedded?: boolean | undefined
   /** Run the page full height behind the bars instead of below them. */
@@ -140,7 +140,7 @@ export function createDeviceFrameComponent(
       deviceProfile,
       os,
       orientation,
-      inputMode,
+      interactionMode,
       embedded,
       immersive,
       cutout,
@@ -270,7 +270,7 @@ export function createDeviceFrameComponent(
     set('device', device)
     set('os', os)
     set('orientation', orientation)
-    set('input-mode', inputMode)
+    set('interaction-mode', interactionMode)
     set('cutout', cutout)
     set('width', width)
     set('height', height)
@@ -326,7 +326,7 @@ export interface DeviceFrameIntrinsicAttributes
   device?: string | undefined
   os?: DeviceOS | undefined
   orientation?: Orientation | undefined
-  'input-mode'?: DeviceInputMode | undefined
+  'interaction-mode'?: DeviceInteractionMode | undefined
   /**
    * Presence is the whole signal. `false` is not accepted on the raw tag: on
    * React 18 it would set the literal attribute `embedded="false"`, which the

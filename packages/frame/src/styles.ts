@@ -138,13 +138,13 @@ export const DEVICE_FRAME_STYLES = `
    over the simulated screen, like browser device emulation. The 24px SVG
    stays below common cursor-image limits; the auto fallback keeps the frame
    usable in browsers that reject custom cursor images. */
-:host([data-devicekit-input-mode="mobile"]) .screen,
-:host([data-devicekit-input-mode="desktop-touch"]) .screen {
+:host([data-devicekit-interaction-mode="mobile"]) .screen,
+:host([data-devicekit-interaction-mode="desktop-touch"]) .screen {
   cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23fff' stroke-width='3'/%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23000' stroke-opacity='.7' stroke-width='1'/%3E%3C/svg%3E") 12 12, auto;
 }
 
-:host([data-devicekit-input-mode="mobile-no-touch"]) .screen,
-:host([data-devicekit-input-mode="desktop"]) .screen {
+:host([data-devicekit-interaction-mode="mobile-no-touch"]) .screen,
+:host([data-devicekit-interaction-mode="desktop"]) .screen {
   cursor: auto;
 }
 

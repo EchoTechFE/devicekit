@@ -47,7 +47,7 @@ describe('<DeviceFrame> newly-added props', () => {
         safeAreaBottom={20}
         safeAreaLeft={0}
         statusBar="live"
-        inputMode="desktop-touch"
+        interactionMode="desktop-touch"
       />,
     )
     const el = container!.querySelector('device-frame')!
@@ -63,7 +63,7 @@ describe('<DeviceFrame> newly-added props', () => {
     expect(el.getAttribute('safe-area-bottom')).toBe('20')
     expect(el.getAttribute('safe-area-left')).toBe('0')
     expect(el.getAttribute('status-bar')).toBe('live')
-    expect(el.getAttribute('input-mode')).toBe('desktop-touch')
+    expect(el.getAttribute('interaction-mode')).toBe('desktop-touch')
   })
 
   it('drives the resolved metrics, not just the attribute strings', () => {
