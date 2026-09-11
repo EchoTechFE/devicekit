@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-11
+
 ### Added
 
 - `@devicekit/frame`: add `interaction-mode` (`mobile`, `mobile-no-touch`, `desktop`, `desktop-touch`) for touch or mouse preview affordances, including the frame demo control and React prop. Default `mobile` now shows a centered touch-ring cursor over the screen, where previous releases used the normal cursor.
