@@ -1,6 +1,9 @@
 node_modules
 dist
 demo/dist
+packages/frame/.astro
+packages/frame/demo/.astro
+packages/frame/demo/devices
 *.tsbuildinfo
 .DS_Store
 test-report*.json

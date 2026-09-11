@@ -37,6 +37,11 @@ export const STATUS_BAR_ICON_METRICS: Record<StatusBarStyle, StatusBarIconMetric
     wifi: { width: 14, height: 12, inkWidth: 13, inkHeight: 10, inkOffsetY: 0 },
     battery: { width: 20, height: 10, inkWidth: 20, inkHeight: 10, inkOffsetY: 0 },
   },
+  'android-hyperos': {
+    signal: { width: 13, height: 12, inkWidth: 12, inkHeight: 11, inkOffsetY: 0 },
+    wifi: { width: 14, height: 12, inkWidth: 13, inkHeight: 10, inkOffsetY: -0.25 },
+    battery: { width: 19, height: 10, inkWidth: 19, inkHeight: 10, inkOffsetY: 0 },
+  },
   harmony: {
     signal: { width: 12, height: 12, inkWidth: 11, inkHeight: 12, inkOffsetY: 0 },
     wifi: { width: 13, height: 11, inkWidth: 13, inkHeight: 10, inkOffsetY: -0.75 },

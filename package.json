@@ -1,7 +1,7 @@
 {
   "name": "devicekit",
   "private": true,
-  "description": "A device table and a simulated-phone custom element: presets for phones and tablets, and the frame that draws one around any previewed page.",
+  "description": "Device profiles and a Web Component frame for iOS, Android and HarmonyOS, including iPhone 18 Pro and iPhone Duo.",
   "license": "MIT",
   "author": "EchoTechFE",
   "repository": {

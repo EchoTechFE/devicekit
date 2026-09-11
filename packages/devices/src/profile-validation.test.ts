@@ -64,7 +64,7 @@ describe('assertDeviceProfile checks os is one of the three supported platforms'
 })
 
 describe('assertDeviceProfile checks the optional status-bar visual family', () => {
-  it.each(['ios', 'android-stock', 'android-samsung', 'harmony'] as const)('accepts %s', (statusBarStyle) => {
+  it.each(['ios', 'android-stock', 'android-samsung', 'android-hyperos', 'harmony'] as const)('accepts %s', (statusBarStyle) => {
     expect(() => assertDeviceProfile({ ...VALID, statusBarStyle })).not.toThrow()
   })
 

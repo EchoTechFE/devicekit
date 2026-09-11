@@ -6,23 +6,23 @@
 
 :root {
   color-scheme: light;
-  --demo-body-background: #eef2f6;
-  --demo-body-color: #0f172a;
-  --demo-panel-background: #fff;
-  --demo-panel-border: #dde3ea;
-  --demo-label-color: #475569;
-  --demo-note-color: #64748b;
+  --demo-body-background: #f8fafc;
+  --demo-body-color: #18181b;
+  --demo-panel-background: rgba(255, 255, 255, .86);
+  --demo-panel-border: #e4e4e7;
+  --demo-label-color: #71717a;
+  --demo-note-color: #71717a;
   --demo-control-background: #fff;
-  --demo-control-border: #cbd5e1;
-  --demo-stage-background: #eef2f6;
+  --demo-control-border: #e4e4e7;
+  --demo-stage-background: radial-gradient(circle at 50% 10%, #fff 0, #f4f4f5 48%, #e4e4e7 100%);
   --demo-board-background: #fff;
   --demo-board-shadow: 0 18px 50px rgba(16, 20, 24, 0.18);
   --demo-page-background: transparent;
   --demo-page-color: #0f172a;
-  --demo-page-size-color: #1d4ed8;
+  --demo-page-size-color: #18181b;
   --demo-readout-background: #0f172a;
   --demo-readout-color: #e2e8f0;
-  --demo-screen-background: linear-gradient(#dbeafe, #f8fafc 160px);
+  --demo-screen-background: linear-gradient(145deg, #f4f4f5, #fff 55%, #e4e4e7);
   --demo-navigation-background: #ededed;
   --demo-navigation-color: #000;
   --demo-tab-background: #f7f7f7;
@@ -37,61 +37,119 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --demo-body-background: #0b1220;
-  --demo-body-color: #e5e7eb;
-  --demo-panel-background: #111827;
-  --demo-panel-border: #263449;
-  --demo-label-color: #cbd5e1;
-  --demo-note-color: #94a3b8;
-  --demo-control-background: #1f2937;
-  --demo-control-border: #475569;
-  --demo-stage-background: #0b1220;
-  --demo-board-background: #111827;
+  --demo-body-background: #09090b;
+  --demo-body-color: #fafafa;
+  --demo-panel-background: rgba(24, 24, 27, .9);
+  --demo-panel-border: #27272a;
+  --demo-label-color: #a1a1aa;
+  --demo-note-color: #a1a1aa;
+  --demo-control-background: #18181b;
+  --demo-control-border: #3f3f46;
+  --demo-stage-background: radial-gradient(circle at 50% 10%, #27272a 0, #18181b 46%, #09090b 100%);
+  --demo-board-background: #18181b;
   --demo-board-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
   --demo-page-background: transparent;
   --demo-page-color: #e2e8f0;
-  --demo-page-size-color: #93c5fd;
-  --demo-readout-background: #020617;
-  --demo-readout-color: #e2e8f0;
-  --demo-screen-background: linear-gradient(#0f172a, #1e293b 160px);
-  --demo-navigation-background: #1f1f1f;
+  --demo-page-size-color: #fafafa;
+  --demo-readout-background: #09090b;
+  --demo-readout-color: #e4e4e7;
+  --demo-screen-background: linear-gradient(145deg, #27272a, #18181b 55%, #09090b);
+  --demo-navigation-background: #18181b;
   --demo-navigation-color: #fff;
-  --demo-tab-background: #111827;
-  --demo-tab-border: #1f2937;
-  --demo-tab-color: #94a3b8;
-  --demo-tab-active: #34d399;
-  --demo-theme-toggle-background: #1e293b;
-  --demo-theme-toggle-border: #64748b;
-  --demo-theme-toggle-selected: #475569;
-  --demo-theme-toggle-selected-color: #f8fafc;
+  --demo-tab-background: #18181b;
+  --demo-tab-border: #27272a;
+  --demo-tab-color: #a1a1aa;
+  --demo-tab-active: #fafafa;
+  --demo-theme-toggle-background: #18181b;
+  --demo-theme-toggle-border: #3f3f46;
+  --demo-theme-toggle-selected: #27272a;
+  --demo-theme-toggle-selected-color: #fafafa;
 }
 
 body {
   margin: 0;
   display: flex;
   height: 100vh;
-  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  min-height: 100vh;
+  font: 13px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
   color: var(--demo-body-color);
   background: var(--demo-body-background);
 }
 
 .panel {
   flex: none;
-  width: 300px;
-  padding: 20px;
+  width: 340px;
+  padding: 24px;
   overflow: auto;
   background: var(--demo-panel-background);
   border-right: 1px solid var(--demo-panel-border);
+  backdrop-filter: blur(18px);
 }
 
 .panel h1 {
-  margin: 0 0 16px;
-  font-size: 16px;
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -.025em;
 }
+
+.panel__header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.github-link {
+  padding: 5px 8px;
+  border: 1px solid var(--demo-control-border);
+  border-radius: 6px;
+  color: var(--demo-body-color);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.demo-intro {
+  margin: 8px 0 20px;
+  color: var(--demo-note-color);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.panel__eyebrow,
+.control-section__title,
+.stage__label {
+  color: var(--demo-label-color);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.page__eyebrow {
+  color: var(--demo-page-muted-color, var(--demo-label-color));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.panel__eyebrow { margin-bottom: 10px; }
+
+.control-section {
+  margin: 16px 0;
+  padding: 14px;
+  border: 1px solid var(--demo-panel-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--demo-panel-background) 92%, #f4f4f5);
+}
+
+.control-section__title { margin-bottom: 12px; }
 
 .field {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .field > span {
@@ -120,12 +178,24 @@ body {
   width: 100%;
 }
 
+.theme-readout {
+  display: block;
+  padding: 7px 9px;
+  border: 1px solid var(--demo-control-border);
+  border-radius: 6px;
+  color: var(--demo-note-color);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .field select,
 .field input[type="number"],
 .field input[type="text"] {
   box-sizing: border-box;
   border: 1px solid var(--demo-control-border);
-  border-radius: 4px;
+  min-height: 34px;
+  padding: 6px 9px;
+  border-radius: 6px;
   background: var(--demo-control-background);
   color: var(--demo-body-color);
 }
@@ -200,12 +270,6 @@ code {
   font-size: 12px;
 }
 
-.sf-symbol-status {
-  margin: 8px 0;
-  color: var(--demo-label-color);
-  font-size: 12px;
-}
-
 .readout__head {
   display: flex;
   justify-content: space-between;
@@ -234,8 +298,41 @@ code {
   justify-content: center;
   min-width: 0;
   overflow: auto;
+  position: relative;
+  padding: 48px;
   background: var(--demo-stage-background);
 }
+
+.stage__label {
+  position: absolute;
+  top: 24px;
+  left: 32px;
+}
+
+.theme-toggle {
+  position: absolute;
+  z-index: 1;
+  top: 18px;
+  right: 24px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--demo-panel-border);
+  border-radius: 7px;
+  background: var(--demo-panel-background);
+  color: var(--demo-body-color);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
+}
+
+.theme-toggle:hover { background: var(--demo-control-background); }
+.theme-toggle:focus-visible { outline: 2px solid var(--demo-body-color); outline-offset: 2px; }
+.theme-toggle svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.theme-toggle__moon { display: none; }
+:root[data-theme="dark"] .theme-toggle__sun { display: none; }
+:root[data-theme="dark"] .theme-toggle__moon { display: block; }
 
 .stage__scaler {
   position: absolute;
@@ -247,6 +344,25 @@ code {
 .stage__viewport {
   position: relative;
   flex: none;
+}
+
+.stage__preview {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stage__attribution {
+  margin: 14px 0 0;
+  color: var(--demo-note-color);
+  font-size: 11px;
+}
+
+.stage__attribution a {
+  color: inherit;
+  font-weight: 650;
+  text-underline-offset: 3px;
 }
 
 .stage--overflow {
@@ -285,8 +401,9 @@ code {
 }
 
 .page h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
+  margin: 6px 0 10px;
+  font-size: 20px;
+  letter-spacing: -.03em;
 }
 
 .page p {
@@ -356,13 +473,21 @@ code {
   writing-mode: vertical-rl;
 }
 
-/* ---- Dark page: makes both status-bar-text-style values readable at a glance ---- */
+@media (max-width: 800px) {
+  body {
+    display: block;
+    height: auto;
+  }
 
-device-frame {
-  --device-screen-background: var(--demo-screen-background);
-}
+  .panel {
+    width: 100%;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--demo-panel-border);
+  }
 
-devicekit-demo-h5-navigation {
-  --demo-navigation-background: #0f172a;
-  --demo-navigation-color: #fff;
+  .stage {
+    min-height: 720px;
+    padding: 48px 24px 24px;
+  }
 }

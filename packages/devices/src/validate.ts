@@ -52,7 +52,7 @@ const INSET_FIELDS = ['safeAreaInsets', 'safeAreaInsetsLandscape'] as const
 const SHELL_FIELDS = ['screenRadius', 'bezel', 'bodyRadius'] as const
 const CUTOUT_SHAPES: readonly CutoutShape[] = ['notch', 'pill', 'circle']
 const STATUS_BAR_EDGES: readonly StatusBarEdge[] = ['top', 'right']
-const STATUS_BAR_STYLES: readonly StatusBarStyle[] = ['ios', 'android-stock', 'android-samsung', 'harmony']
+const STATUS_BAR_STYLES: readonly StatusBarStyle[] = ['ios', 'android-stock', 'android-samsung', 'android-hyperos', 'harmony']
 
 /**
  * Throws `TypeError` if `value` is not a usable DeviceProfile. `label` names
@@ -80,7 +80,7 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
   }
 
   if (value.statusBarStyle !== undefined && !STATUS_BAR_STYLES.includes(value.statusBarStyle as StatusBarStyle)) {
-    throw new TypeError(`${label}.statusBarStyle must be one of "ios", "android-stock", "android-samsung", "harmony", got ${JSON.stringify(value.statusBarStyle)}`)
+    throw new TypeError(`${label}.statusBarStyle must be one of "ios", "android-stock", "android-samsung", "android-hyperos", "harmony", got ${JSON.stringify(value.statusBarStyle)}`)
   }
 
   for (const field of ['statusBarEdge', 'statusBarEdgeLandscape'] as const) {

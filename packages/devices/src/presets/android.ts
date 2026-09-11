@@ -907,6 +907,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Xiaomi 14',
     os: 'android',
+    statusBarStyle: 'android-hyperos',
     screen: { width: 412, height: 915 },
     pixelRatio: 2.625,
     system: 'Android 14',

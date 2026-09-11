@@ -29,7 +29,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - run: pnpm --filter @devicekit/frame exec vite build demo --base=/devicekit/
+      - run: pnpm --filter @devicekit/frame demo:build:pages
 
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
