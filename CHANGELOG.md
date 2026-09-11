@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `@devicekit/frame`: sort each demo device group by release year, newest first, and select iPhone 18 Pro by default.
+- `@devicekit/devices` and `@devicekit/frame`: render separate iOS, stock Android, Samsung and HarmonyOS status-bar typography, spacing and glyphs. The frame demo uses native SF Symbols when macOS can provide them, keeps project-owned fallbacks for published builds, and adds componentized Light/Dark preview chrome.
+
+### Fixed
+
+- `@devicekit/frame`: shells with asymmetric bezel insets now derive concentric per-corner radii without overriding an explicit `bodyRadius`.
 
 ## [0.2.3] - 2026-09-08
 

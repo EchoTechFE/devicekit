@@ -9,7 +9,7 @@
  * nested field (a bogus `cutout.shape`, a negative `shell.bezel`) is rejected
  * here rather than surfacing later as a NaN in computed CSS.
  */
-import type { CutoutShape, DeviceFormFactor, DeviceOS, DeviceProfile, StatusBarEdge } from './devices.js'
+import type { CutoutShape, DeviceFormFactor, DeviceOS, DeviceProfile, StatusBarEdge, StatusBarStyle } from './devices.js'
 
 type UnknownRecord = Record<string, unknown>
 
@@ -52,6 +52,7 @@ const INSET_FIELDS = ['safeAreaInsets', 'safeAreaInsetsLandscape'] as const
 const SHELL_FIELDS = ['screenRadius', 'bezel', 'bodyRadius'] as const
 const CUTOUT_SHAPES: readonly CutoutShape[] = ['notch', 'pill', 'circle']
 const STATUS_BAR_EDGES: readonly StatusBarEdge[] = ['top', 'right']
+const STATUS_BAR_STYLES: readonly StatusBarStyle[] = ['ios', 'android-stock', 'android-samsung', 'harmony']
 
 /**
  * Throws `TypeError` if `value` is not a usable DeviceProfile. `label` names
@@ -76,6 +77,10 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
     if (formFactor !== 'phone' && formFactor !== 'tablet' && formFactor !== 'foldable') {
       throw new TypeError(`${label}.formFactor must be one of "phone", "tablet", "foldable", got ${JSON.stringify(formFactor)}`)
     }
+  }
+
+  if (value.statusBarStyle !== undefined && !STATUS_BAR_STYLES.includes(value.statusBarStyle as StatusBarStyle)) {
+    throw new TypeError(`${label}.statusBarStyle must be one of "ios", "android-stock", "android-samsung", "harmony", got ${JSON.stringify(value.statusBarStyle)}`)
   }
 
   for (const field of ['statusBarEdge', 'statusBarEdgeLandscape'] as const) {

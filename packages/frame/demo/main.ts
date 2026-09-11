@@ -16,8 +16,22 @@ import {
 } from '@devicekit/frame'
 import { overflowsViewport, scaleFor, scaleLabel, scaledViewport, type DemoScaleMode } from '../src/demo-scale.js'
 import { DEMO_DEFAULT_DEVICE_NAME, newestDevicesFirst } from '../src/demo-device-order.js'
+import { applySfSymbolMasks, normalizeSfSymbolPayload, SF_SYMBOLS_ENDPOINT, type SfSymbolPayload } from '../src/sf-symbols.js'
+import {
+  applyDemoTheme,
+  statusBarTextStyleForThemeAndNavigation,
+  type DemoNavigation,
+  type DemoTheme,
+} from './theme.js'
+import {
+  defineDemoComponents,
+  H5_NAVIGATION_TAG,
+  MINI_PROGRAM_NAVIGATION_TAG,
+  TAB_BAR_TAG,
+} from './components/index.js'
 
 defineDeviceFrame()
+defineDemoComponents()
 
 const OS_LABEL: Record<DeviceOS, string> = { ios: 'iOS', android: 'Android', harmony: 'HarmonyOS' }
 /** Blank space kept around the stage; the auto-fit scale has to leave this much. */
@@ -50,19 +64,23 @@ const tabBarHeightInput = need<HTMLInputElement>('tab-bar-height')
 const immersiveInput = need<HTMLInputElement>('immersive')
 const embeddedInput = need<HTMLInputElement>('embedded')
 const safeAreaInput = need<HTMLInputElement>('show-safe-area')
-const darkPageInput = need<HTMLInputElement>('dark-page')
+const themeInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="theme"]')]
 const zoomSelect = need<HTMLSelectElement>('zoom')
 const zoomValue = need<HTMLOutputElement>('zoom-value')
 const eventsValue = need<HTMLOutputElement>('events')
 const contentRectPre = need('content-rect')
 const metricsPre = need('metrics')
 const pageSize = need('page-size')
+const sfSymbolsValue = need<HTMLOutputElement>('sf-symbols-value')
 
 const bars = {
-  mp: templateChild('tpl-mp'),
-  h5: templateChild('tpl-h5'),
-  tab: templateChild('tpl-tab'),
+  mp: document.createElement(MINI_PROGRAM_NAVIGATION_TAG),
+  h5: document.createElement(H5_NAVIGATION_TAG),
+  tab: document.createElement(TAB_BAR_TAG),
 }
+bars.mp.setAttribute('title', 'Cart')
+bars.h5.setAttribute('title', 'Campaign details')
+bars.tab.setAttribute('active', 'home')
 
 const safeAreaOverlay = templateChild('tpl-safe-area')
 const safeAreaBands = {
@@ -71,6 +89,8 @@ const safeAreaBands = {
   bottom: safeAreaOverlay.querySelector<HTMLElement>('.safe-area-overlay__band--bottom span'),
   left: safeAreaOverlay.querySelector<HTMLElement>('.safe-area-overlay__band--left span'),
 } as const
+
+let sfSymbols: SfSymbolPayload = { status: 'fallback', masks: null }
 
 function fillDevices(): void {
   for (const os of ['ios', 'android', 'harmony'] as const) {
@@ -153,6 +173,10 @@ function layout(): void {
 function apply(): void {
   frame.setAttribute('device', deviceSelect.value)
   frame.setAttribute('orientation', orientationSelect.value)
+  const device = DEVICES.find((candidate) => candidate.name === deviceSelect.value)
+  for (const navigation of [bars.mp, bars.h5]) navigation.setAttribute('device-os', device?.os ?? 'ios')
+  const layoutMode = frame.shadowRoot?.querySelector<HTMLElement>('.status-bar')?.dataset.layout
+  sfSymbolsValue.value = applySfSymbolMasks(frame, device?.os ?? 'ios', layoutMode, sfSymbols)
   frame.toggleAttribute('immersive', immersiveInput.checked)
   frame.toggleAttribute('embedded', embeddedInput.checked)
   setOrRemove('status-bar', statusBarSelect.value)
@@ -173,18 +197,18 @@ function apply(): void {
   syncSlot(tabBarInput.checked ? bars.tab : null, [bars.tab])
   syncSlot(safeAreaInput.checked ? safeAreaOverlay : null, [safeAreaOverlay])
 
-  document.body.classList.toggle('demo-dark-page', darkPageInput.checked)
-
   scaler.classList.toggle('stage__scaler--embedded', embeddedInput.checked)
   layout()
 }
 
-// The checkbox drives the dropdown, not the other way round: it only writes
-// status-bar-text-style at the moment it is toggled, so a user who changes the
-// dropdown by hand afterwards keeps that choice through unrelated re-renders.
-darkPageInput.addEventListener('change', () => {
-  textStyleSelect.value = darkPageInput.checked ? 'white' : 'black'
-})
+function selectedTheme(): DemoTheme {
+  return (themeInputs.find((input) => input.checked)?.value ?? 'light') as DemoTheme
+}
+
+function syncStatusBarTextStyle(): void {
+  const navigation = navigationSelect.value as DemoNavigation
+  textStyleSelect.value = statusBarTextStyleForThemeAndNavigation(selectedTheme(), navigation)
+}
 
 let events = 0
 frame.addEventListener(CONTENT_RECT_CHANGE_EVENT, (event) => {
@@ -196,7 +220,6 @@ frame.addEventListener(CONTENT_RECT_CHANGE_EVENT, (event) => {
 for (const control of [
   deviceSelect,
   orientationSelect,
-  navigationSelect,
   statusBarSelect,
   textStyleSelect,
   tabBarInput,
@@ -204,10 +227,22 @@ for (const control of [
   immersiveInput,
   embeddedInput,
   safeAreaInput,
-  darkPageInput,
 ]) {
   control.addEventListener('change', apply)
 }
+for (const themeInput of themeInputs) {
+  themeInput.addEventListener('change', () => {
+    if (!themeInput.checked) return
+    const theme = themeInput.value as DemoTheme
+    applyDemoTheme(theme)
+    syncStatusBarTextStyle()
+    apply()
+  })
+}
+navigationSelect.addEventListener('change', () => {
+  syncStatusBarTextStyle()
+  apply()
+})
 statusBarBackgroundInput.addEventListener('input', apply)
 tabBarHeightInput.addEventListener('input', apply)
 zoomSelect.addEventListener('change', layout)
@@ -216,4 +251,17 @@ window.addEventListener('resize', layout)
 fillDevices()
 navigationSelect.value = 'mp'
 tabBarInput.checked = true
+applyDemoTheme('light')
+syncStatusBarTextStyle()
 apply()
+
+void fetch(SF_SYMBOLS_ENDPOINT)
+  .then((response) => response.ok ? response.json() : null)
+  .then((value) => {
+    sfSymbols = normalizeSfSymbolPayload(value)
+    apply()
+  })
+  .catch(() => {
+    sfSymbols = { status: 'fallback', masks: null }
+    apply()
+  })

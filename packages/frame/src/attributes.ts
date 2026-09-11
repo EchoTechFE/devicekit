@@ -76,6 +76,7 @@ export function profileFromAttributes(
       height: toPositiveNumber(element.getAttribute('height')) ?? named?.screen.height ?? fallbackScreen.height,
     },
     pixelRatio: toPositiveNumber(element.getAttribute('pixel-ratio')) ?? named?.pixelRatio ?? 1,
+    statusBarStyle: named?.statusBarStyle,
     formFactor: named?.formFactor,
     system: named?.system,
     releaseYear: named?.releaseYear,

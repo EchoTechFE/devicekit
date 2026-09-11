@@ -32,6 +32,9 @@ import { assertDeviceProfile } from './validate.js'
 /** The platforms the table covers. */
 export type DeviceOS = 'ios' | 'android' | 'harmony'
 
+/** Paint family for status-bar typography and glyphs; independent of geometry. */
+export type StatusBarStyle = 'ios' | 'android-stock' | 'android-samsung' | 'harmony'
+
 /** Which way the device is held. Landscape swaps the screen's two sides. */
 export type Orientation = 'portrait' | 'landscape'
 
@@ -88,7 +91,7 @@ export interface DeviceShell {
   bezelInsets?: Partial<EdgeInsets>
   /** A physical Home button centered in the bottom bezel. */
   homeButton?: HomeButtonSpec | null
-  /** Body corner radius. Omitted = screenRadius + uniform bezel; profiles with per-edge insets should set this explicitly. */
+  /** Body corner radius. Omitted = screenRadius + the largest adjacent bezel inset. */
   bodyRadius?: number
 }
 
@@ -110,6 +113,8 @@ export interface DeviceProfile {
   /** Lookup key, so it has to be unique within the table. */
   name: string
   os: DeviceOS
+  /** Status-bar paint family. Omitted profiles use their platform's family. */
+  statusBarStyle?: StatusBarStyle
   /** The physical screen in CSS px, portrait. Landscape swaps the two. */
   screen: ScreenSize
   pixelRatio: number
@@ -174,6 +179,7 @@ export interface PresetDeviceProfile extends DeviceProfile {
  * when rotated — neither has been checked against a rotated device.
  */
 export const PLATFORM_DEFAULTS: Record<DeviceOS, {
+  statusBarStyle: StatusBarStyle
   statusBarHeight: number
   statusBarHeightLandscape: number
   statusBarEdge: StatusBarEdge
@@ -183,6 +189,7 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
   shell: DeviceShell
 }> = {
   ios: {
+    statusBarStyle: 'ios',
     statusBarHeight: 44,
     statusBarHeightLandscape: 0,
     statusBarEdge: 'top',
@@ -192,6 +199,7 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
     shell: { screenRadius: 38, bezel: 6 },
   },
   android: {
+    statusBarStyle: 'android-stock',
     statusBarHeight: 24,
     statusBarHeightLandscape: 24,
     statusBarEdge: 'top',
@@ -201,6 +209,7 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
     shell: { screenRadius: 16, bezel: 4 },
   },
   harmony: {
+    statusBarStyle: 'harmony',
     statusBarHeight: 36,
     statusBarHeightLandscape: 36,
     statusBarEdge: 'top',
@@ -220,6 +229,7 @@ const NO_INSETS: EdgeInsets = { top: 0, right: 0, bottom: 0, left: 0 }
 export interface ResolvedDevice {
   name: string
   os: DeviceOS
+  statusBarStyle: StatusBarStyle
   screen: ScreenSize
   pixelRatio: number
   formFactor: DeviceFormFactor
@@ -280,6 +290,7 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
   return {
     name: profile.name,
     os: profile.os,
+    statusBarStyle: profile.statusBarStyle ?? defaults.statusBarStyle,
     screen: profile.screen,
     pixelRatio: profile.pixelRatio,
     formFactor: profile.formFactor ?? 'phone',
@@ -301,7 +312,11 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
       bezel,
       bezelInsets,
       homeButton,
-      bodyRadius: profile.shell?.bodyRadius ?? screenRadius + bezel,
+      // The largest adjacent inset is the natural scalar envelope for an
+      // asymmetric modern shell. reflectMetrics may replace it with the
+      // per-corner ellipse when the profile did not explicitly provide a
+      // scalar bodyRadius.
+      bodyRadius: profile.shell?.bodyRadius ?? screenRadius + Math.max(...Object.values(bezelInsets)),
     },
   }
 }

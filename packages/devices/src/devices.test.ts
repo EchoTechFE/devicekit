@@ -8,7 +8,7 @@ import {
   type DeviceOS,
   type DeviceProfile,
 } from './devices.js'
-import { findDevice } from './presets/index.js'
+import { DEVICES, findDevice } from './presets/index.js'
 
 /**
  * Expected numbers, transcribed from the external device tables and published
@@ -189,6 +189,23 @@ describe('falling back to platform defaults when a profile omits chrome fields',
     const resolved = resolveDevice(bareProfile('android'))
     expect(resolved.safeAreaInsets).toEqual({ top: 24, right: 0, bottom: 0, left: 0 })
     expect(resolved.safeAreaInsetsLandscape).toEqual({ top: 24, right: 0, bottom: 0, left: 0 })
+  })
+
+  it('resolves the platform visual family, while a profile can explicitly override it', () => {
+    expect(resolveDevice(bareProfile('ios')).statusBarStyle).toBe('ios')
+    expect(resolveDevice(bareProfile('android')).statusBarStyle).toBe('android-stock')
+    expect(resolveDevice(bareProfile('harmony')).statusBarStyle).toBe('harmony')
+    expect(resolveDevice({ ...bareProfile('android'), statusBarStyle: 'android-samsung' }).statusBarStyle).toBe('android-samsung')
+  })
+})
+
+describe('preset status-bar visual families', () => {
+  it('keeps every Samsung preset on the Samsung visual approximation, while Pixel uses Android stock and Huawei uses HarmonyOS', () => {
+    const samsung = DEVICES.filter((device) => device.name.includes('Samsung') || device.name.startsWith('Galaxy'))
+    expect(samsung.length).toBeGreaterThan(0)
+    expect(samsung.map((device) => resolveDevice(device).statusBarStyle)).toEqual(Array(samsung.length).fill('android-samsung'))
+    expect(resolveDevice(preset('Pixel 7')).statusBarStyle).toBe('android-stock')
+    expect(resolveDevice(preset('HUAWEI Mate 60 Pro')).statusBarStyle).toBe('harmony')
   })
 })
 

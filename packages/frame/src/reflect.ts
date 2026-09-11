@@ -11,8 +11,10 @@
  * the attribute stays the single source of truth, and the two doors cannot
  * disagree.
  */
+import type { DeviceProfile } from '@devicekit/devices'
 import type { DeviceMetrics } from './metrics.js'
 import { orientedShellInsets } from './shell-insets.js'
+import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
 
 /** A value-carrying attribute. `null`/`undefined` clear it, matching `removeAttribute`. */
 export function reflectAttribute(el: Element, name: string, value: string | null | undefined): void {
@@ -37,7 +39,7 @@ export function reflectFlag(el: Element, name: string, value: boolean | null | u
  * The safe area is published as insets, matching what `env(safe-area-inset-*)`
  * would report, rather than as the rectangle's own coordinates.
  */
-export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetrics, embedded: boolean): void {
+export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetrics, embedded: boolean, profile?: DeviceProfile): void {
   if (embedded) {
     style.removeProperty('--device-width')
     style.removeProperty('--device-height')
@@ -69,4 +71,28 @@ export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetric
   style.setProperty('--device-bezel-bottom', `${shellInsets.bottom}px`)
   style.setProperty('--device-bezel-left', `${shellInsets.left}px`)
   style.setProperty('--device-body-radius', `${shell.bodyRadius}px`)
+
+  // Rounded modern screens stay concentric with each adjacent edge even when
+  // the bezel is asymmetric. Legacy square screens intentionally keep their
+  // explicit scalar bodyRadius semantics and therefore do not publish these
+  // modern per-corner variables.
+  const uniformInsets = shellInsets.top === shellInsets.right
+    && shellInsets.right === shellInsets.bottom
+    && shellInsets.bottom === shellInsets.left
+  // A caller-provided scalar is an explicit shell contract, even when the
+  // screen also has asymmetric insets. Automatic elliptical radii apply only
+  // when the profile leaves bodyRadius unspecified.
+  const explicitBodyRadius = profile?.shell?.bodyRadius !== undefined
+  if (shell.screenRadius === 0 || uniformInsets || explicitBodyRadius) {
+    style.removeProperty('--device-body-radius-x')
+    style.removeProperty('--device-body-radius-y')
+  }
+  else {
+    const left = shell.screenRadius + shellInsets.left + DEVICE_FRAME_BORDER_WIDTH
+    const right = shell.screenRadius + shellInsets.right + DEVICE_FRAME_BORDER_WIDTH
+    const top = shell.screenRadius + shellInsets.top + DEVICE_FRAME_BORDER_WIDTH
+    const bottom = shell.screenRadius + shellInsets.bottom + DEVICE_FRAME_BORDER_WIDTH
+    style.setProperty('--device-body-radius-x', `${left}px ${right}px ${right}px ${left}px`)
+    style.setProperty('--device-body-radius-y', `${top}px ${top}px ${bottom}px ${bottom}px`)
+  }
 }

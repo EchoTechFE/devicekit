@@ -4,7 +4,7 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "."
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

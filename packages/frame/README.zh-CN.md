@@ -221,7 +221,7 @@ frame 只帮这个槽让开状态栏。**横屏时它不处理左右安全区**�
 ```html
 <device-frame device="iPhone 16 Pro">
   <div slot="navigation-bar" class="mp-title-bar">
-    <button class="mp-title-bar__back" aria-label="返回">‹</button>
+    <button class="demo-icon-button" aria-label="返回"><span class="demo-icon demo-icon--back" aria-hidden="true"></span></button>
     <span class="mp-title-bar__title">购物车</span>
   </div>
   <iframe src="/preview"></iframe>
@@ -240,13 +240,34 @@ frame 只帮这个槽让开状态栏。**横屏时它不处理左右安全区**�
   font: 500 17px/1 -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-.mp-title-bar__back {
+.demo-icon-button {
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
   border: 0;
-  background: none;
-  font-size: 26px;
-  line-height: 1;
-  padding: 0 8px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  font: inherit;
+  line-height: 0;
   cursor: pointer;
+}
+
+.demo-icon {
+  display: block;
+  width: 9px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 14'><path d='M8 0 1 7l7 7 1-1-6-6 6-6z'/></svg>") no-repeat center / contain;
+  mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 14'><path d='M8 0 1 7l7 7 1-1-6-6 6-6z'/></svg>") no-repeat center / contain;
 }
 
 /* 标题在整条栏里居中，而不是在返回键右边居中——微信就是这么排的 */
@@ -262,9 +283,9 @@ frame 只帮这个槽让开状态栏。**横屏时它不处理左右安全区**�
 ```html
 <device-frame device="iPhone 16 Pro" status-bar-text-style="white">
   <div slot="navigation-bar" class="h5-bar">
-    <button class="h5-bar__back" aria-label="返回">‹</button>
+    <button class="demo-icon-button" aria-label="返回"><span class="demo-icon demo-icon--back" aria-hidden="true"></span></button>
     <span class="h5-bar__title">活动详情</span>
-    <button class="h5-bar__close" aria-label="关闭">✕</button>
+    <button class="demo-icon-button" aria-label="关闭"><span class="demo-icon demo-icon--close" aria-hidden="true"></span></button>
   </div>
   <iframe src="/activity"></iframe>
 </device-frame>
@@ -284,14 +305,11 @@ frame 只帮这个槽让开状态栏。**横屏时它不处理左右安全区**�
 
 .h5-bar__title { flex: 1; text-align: center; }
 
-.h5-bar__back,
-.h5-bar__close {
-  border: 0;
-  background: none;
-  color: inherit;
-  font-size: 20px;
-  padding: 0 4px;
-  cursor: pointer;
+.demo-icon--close {
+  width: 14px;
+  height: 14px;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='m1 0 6 6 6-6 1 1-6 6 6 6-1 1-6-6-6 6-1-1 6-6-6-6z'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 14'><path d='m1 0 6 6 6-6 1 1-6 6 6 6-1 1-6-6-6 6-1-1 6-6-6-6z'/></svg>");
 }
 ```
 
@@ -350,7 +368,7 @@ frame 只帮这个槽让开状态栏。**横屏时它不处理左右安全区**�
 
 `embedded` 下屏幕尺寸那两个不再写出：元素自己宽高走 `100%`，尺寸归容器管。归零的是本来被手机外壳占掉的那些——窗口尺寸、三条栏的高度、四条安全区边距。`--device-pixel-ratio`、`--device-screen-radius`、`--device-bezel`、`--device-bezel-top`、`--device-bezel-right`、`--device-bezel-bottom`、`--device-bezel-left`、`--device-body-radius` 仍然是这台机器自己的值，宿主画自己的外壳时照样读得到。
 
-外观也留了几个变量可以盖：`--device-frame-radius`（盖过机型自己的机身圆角，现在同时驱动机身和屏幕两处圆角，屏幕会自动跟着收窄描边和内边距那部分；这个同心计算只适用于统一 bezel，使用 `bezelInsets` 的机型应直接设置自己的 `bodyRadius`；只接受 CSS `<length>`——百分比会被浏览器各自相对两个盒子单独解析，机身和屏幕就不再共享同一个圆心，这个变量也就不再是"同心一个圆角"的意思了）、`--device-frame-border`、`--device-frame-background`、`--device-frame-shadow`、`--device-cutout-color`（刘海/灵动岛/挖孔的颜色）、`--device-screen-background`（屏幕上没被 slot 盖住的地方显示什么——状态栏默认透明，没有 `navigation-bar` slot 时时钟那一条露出来的就是它；默认白色，暗色页面要把它设成页面自己的背景色，否则白色状态栏文字没东西衬）。机身默认是近黑色（`#0b0b0c`）配一圈极淡的白色描边，`--device-bezel` 按平台取默认值（iOS 6、Android/HarmonyOS 4），单个机型可以在 `shell.bezel` 里覆盖。改 `--device-frame-border` 顺带把描边宽度也改了的话，必须同步设置 `--device-frame-border-width`，否则圆角公式还是按旧的默认宽度算。
+外观也留了几个变量可以盖：`--device-frame-radius`（盖过机型自己的机身圆角，现在同时驱动机身和屏幕两处圆角，屏幕会自动跟着收窄描边和内边距那部分；统一 bezel 会使用标量圆角，设置了 `bezelInsets` 且省略 `bodyRadius` 时会按四边厚度自动生成同心椭圆圆角，显式设置 `bodyRadius` 则保留这个标量；只接受 CSS `<length>`——百分比会被浏览器各自相对两个盒子单独解析，机身和屏幕就不再共享同一个圆心，这个变量也就不再是"同心一个圆角"的意思了）、`--device-frame-border`、`--device-frame-background`、`--device-frame-shadow`、`--device-cutout-color`（刘海/灵动岛/挖孔的颜色）、`--device-screen-background`（屏幕上没被 slot 盖住的地方显示什么——状态栏默认透明，没有 `navigation-bar` slot 时时钟那一条露出来的就是它；默认白色，暗色页面要把它设成页面自己的背景色，否则白色状态栏文字没东西衬）。原生宿主如果能提供合法的图像输出，也可以通过继承的 `--device-status-bar-signal-image`、`--device-status-bar-wifi-image`、`--device-status-bar-battery-image` 覆盖三种状态栏 mask；不提供时仍使用包内自有 fallback path。机身默认是近黑色（`#0b0b0c`）配一圈极淡的白色描边，`--device-bezel` 按平台取默认值（iOS 6、Android/HarmonyOS 4），单个机型可以在 `shell.bezel` 里覆盖。改 `--device-frame-border` 顺带把描边宽度也改了的话，必须同步设置 `--device-frame-border-width`，否则圆角公式还是按旧的默认宽度算。
 
 `<device-frame safe-area-bottom="30">` 会覆盖底部安全区；在 `deviceProfile` 里设置 `safeAreaInsets.bottom: 30` 也一样。它会更新 `metrics.safeAreaInsets.bottom`、`--device-safe-area-bottom`，并让元素自身按这个安全区绘制底部区域和手势条。
 

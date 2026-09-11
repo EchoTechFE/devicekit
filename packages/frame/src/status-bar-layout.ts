@@ -8,7 +8,7 @@
  * "ear" widths either side of the cutout — computes position, so there is one
  * place to fix when a measurement is wrong instead of two that can drift.
  */
-import { cutoutFor, statusBarEdgeFor, statusBarHeightFor, type Orientation, type ResolvedDevice, type StatusBarEdge } from '@devicekit/devices'
+import { cutoutFor, statusBarEdgeFor, statusBarHeightFor, type Orientation, type ResolvedDevice, type StatusBarEdge, type StatusBarStyle } from '@devicekit/devices'
 
 /**
  * The device's screen width in this orientation. Not orientedScreen() itself:
@@ -58,8 +58,8 @@ function modeFor(device: ResolvedDevice, orientation: Orientation): StatusBarLay
     if (shortSide >= IPAD_SHORT_SIDE) return 'ipad'
     return cutoutFor(device, orientation) ? 'ios-cutout' : 'ios-classic'
   }
-  // android and harmony: harmony has no layout of its own measured yet, so it
-  // borrows android's until someone measures a real device.
+  // Harmony only reuses Android geometry; its paint/style is independent and
+  // the Harmony geometry has not been measured on a real device.
   return 'android'
 }
 
@@ -167,8 +167,35 @@ function ipadLayout(height: number): OrientationlessLayout {
   }
 }
 
-function androidLayout(height: number): OrientationlessLayout {
-  return { timeLeft: 31, trailing: 28, centerY: height / 2, scale: 1, leadingIcons: null }
+interface AndroidGeometryToken {
+  timeLeft: number
+  trailing: number
+  centerOffset: number
+  scale: number
+}
+
+/**
+ * Family-level approximations for the Android status strip. These are visual
+ * tokens, not claims of pixel measurements from each vendor's firmware. The
+ * map is deliberately keyed by the existing paint family so topology and
+ * typography cannot drift into separate device-name special cases.
+ */
+const ANDROID_GEOMETRY: Record<StatusBarStyle, AndroidGeometryToken> = {
+  ios: { timeLeft: 31, trailing: 28, centerOffset: 0, scale: 1 },
+  'android-stock': { timeLeft: 31, trailing: 28, centerOffset: 0, scale: 1 },
+  'android-samsung': { timeLeft: 28, trailing: 24, centerOffset: -1, scale: 1 },
+  harmony: { timeLeft: 27, trailing: 22, centerOffset: 0.5, scale: 1.02 },
+}
+
+function androidLayout(device: ResolvedDevice, height: number): OrientationlessLayout {
+  const token = ANDROID_GEOMETRY[device.statusBarStyle]
+  return {
+    timeLeft: token.timeLeft,
+    trailing: token.trailing,
+    centerY: height / 2 + token.centerOffset,
+    scale: token.scale,
+    leadingIcons: null,
+  }
 }
 
 /**
@@ -196,6 +223,6 @@ export function computeStatusBarLayout(device: ResolvedDevice, orientation: Orie
     case 'ipad':
       return { mode, edge, height, ...ipadLayout(height) }
     case 'android':
-      return { mode, edge, height, ...androidLayout(height) }
+      return { mode, edge, height, ...androidLayout(device, height) }
   }
 }

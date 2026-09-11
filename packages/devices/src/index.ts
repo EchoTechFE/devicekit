@@ -20,6 +20,7 @@ export {
   type ResolvedDeviceShell,
   type ScreenSize,
   type StatusBarEdge,
+  type StatusBarStyle,
 } from './devices.js'
 
 export { assertDeviceProfile } from './validate.js'

@@ -32,15 +32,16 @@ describe('DEVICE_FRAME_STYLES corner radius variables', () => {
     expect(DEVICE_FRAME_STYLES).toMatch(/--device-frame-border:[^;]*var\(--device-frame-border-width\)/)
   })
 
-  it('.body border-radius adds the border width to the resolved body radius', () => {
+  it('.body border-radius accepts per-corner elliptical variables with scalar fallback', () => {
     expect(ruleBody('.body')).toMatch(
-      /border-radius:\s*var\(--device-frame-radius,\s*calc\(var\(--device-body-radius\)\s*\+\s*var\(--device-frame-border-width\)\)\)/,
+      /border-radius:\s*var\(--device-frame-radius,\s*var\(--device-body-radius-x,\s*calc\(var\(--device-body-radius\)\s*\+\s*var\(--device-frame-border-width\)\)\)\s*\/\s*var\(--device-body-radius-y,\s*calc\(var\(--device-body-radius\)\s*\+\s*var\(--device-frame-border-width\)\)\)\)/,
     )
   })
 
-  it('.screen border-radius subtracts the bezel and border width, floored at 0', () => {
-    expect(ruleBody('.screen')).toMatch(
-      /border-radius:\s*max\(0px,\s*calc\(\s*var\(--device-frame-radius,\s*calc\(var\(--device-screen-radius\)\s*\+\s*var\(--device-bezel\)\s*\+\s*var\(--device-frame-border-width\)\)\)\s*-\s*var\(--device-bezel\)\s*-\s*var\(--device-frame-border-width\)\)\)/,
+  it('.screen uses an effective radius that preserves the host override calculation', () => {
+    expect(ruleBody('.screen')).toMatch(/border-radius:\s*var\(--device-screen-radius-effective\)/)
+    expect(DEVICE_FRAME_STYLES).toMatch(
+      /--device-screen-radius-effective:\s*max\(0px,\s*calc\(var\(--device-frame-radius,\s*calc\(var\(--device-screen-radius\)\s*\+\s*var\(--device-bezel\)\s*\+\s*var\(--device-frame-border-width\)\)\)\s*-\s*var\(--device-bezel\)\s*-\s*var\(--device-frame-border-width\)\)\)/,
     )
   })
 })

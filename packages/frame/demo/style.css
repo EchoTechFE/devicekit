@@ -4,13 +4,75 @@
 
 * { box-sizing: border-box; }
 
+:root {
+  color-scheme: light;
+  --demo-body-background: #eef2f6;
+  --demo-body-color: #0f172a;
+  --demo-panel-background: #fff;
+  --demo-panel-border: #dde3ea;
+  --demo-label-color: #475569;
+  --demo-note-color: #64748b;
+  --demo-control-background: #fff;
+  --demo-control-border: #cbd5e1;
+  --demo-stage-background: #eef2f6;
+  --demo-board-background: #fff;
+  --demo-board-shadow: 0 18px 50px rgba(16, 20, 24, 0.18);
+  --demo-page-background: transparent;
+  --demo-page-color: #0f172a;
+  --demo-page-size-color: #1d4ed8;
+  --demo-readout-background: #0f172a;
+  --demo-readout-color: #e2e8f0;
+  --demo-screen-background: linear-gradient(#dbeafe, #f8fafc 160px);
+  --demo-navigation-background: #ededed;
+  --demo-navigation-color: #000;
+  --demo-tab-background: #f7f7f7;
+  --demo-tab-border: #d8d8d8;
+  --demo-tab-color: #7a7e83;
+  --demo-tab-active: #07c160;
+  --demo-theme-toggle-background: #e2e8f0;
+  --demo-theme-toggle-border: #94a3b8;
+  --demo-theme-toggle-selected: #fff;
+  --demo-theme-toggle-selected-color: #0f172a;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --demo-body-background: #0b1220;
+  --demo-body-color: #e5e7eb;
+  --demo-panel-background: #111827;
+  --demo-panel-border: #263449;
+  --demo-label-color: #cbd5e1;
+  --demo-note-color: #94a3b8;
+  --demo-control-background: #1f2937;
+  --demo-control-border: #475569;
+  --demo-stage-background: #0b1220;
+  --demo-board-background: #111827;
+  --demo-board-shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+  --demo-page-background: transparent;
+  --demo-page-color: #e2e8f0;
+  --demo-page-size-color: #93c5fd;
+  --demo-readout-background: #020617;
+  --demo-readout-color: #e2e8f0;
+  --demo-screen-background: linear-gradient(#0f172a, #1e293b 160px);
+  --demo-navigation-background: #1f1f1f;
+  --demo-navigation-color: #fff;
+  --demo-tab-background: #111827;
+  --demo-tab-border: #1f2937;
+  --demo-tab-color: #94a3b8;
+  --demo-tab-active: #34d399;
+  --demo-theme-toggle-background: #1e293b;
+  --demo-theme-toggle-border: #64748b;
+  --demo-theme-toggle-selected: #475569;
+  --demo-theme-toggle-selected-color: #f8fafc;
+}
+
 body {
   margin: 0;
   display: flex;
   height: 100vh;
   font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
-  color: #0f172a;
-  background: #eef2f6;
+  color: var(--demo-body-color);
+  background: var(--demo-body-background);
 }
 
 .panel {
@@ -18,8 +80,8 @@ body {
   width: 300px;
   padding: 20px;
   overflow: auto;
-  background: #fff;
-  border-right: 1px solid #dde3ea;
+  background: var(--demo-panel-background);
+  border-right: 1px solid var(--demo-panel-border);
 }
 
 .panel h1 {
@@ -35,7 +97,7 @@ body {
 .field > span {
   display: block;
   margin-bottom: 4px;
-  color: #475569;
+  color: var(--demo-label-color);
   font-size: 12px;
 }
 
@@ -48,13 +110,83 @@ body {
 .field--inline > span {
   margin: 0;
   font-size: 13px;
-  color: #0f172a;
+  color: var(--demo-body-color);
 }
 
 .field select,
 .field input[type="number"],
+.field input[type="text"],
 .field input[type="range"] {
   width: 100%;
+}
+
+.field select,
+.field input[type="number"],
+.field input[type="text"] {
+  box-sizing: border-box;
+  border: 1px solid var(--demo-control-border);
+  border-radius: 4px;
+  background: var(--demo-control-background);
+  color: var(--demo-body-color);
+}
+
+.theme-switch {
+  padding: 0;
+  border: 0;
+}
+
+.theme-switch legend {
+  margin-bottom: 4px;
+  color: var(--demo-label-color);
+  font-size: 12px;
+}
+
+.theme-switch label {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  color: var(--demo-label-color);
+  cursor: pointer;
+}
+
+.theme-switch__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid var(--demo-theme-toggle-border);
+  border-radius: 6px;
+  background: var(--demo-theme-toggle-background);
+}
+
+.theme-switch input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.theme-switch label span {
+  display: block;
+  width: 100%;
+  padding: 5px 8px;
+  color: inherit;
+  text-align: center;
+}
+
+.theme-switch input:checked + span {
+  background: var(--demo-theme-toggle-selected);
+  color: var(--demo-theme-toggle-selected-color);
+  box-shadow: inset 0 0 0 1px var(--demo-theme-toggle-border);
+}
+
+.theme-switch input:focus-visible + span {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
 }
 
 code {
@@ -64,7 +196,13 @@ code {
 
 .note {
   margin: 16px 0;
-  color: #64748b;
+  color: var(--demo-note-color);
+  font-size: 12px;
+}
+
+.sf-symbol-status {
+  margin: 8px 0;
+  color: var(--demo-label-color);
   font-size: 12px;
 }
 
@@ -72,7 +210,7 @@ code {
   display: flex;
   justify-content: space-between;
   margin: 12px 0 4px;
-  color: #475569;
+  color: var(--demo-label-color);
   font-size: 12px;
 }
 
@@ -81,8 +219,8 @@ code {
   padding: 8px;
   max-height: 220px;
   overflow: auto;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--demo-readout-background);
+  color: var(--demo-readout-color);
   border-radius: 6px;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
@@ -96,6 +234,7 @@ code {
   justify-content: center;
   min-width: 0;
   overflow: auto;
+  background: var(--demo-stage-background);
 }
 
 .stage__scaler {
@@ -122,8 +261,8 @@ code {
   height: 760px;
   overflow: hidden;
   border-radius: 12px;
-  background: #fff;
-  box-shadow: 0 18px 50px rgba(16, 20, 24, 0.18);
+  background: var(--demo-board-background);
+  box-shadow: var(--demo-board-shadow);
 }
 
 /* ---- The previewed page: height and padding all read the custom properties
@@ -141,8 +280,8 @@ code {
     calc(max(var(--device-safe-area-bottom) - var(--device-tab-bar-height), 0px) + 16px)
     calc(var(--device-safe-area-left) + 16px);
   overflow: auto;
-  background: transparent;
-  color: #0f172a;
+  background: var(--demo-page-background);
+  color: var(--demo-page-color);
 }
 
 .page h2 {
@@ -157,87 +296,7 @@ code {
 
 .page__size {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  color: #1d4ed8;
-}
-
-/* ---- Mini-program title bar ---- */
-
-.mp-title-bar {
-  position: relative;
-  display: flex;
-  align-items: center;
-  height: 100%;
-  padding: 0 12px;
-  background: #ededed;
-  color: #000;
-  font: 500 17px/1 -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.mp-title-bar__back {
-  border: 0;
-  background: none;
-  font-size: 26px;
-  line-height: 1;
-  padding: 0 8px;
-  cursor: pointer;
-}
-
-/* The title centers in the whole bar, not in the space to the right of the
-   back button — which is how WeChat lays it out. */
-.mp-title-bar__title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* ---- In-app browser back bar ---- */
-
-.h5-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 100%;
-  padding: 0 12px;
-  background: #0f172a;
-  color: #fff;
-  font: 500 17px/1 -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.h5-bar__title { flex: 1; text-align: center; }
-
-.h5-bar__back,
-.h5-bar__close {
-  border: 0;
-  background: none;
-  color: inherit;
-  font-size: 20px;
-  padding: 0 4px;
-  cursor: pointer;
-}
-
-/* ---- Tab bar ---- */
-
-.demo-tab-bar {
-  display: flex;
-  height: 100%;
-  background: #f7f7f7;
-  border-top: 1px solid #d8d8d8;
-  /* A real tab bar absorbs the gesture-bar inset itself rather than letting the
-     home indicator sit on top of its labels. */
-  padding-bottom: var(--device-safe-area-bottom);
-}
-
-.demo-tab-bar__item {
-  flex: 1;
-  border: 0;
-  background: none;
-  color: #7a7e83;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.demo-tab-bar__item--on {
-  color: #07c160;
+  color: var(--demo-page-size-color);
 }
 
 /* ---- Safe area, drawn: four translucent bands sized straight from the four
@@ -300,31 +359,10 @@ code {
 /* ---- Dark page: makes both status-bar-text-style values readable at a glance ---- */
 
 device-frame {
-  --device-screen-background: linear-gradient(#dbeafe, #f8fafc 160px);
+  --device-screen-background: var(--demo-screen-background);
 }
 
-body.demo-dark-page .page {
-  color: #e2e8f0;
-}
-
-body.demo-dark-page device-frame {
-  --device-screen-background: linear-gradient(#0f172a, #1e293b 160px);
-}
-
-body.demo-dark-page .mp-title-bar {
-  background: #1f1f1f;
-  color: #fff;
-}
-
-body.demo-dark-page .demo-tab-bar {
-  background: #111827;
-  border-top-color: #1f2937;
-}
-
-body.demo-dark-page .demo-tab-bar__item {
-  color: #94a3b8;
-}
-
-body.demo-dark-page .demo-tab-bar__item--on {
-  color: #34d399;
+devicekit-demo-h5-navigation {
+  --demo-navigation-background: #0f172a;
+  --demo-navigation-color: #fff;
 }
