@@ -56,6 +56,7 @@ const viewport = need('viewport')
 const scaler = need('scaler')
 const deviceSelect = need<HTMLSelectElement>('device')
 const orientationSelect = need<HTMLSelectElement>('orientation')
+const interactionModeSelect = need<HTMLSelectElement>('interaction-mode')
 const navigationSelect = need<HTMLSelectElement>('navigation-bar')
 const statusBarSelect = need<HTMLSelectElement>('status-bar')
 const textStyleSelect = need<HTMLSelectElement>('status-bar-text-style')
@@ -206,6 +207,7 @@ function layout(): void {
 function apply(): void {
   frame.setAttribute('device', deviceSelect.value)
   frame.setAttribute('orientation', orientationSelect.value)
+  frame.setAttribute('interaction-mode', interactionModeSelect.value)
   const device = DEVICES.find((candidate) => candidate.name === deviceSelect.value)
   if (device === undefined) throw new Error(`unknown demo device ${deviceSelect.value}`)
   const deviceTheme = applyDeviceTheme([frame, bars.mp, bars.h5, bars.tab], device, selectedTheme())
@@ -266,6 +268,7 @@ export function bootstrapDemo(): void {
 
   for (const control of [
     orientationSelect,
+    interactionModeSelect,
     statusBarSelect,
     textStyleSelect,
     tabBarInput,

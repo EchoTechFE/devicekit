@@ -21,15 +21,17 @@ const _props: DeviceFrameProps = {
   device: maybe,
   deviceProfile: maybeProfile,
   orientation: undefined,
+  interactionMode: undefined,
   embedded: undefined,
 }
 
-const _el = <DeviceFrame device={maybe} os={undefined} statusBar={undefined} />
+const _el = <DeviceFrame device={maybe} os={undefined} interactionMode={undefined} statusBar={undefined} />
 
 const _intrinsic: DeviceFrameIntrinsicAttributes = {
   device: maybe,
   os: undefined,
   orientation: undefined,
+  'interaction-mode': undefined,
 }
 
-const _intrinsicEl = <device-frame device={maybe} os={undefined} orientation={undefined} />
+const _intrinsicEl = <device-frame device={maybe} os={undefined} orientation={undefined} interaction-mode={undefined} />

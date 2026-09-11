@@ -21,7 +21,7 @@
 import * as React from 'react'
 import { useImperativeHandle, useLayoutEffect, useRef } from 'react'
 import type { CutoutShape, DeviceName, DeviceOS, DeviceProfile, Orientation } from '@devicekit/devices'
-import { defineDeviceFrame, DEVICE_FRAME_TAG, type DeviceFrameElement } from '../device-frame.js'
+import { defineDeviceFrame, DEVICE_FRAME_TAG, type DeviceFrameElement, type DeviceInteractionMode } from '../device-frame.js'
 import { CONTENT_RECT_CHANGE_EVENT } from '../element-events.js'
 import { sameContentRect, type ContentRect } from '../content-rect.js'
 import type { StatusBarTextStyle } from '../metrics.js'
@@ -67,6 +67,8 @@ export interface DeviceFrameProps extends React.HTMLAttributes<HTMLElement> {
   os?: DeviceOS | undefined
   /** Which way the device is held. Default portrait. */
   orientation?: Orientation | undefined
+  /** Whether the preview presents touch or mouse input affordances. Default mobile. */
+  interactionMode?: DeviceInteractionMode | undefined
   /** Draw a bare screen with no body or chrome, stretched to fill the container. */
   embedded?: boolean | undefined
   /** Run the page full height behind the bars instead of below them. */
@@ -138,6 +140,7 @@ export function createDeviceFrameComponent(
       deviceProfile,
       os,
       orientation,
+      interactionMode,
       embedded,
       immersive,
       cutout,
@@ -267,6 +270,7 @@ export function createDeviceFrameComponent(
     set('device', device)
     set('os', os)
     set('orientation', orientation)
+    set('interaction-mode', interactionMode)
     set('cutout', cutout)
     set('width', width)
     set('height', height)
@@ -322,6 +326,7 @@ export interface DeviceFrameIntrinsicAttributes
   device?: string | undefined
   os?: DeviceOS | undefined
   orientation?: Orientation | undefined
+  'interaction-mode'?: DeviceInteractionMode | undefined
   /**
    * Presence is the whole signal. `false` is not accepted on the raw tag: on
    * React 18 it would set the literal attribute `embedded="false"`, which the

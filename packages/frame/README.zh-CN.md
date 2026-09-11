@@ -98,6 +98,7 @@ import { DEVICE_NAMES } from '@devicekit/devices'
 | `deviceProfile` | `DeviceProfile \| null` | 没有属性形式，直接当 property 赋值 |
 | `os` | `DeviceOS` | `os` |
 | `orientation` | `Orientation` | `orientation` |
+| `interactionMode` | `DeviceInteractionMode` | `interaction-mode` |
 | `width`、`height` | `number` | `width`、`height` |
 | `pixelRatio` | `number` | `pixel-ratio` |
 | `cutout` | `CutoutShape \| 'none'` | `cutout` |
@@ -152,6 +153,7 @@ pnpm --filter @devicekit/frame demo
 | `device` | 机型名，如 `iPhone 16 Pro` | 表里没有的名字，或者干脆不写这个属性，退回的是默认*尺寸*，不是一台默认机型（见下）。在 JS 里请用 `@devicekit/devices` 的 `DEVICE_NAMES` 常量，别手打字符串 |
 | `os` | `ios`（默认）、`android`、`harmony` | 没有机型也没写高度时，状态栏和导航栏走这个平台的默认值 |
 | `orientation` | `portrait`（默认）、`landscape` | 横屏时宽高互换，其余的数字换成机型表里横屏那一套 |
+| `interaction-mode` | `mobile`（默认）、`mobile-no-touch`、`desktop`、`desktop-touch` | 决定预览屏幕显示触控圆环还是普通鼠标；解析后的模式也会公布给插槽内容 |
 | `width`、`height` | 数字，CSS px，**竖屏方向** | 给了就盖过机型表里的值 |
 | `pixel-ratio` | 数字 | 同上 |
 | `cutout` | `none`、`notch`、`pill`、`circle` | 按形状取一套通用几何。要精确的挖孔用 `deviceProfile` 传 |
@@ -166,6 +168,12 @@ pnpm --filter @devicekit/frame demo
 | `immersive` | 布尔属性 | 见“页面自己画标题栏” |
 | `embedded` | 布尔属性 | 见 `embedded` |
 
+## 交互模式
+
+`interaction-mode` 决定桌面预览如何表达输入方式。`mobile` 和 `desktop-touch` 显示以圆心为热点的触控圆环；`mobile-no-touch` 和 `desktop` 显示普通光标。解析后的值可以从 `frame.interactionMode` 读取，也会写到 frame 的 `data-devicekit-interaction-mode`，插槽里的内容可据此切换自己的交互提示。
+
+这只改变预览外观并提供模式信息，不会伪造浏览器触摸事件，也不会修改 `navigator.maxTouchPoints` 等页面 API。需要让业务代码真正观察到这些差异时，请使用真机、iframe/运行时适配层或浏览器模拟。
+
 默认时间固定在 `9:41` 而不是当前时间，是为了截图和视觉 diff 每次都一样。真的想让它走起来就写 `status-bar="live"`。背后的定时器只在元素连进文档时才跑——在文档外先建好的 frame 显示的是固定时间，挂上去才开始走，摘下来就停。
 
 **不写 `device` 的 `<device-frame>` 画的不是 `DEFAULT_DEVICE`。** 属性是由 `profileFromAttributes` 折到一份机型 profile 上的，没指定机型就没有可折的底：出来的是一台匿名 iOS 机——只借了 `DEFAULT_DEVICE` 的屏幕宽高，其余走平台默认值，像素比 1、没有挖孔、没有实测安全区、状态栏按 iOS 默认高度算。当“随便一台手机”用没问题，当“iPhone X”用就不对了。要么把机型名写出来，要么自己写 `width` / `height` / `pixel-ratio` / `cutout`。
@@ -177,13 +185,14 @@ pnpm --filter @devicekit/frame demo
 | `deviceProfile` | `DeviceProfile \| null` | 机型表以外的机型，优先于 `device` 属性。可读可写，没有对应的属性写法；写 `null` 就是清掉 |
 | `device` | 读出 `DeviceProfile \| null`，写入 `string \| null \| undefined` | `device` 属性点名的那条机型，没有就是 `null`；写机型名会设上属性，写 `null` 或 `undefined` 就把属性去掉 |
 | `orientation` | 读出 `Orientation`，写入 `string \| null \| undefined` | 当前方向；写入会设上 `orientation` 属性，写 `null` 或 `undefined` 就把属性去掉 |
+| `interactionMode` | 读出 `DeviceInteractionMode`，写入 `DeviceInteractionMode \| string \| null \| undefined` | 反射 `interaction-mode`；不支持的值按 `mobile` 生效 |
 | `embedded` | `boolean` | 是不是在 embedded 模式；写入会加上或去掉属性 |
 | `immersive` | `boolean` | 页面是不是跑在几条栏后面；写入会加上或去掉属性 |
 | `profile` | `DeviceProfile` | 只读：真正生效的那条机型，属性覆盖已经折进去了 |
 | `metrics` | `DeviceMetrics` | 只读：元素最后是按哪几个数画的 |
 | `contentRect` | `ContentRect` | 只读：内容区在视口坐标系里的位置 |
 
-上面这四个就是同名属性的另一个入口：写 property 会反射成属性，读出来的是元素从属性里解析出的结果，两种写法效果一样。React 19 不调 `setAttribute`、直接给元素上已有的名字赋值，靠的就是这一条。
+上面这五个就是同名属性的另一个入口：写 property 会反射成属性，读出来的是元素从属性里解析出的结果，两种写法效果一样。React 19 不调 `setAttribute`、直接给元素上已有的名字赋值，靠的就是这一条。
 
 `embedded` 和 `immersive` 是布尔**属性**（attribute）：出现就是真，`embedded=""` 也算真，跟原生的 `hidden` 一样。但当**property** 写的时候，setter 是拿 `Boolean(value)` 判的，所以 `el.embedded = ''` 会被判成假——同样是照 `hidden` 的规矩来。这个差异正是 React 要小心的地方：React 18 把标签上写的这类布尔 prop 当字面属性写（`embedded={true}` 变成属性 `embedded="true"`，依然是真），React 19 则直接赋值成 property（这时 `embedded=""` 就会判成假）。请传 `embedded={true}` 或简写的 `embedded`，别写 `embedded=""`，两个 React 版本才能给出一样的结果。
 

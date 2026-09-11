@@ -55,6 +55,21 @@ import { upgradeProperties } from './upgrade-properties.js'
 export { CONTENT_RECT_CHANGE_EVENT }
 export type { DeviceFrameElementEventMap, DeviceMetrics, StatusBarTextStyle }
 
+/** How a desktop host should present input over the simulated device screen. */
+export type DeviceInteractionMode = 'mobile' | 'mobile-no-touch' | 'desktop' | 'desktop-touch'
+
+function toInteractionMode(value: string | null): DeviceInteractionMode {
+  switch (value) {
+    case 'mobile':
+    case 'mobile-no-touch':
+    case 'desktop':
+    case 'desktop-touch':
+      return value
+    default:
+      return 'mobile'
+  }
+}
+
 /**
  * `HTMLElement` is missing when this module is evaluated on a server, and a
  * class whose `extends` clause throws takes the whole entry point down with it
@@ -88,6 +103,7 @@ export class DeviceFrameElement extends HTMLElementBase {
       'device',
       'os',
       'orientation',
+      'interaction-mode',
       'embedded',
       'immersive',
       'width',
@@ -158,7 +174,7 @@ export class DeviceFrameElement extends HTMLElementBase {
     // Replays properties set before define() upgraded this instance (own
     // properties shadowing the setters) — here, not connectedCallback, since a
     // getter can run via attributeChangedCallback first. No-op when synchronous.
-    upgradeProperties(this, ['device', 'deviceProfile', 'orientation', 'embedded', 'immersive'])
+    upgradeProperties(this, ['device', 'deviceProfile', 'orientation', 'interactionMode', 'embedded', 'immersive'])
   }
 
   /** Renders and starts watching the host's box for moves the attributes miss. */
@@ -214,6 +230,21 @@ export class DeviceFrameElement extends HTMLElementBase {
 
   set orientation(value: string | null | undefined) {
     reflectAttribute(this, 'orientation', value)
+  }
+
+  /**
+   * Whether the preview should look touch-first or mouse-first. This controls
+   * the screen cursor and is also reflected as data-devicekit-interaction-mode for
+   * slotted content that needs to choose its own interaction affordances.
+   * It does not synthesize browser touch events; the page still runs in the
+   * host document's real input environment.
+   */
+  get interactionMode(): DeviceInteractionMode {
+    return toInteractionMode(this.getAttribute('interaction-mode'))
+  }
+
+  set interactionMode(value: DeviceInteractionMode | string | null | undefined) {
+    reflectAttribute(this, 'interaction-mode', value)
   }
 
   /**
@@ -377,6 +408,7 @@ export class DeviceFrameElement extends HTMLElementBase {
   #render(): void {
     if (!this.#statusBar || !this.#homeIndicatorEl || !this.#homeButtonEl) return
 
+    this.dataset.devicekitInteractionMode = this.interactionMode
     const metrics = this.metrics
     reflectMetrics(this.style, metrics, this.embedded, this.profile)
 
