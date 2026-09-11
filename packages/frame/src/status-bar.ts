@@ -9,6 +9,7 @@
  */
 import { cutoutBorderRadius, cutoutLeft } from './cutout.js'
 import { computeStatusBarLayout, type StatusBarLayout } from './status-bar-layout.js'
+import { setStatusBarIconMetrics } from './status-bar-icons.js'
 import { cutoutFor, type Orientation, type ResolvedDevice } from '@devicekit/devices'
 
 /** The canonical Apple marketing time, and this element's default. */
@@ -130,6 +131,10 @@ export class StatusBar {
     else this.element.style.removeProperty('background-color')
 
     const layout = computeStatusBarLayout(device, orientation)
+    this.element.dataset.style = device.statusBarStyle
+    setStatusBarIconMetrics(this.element.style, device.statusBarStyle)
+    if (cutoutVisible) this.element.dataset.cutoutShape = orientationCutout!.shape
+    else delete this.element.dataset.cutoutShape
     // Ahead of the early return: the cutout and the layout variables have to
     // follow orientation even when the whole bar is gone, or they keep the
     // previous orientation's state on an element anyone can read.

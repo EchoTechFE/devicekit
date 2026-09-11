@@ -378,7 +378,7 @@ export class DeviceFrameElement extends HTMLElementBase {
     if (!this.#statusBar || !this.#homeIndicatorEl || !this.#homeButtonEl) return
 
     const metrics = this.metrics
-    reflectMetrics(this.style, metrics, this.embedded)
+    reflectMetrics(this.style, metrics, this.embedded, this.profile)
 
     const statusBarMode = this.getAttribute('status-bar')
     const showStatusBar = !this.embedded && statusBarMode !== 'hidden' && metrics.statusBarHeight > 0

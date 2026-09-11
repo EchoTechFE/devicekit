@@ -63,6 +63,16 @@ describe('assertDeviceProfile checks os is one of the three supported platforms'
   })
 })
 
+describe('assertDeviceProfile checks the optional status-bar visual family', () => {
+  it.each(['ios', 'android-stock', 'android-samsung', 'harmony'] as const)('accepts %s', (statusBarStyle) => {
+    expect(() => assertDeviceProfile({ ...VALID, statusBarStyle })).not.toThrow()
+  })
+
+  it('rejects an unknown visual family instead of silently falling back', () => {
+    expectRejects({ ...VALID, statusBarStyle: 'material-you' }, undefined, 'deviceProfile.statusBarStyle')
+  })
+})
+
 describe('assertDeviceProfile requires a finite, positive screen', () => {
   it('a missing screen is rejected', () => {
     expectRejects({ ...VALID, screen: null }, undefined, 'deviceProfile.screen')

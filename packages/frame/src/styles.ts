@@ -46,6 +46,7 @@ export const DEVICE_FRAME_STYLES = `
   --device-bezel-bottom: 0px;
   --device-bezel-left: 0px;
   --device-body-radius: 38px;
+  --device-screen-radius-effective: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
   --device-frame-border-width: ${DEVICE_FRAME_BORDER_WIDTH}px;
 
   /* Host-overridable skin. --device-frame-radius overrides the body radius the
@@ -88,7 +89,7 @@ export const DEVICE_FRAME_STYLES = `
   min-height: 0;
   overflow: hidden;
   border: var(--device-frame-border);
-  border-radius: var(--device-frame-radius, calc(var(--device-body-radius) + var(--device-frame-border-width)));
+  border-radius: var(--device-frame-radius, var(--device-body-radius-x, calc(var(--device-body-radius) + var(--device-frame-border-width))) / var(--device-body-radius-y, calc(var(--device-body-radius) + var(--device-frame-border-width))));
   background: var(--device-frame-background);
   box-shadow: var(--device-frame-shadow);
 }
@@ -130,7 +131,7 @@ export const DEVICE_FRAME_STYLES = `
   /* The screen sits inside both the bezel and the border, so staying concentric
      with the body needs both subtracted back out — floored at 0 so a small
      --device-frame-radius override never asks for a negative radius. */
-  border-radius: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
+  border-radius: var(--device-screen-radius-effective);
 }
 
 /*

@@ -208,7 +208,7 @@ describe('ipad: home-button and full-screen iPads share one fixed layout keyed o
   })
 })
 
-describe('android: one fixed layout regardless of statusBarHeight, both orientations', () => {
+describe('android: family geometry is centralized but no longer one fixed layout', () => {
   it('Pixel 7 portrait uses 31/28 with centerY = statusBarHeight / 2', () => {
     const device = resolveDevice(findDevice('Pixel 7')!)
     const layout = computeStatusBarLayout(device, 'portrait')
@@ -226,5 +226,36 @@ describe('android: one fixed layout regardless of statusBarHeight, both orientat
     expect(layout.centerY).toBe(12)
     expect(layout.timeLeft).toBe(31)
     expect(layout.trailing).toBe(28)
+  })
+
+  it.each([
+    {
+      name: 'Pixel 7',
+      timeLeft: 31,
+      trailing: 28,
+      centerOffset: 0,
+      scale: 1,
+    },
+    {
+      name: 'Samsung Galaxy A55',
+      timeLeft: 28,
+      trailing: 24,
+      centerOffset: -1,
+      scale: 1,
+    },
+    {
+      name: 'HUAWEI Mate 60 Pro',
+      timeLeft: 27,
+      trailing: 22,
+      centerOffset: 0.5,
+      scale: 1.02,
+    },
+  ])('%s uses its family geometry tokens', ({ name, timeLeft, trailing, centerOffset, scale }) => {
+    const device = resolveDevice(findDevice(name)!)
+    const layout = computeStatusBarLayout(device, 'portrait')
+    expect(layout.timeLeft).toBe(timeLeft)
+    expect(layout.trailing).toBe(trailing)
+    expect(layout.centerY).toBe(device.statusBarHeight / 2 + centerOffset)
+    expect(layout.scale).toBe(scale)
   })
 })

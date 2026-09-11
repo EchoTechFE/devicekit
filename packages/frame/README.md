@@ -191,6 +191,7 @@ Use these variables to change the frame appearance:
 | `--device-frame-shadow` | Body shadow |
 | `--device-cutout-color` | Cutout color |
 | `--device-screen-background` | Empty screen and transparent status bar background |
+| `--device-status-bar-signal-image`, `--device-status-bar-wifi-image`, `--device-status-bar-battery-image` | Optional inherited mask-image overrides for a native host; the built-in project-owned paths remain the fallback |
 
 If `--device-frame-border` changes the border width, set `--device-frame-border-width` to the same width so the radius calculation remains aligned.
 

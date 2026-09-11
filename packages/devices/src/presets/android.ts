@@ -123,6 +123,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Samsung Galaxy S8+',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 740 },
     pixelRatio: 4,
     system: 'Android 7.0',
@@ -133,6 +134,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Samsung Galaxy S20 Ultra',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 412, height: 915 },
     pixelRatio: 3.5,
     system: 'Android 13',
@@ -160,6 +162,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Samsung Galaxy A55',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 800 },
     pixelRatio: 2.25,
     system: 'Android 14',
@@ -188,6 +191,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 6',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 412, height: 968 },
     pixelRatio: 2.625,
     system: 'Android 14',
@@ -199,6 +203,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 6 (inner)',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 707, height: 823 },
     pixelRatio: 2.625,
     system: 'Android 14',
@@ -207,6 +212,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 5',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 344, height: 882 },
     pixelRatio: 2.625,
     system: 'Android 13',
@@ -217,6 +223,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 5 (inner)',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 690, height: 829 },
     pixelRatio: 2.625,
     system: 'Android 13',
@@ -225,6 +232,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Samsung Galaxy A51/71',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 412, height: 914 },
     pixelRatio: 2.625,
     system: 'Android 10',
@@ -235,6 +243,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Tab S4',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     formFactor: 'tablet',
     screen: { width: 712, height: 1138 },
     pixelRatio: 2.25,
@@ -297,6 +306,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Note 3',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 640 },
     pixelRatio: 3,
     system: 'Android 4.3',
@@ -307,6 +317,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Note II',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 640 },
     pixelRatio: 2,
     system: 'Android 4.1',
@@ -317,6 +328,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S III',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 640 },
     pixelRatio: 2,
     system: 'Android 4.0',
@@ -327,6 +339,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S5',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 640 },
     pixelRatio: 3,
     system: 'Android 5.0',
@@ -337,6 +350,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S9+',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 320, height: 658 },
     pixelRatio: 4.5,
     system: 'Android 8.0',
@@ -347,6 +361,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S24',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 780 },
     pixelRatio: 3,
     system: 'Android 14',
@@ -357,6 +372,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Tab S9',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     formFactor: 'tablet',
     screen: { width: 640, height: 1024 },
     pixelRatio: 2.5,
@@ -368,6 +384,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 6 Cover',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 484, height: 1188 },
     pixelRatio: 2,
     system: 'Android 14',
@@ -378,6 +395,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 7',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 984, height: 1092 },
     pixelRatio: 2,
     system: 'Android 16',
@@ -388,6 +406,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 7 Cover',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 840 },
     pixelRatio: 3,
     system: 'Android 16',
@@ -398,6 +417,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Flip 6',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 880 },
     pixelRatio: 3,
     system: 'Android 14',
@@ -408,6 +428,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Flip 6 Cover',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 374 },
     pixelRatio: 2,
     system: 'Android 14',
@@ -418,6 +439,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Flip 7',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 840 },
     pixelRatio: 3,
     system: 'Android 16',
@@ -428,6 +450,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Flip 7 Cover',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 474, height: 524 },
     pixelRatio: 2,
     system: 'Android 16',
@@ -667,6 +690,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Fold',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 280, height: 653 },
     pixelRatio: 3,
     system: 'Android 9.0',
@@ -675,6 +699,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S21',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 800 },
     pixelRatio: 3,
     system: 'Android 11',
@@ -683,6 +708,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S21 Plus',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 384, height: 854 },
     pixelRatio: 2.8125,
     system: 'Android 11',
@@ -691,6 +717,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S21 Ultra',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 412, height: 915 },
     pixelRatio: 2.625,
     system: 'Android 11',
@@ -699,6 +726,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S20',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 800 },
     pixelRatio: 3,
     system: 'Android 10',
@@ -707,6 +735,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S20 Plus',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 384, height: 854 },
     pixelRatio: 3,
     system: 'Android 10',
@@ -715,6 +744,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Samsung S21 FE',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 800 },
     pixelRatio: 3,
     system: 'Android 13',
@@ -725,6 +755,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Fold3 (Folded)',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 320, height: 872 },
     pixelRatio: 3,
     system: 'Android 13',
@@ -735,6 +766,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Fold3 (Unfolded)',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 590, height: 736 },
     pixelRatio: 3,
     system: 'Android 13',
@@ -745,6 +777,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S22',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 800 },
     pixelRatio: 3,
     system: 'Android 13',
@@ -755,6 +788,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S22 Plus',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 384, height: 854 },
     pixelRatio: 3,
     system: 'Android 13',
@@ -765,6 +799,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S22 Ultra',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 412, height: 915 },
     pixelRatio: 2.625,
     system: 'Android 13',
@@ -775,6 +810,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S23',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 360, height: 800 },
     pixelRatio: 3,
     system: 'Android 14',
@@ -785,6 +821,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S23 Plus',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 384, height: 854 },
     pixelRatio: 3,
     system: 'Android 14',
@@ -795,6 +832,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S23 Ultra',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 412, height: 915 },
     pixelRatio: 2.625,
     system: 'Android 14',
@@ -805,6 +843,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S24 Plus',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 384, height: 854 },
     pixelRatio: 3,
     system: 'Android 14',
@@ -815,6 +854,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy S24 Ultra',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 412, height: 915 },
     pixelRatio: 2.625,
     system: 'Android 14',
@@ -825,6 +865,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Flip 5',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 264, height: 844 },
     pixelRatio: 2.8,
     system: 'Android 13',
@@ -835,6 +876,7 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'Galaxy Z Fold 4',
     os: 'android',
+    statusBarStyle: 'android-samsung',
     screen: { width: 344, height: 882 },
     pixelRatio: 2.8,
     system: 'Android 13',
