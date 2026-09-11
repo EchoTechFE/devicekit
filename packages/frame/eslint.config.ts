@@ -53,6 +53,6 @@ export default [
     },
   },
   {
-    ignores: ["coverage/**", "dist/**", "demo/dist/**"],
+    ignores: ["coverage/**", "dist/**", "demo/dist/**", ".astro/**", "demo/.astro/**"],
   },
 ];

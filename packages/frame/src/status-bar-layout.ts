@@ -184,6 +184,7 @@ const ANDROID_GEOMETRY: Record<StatusBarStyle, AndroidGeometryToken> = {
   ios: { timeLeft: 31, trailing: 28, centerOffset: 0, scale: 1 },
   'android-stock': { timeLeft: 31, trailing: 28, centerOffset: 0, scale: 1 },
   'android-samsung': { timeLeft: 28, trailing: 24, centerOffset: -1, scale: 1 },
+  'android-hyperos': { timeLeft: 30, trailing: 26, centerOffset: 0, scale: 1 },
   harmony: { timeLeft: 27, trailing: 22, centerOffset: 0.5, scale: 1.02 },
 }
 

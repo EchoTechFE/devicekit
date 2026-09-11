@@ -200,11 +200,12 @@ describe('falling back to platform defaults when a profile omits chrome fields',
 })
 
 describe('preset status-bar visual families', () => {
-  it('keeps every Samsung preset on the Samsung visual approximation, while Pixel uses Android stock and Huawei uses HarmonyOS', () => {
+  it('maps Samsung, Xiaomi and Huawei presets to their UI paint families', () => {
     const samsung = DEVICES.filter((device) => device.name.includes('Samsung') || device.name.startsWith('Galaxy'))
     expect(samsung.length).toBeGreaterThan(0)
     expect(samsung.map((device) => resolveDevice(device).statusBarStyle)).toEqual(Array(samsung.length).fill('android-samsung'))
     expect(resolveDevice(preset('Pixel 7')).statusBarStyle).toBe('android-stock')
+    expect(resolveDevice(preset('Xiaomi 14')).statusBarStyle).toBe('android-hyperos')
     expect(resolveDevice(preset('HUAWEI Mate 60 Pro')).statusBarStyle).toBe('harmony')
   })
 })

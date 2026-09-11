@@ -33,7 +33,7 @@ import { assertDeviceProfile } from './validate.js'
 export type DeviceOS = 'ios' | 'android' | 'harmony'
 
 /** Paint family for status-bar typography and glyphs; independent of geometry. */
-export type StatusBarStyle = 'ios' | 'android-stock' | 'android-samsung' | 'harmony'
+export type StatusBarStyle = 'ios' | 'android-stock' | 'android-samsung' | 'android-hyperos' | 'harmony'
 
 /** Which way the device is held. Landscape swaps the screen's two sides. */
 export type Orientation = 'portrait' | 'landscape'

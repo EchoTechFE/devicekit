@@ -1,0 +1,67 @@
+---
+import type { PresetDeviceProfile } from '@devicekit/devices'
+import { demoPageMetadata } from '../../../src/demo-page-metadata.js'
+import '../../style.css'
+
+interface Props { device?: PresetDeviceProfile }
+
+const { device } = Astro.props
+const metadata = demoPageMetadata(device)
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{metadata.title}</title>
+    <meta name="description" id="page-description" content={metadata.description}>
+    <link rel="canonical" id="canonical-url" href={metadata.canonical}>
+    {device !== undefined && <><meta property="og:title" content={metadata.title}><meta property="og:description" content={metadata.description}><meta property="og:url" content={metadata.canonical}><meta property="og:type" content="website"></>}
+    <script id="device-jsonld" type="application/ld+json" set:html={JSON.stringify(metadata.jsonLd).replaceAll('<', '\\u003c').replaceAll('>', '\\u003e').replaceAll('&', '\\u0026')}></script>
+  </head>
+  <body data-initial-device={device?.name}>
+    <aside class="panel">
+      <div class="panel__eyebrow">devicekit / frame</div>
+      <div class="panel__header"><h1 id="demo-title">{metadata.heading}</h1><a class="github-link" href="https://github.com/EchoTechFE/devicekit">GitHub ↗</a></div>
+      <p class="demo-intro" id="demo-intro">{metadata.intro}</p>
+
+      <section class="control-section"><div class="control-section__title">Device</div>
+        <label class="field"><span>Profile</span><select id="device"></select></label>
+        <label class="field"><span>Orientation</span><select id="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></label>
+        <label class="field"><span>System UI theme</span><output class="theme-readout" id="device-theme"></output></label>
+      </section>
+      <section class="control-section"><div class="control-section__title">App chrome</div>
+        <label class="field"><span>Top bar</span><select id="navigation-bar"><option value="none">None</option><option value="mp">Mini-program title bar</option><option value="h5">In-app browser back bar</option></select></label>
+        <label class="field field--inline"><input type="checkbox" id="tab-bar"><span>Show tab bar</span></label>
+        <label class="field"><span>Tab bar height</span><input type="number" id="tab-bar-height" min="0" step="1" placeholder="50"></label>
+        <label class="field field--inline"><input type="checkbox" id="show-safe-area"><span>Show safe areas</span></label>
+        <label class="field field--inline"><input type="checkbox" id="immersive"><span>Page draws its top bar</span></label>
+        <label class="field field--inline"><input type="checkbox" id="embedded"><span>Embed without device body</span></label>
+      </section>
+      <section class="control-section"><div class="control-section__title">Appearance</div>
+        <label class="field"><span>Status bar</span><select id="status-bar"><option value="">Drawn</option><option value="hidden">Hidden</option></select></label>
+        <label class="field"><span>Status bar text</span><select id="status-bar-text-style"><option value="">Follow the device</option><option value="black">Black (light page)</option><option value="white">White (dark page)</option></select></label>
+        <label class="field"><span>Status bar background</span><input type="text" id="status-bar-background" placeholder="transparent or #07c160"></label>
+        <label class="field"><span>Zoom <output id="zoom-value">Fit</output></span><select id="zoom"><option value="fit">Fit to window</option><option value="100">100%</option><option value="75">75%</option><option value="50">50%</option></select></label>
+      </section>
+      <p class="note">Fit only scales down. At 100%, one device CSS pixel maps to one host CSS pixel.</p>
+      <div class="readout"><div class="readout__head"><span>contentRect</span><span>updates <output id="events">0</output></span></div><pre id="content-rect"></pre><div class="readout__head"><span>metrics</span></div><pre id="metrics"></pre></div>
+    </aside>
+
+    <main class="stage" id="stage">
+      <div class="stage__label">Live preview</div>
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme">
+        <svg class="theme-toggle__sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="theme-toggle__moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.4 15.3A8.5 8.5 0 0 1 8.7 3.6 8.5 8.5 0 1 0 20.4 15.3Z"/></svg>
+      </button>
+      <div class="stage__preview"><div class="stage__viewport" id="viewport"><div class="stage__scaler" id="scaler"><device-frame id="frame"><div class="page"><span class="page__eyebrow">Device frame</span><h2>Build for every screen.</h2><p>The preview uses the selected profile for status bars, cutouts, safe areas and the surrounding device body.</p><p>Use the controls to inspect how your app frame responds before opening a simulator.</p><p class="page__size" id="page-size"></p></div></device-frame></div></div><p class="stage__attribution">Open sourced by <a href="https://github.com/EchoTechFE">EchoTechFE</a></p></div>
+    </main>
+    <template id="tpl-safe-area"><div slot="overlay" class="safe-area-overlay"><div class="safe-area-overlay__band safe-area-overlay__band--top"><span></span></div><div class="safe-area-overlay__band safe-area-overlay__band--right"><span></span></div><div class="safe-area-overlay__band safe-area-overlay__band--bottom"><span></span></div><div class="safe-area-overlay__band safe-area-overlay__band--left"><span></span></div></div></template>
+    <script>
+      import { bootstrapDemo } from '../client.ts'
+
+      bootstrapDemo()
+    </script>
+  </body>
+</html>

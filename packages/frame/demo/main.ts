@@ -16,11 +16,12 @@ import {
 } from '@devicekit/frame'
 import { overflowsViewport, scaleFor, scaleLabel, scaledViewport, type DemoScaleMode } from '../src/demo-scale.js'
 import { DEMO_DEFAULT_DEVICE_NAME, newestDevicesFirst } from '../src/demo-device-order.js'
-import { applySfSymbolMasks, normalizeSfSymbolPayload, SF_SYMBOLS_ENDPOINT, type SfSymbolPayload } from '../src/sf-symbols.js'
+import { demoPageMetadata } from '../src/demo-page-metadata.js'
+import { devicePath } from '../src/demo-device-url.js'
+import { applyDeviceTheme } from './device-theme.js'
 import {
   applyDemoTheme,
-  statusBarTextStyleForThemeAndNavigation,
-  type DemoNavigation,
+  statusBarTextStyleForTheme,
   type DemoTheme,
 } from './theme.js'
 import {
@@ -64,14 +65,19 @@ const tabBarHeightInput = need<HTMLInputElement>('tab-bar-height')
 const immersiveInput = need<HTMLInputElement>('immersive')
 const embeddedInput = need<HTMLInputElement>('embedded')
 const safeAreaInput = need<HTMLInputElement>('show-safe-area')
-const themeInputs = [...document.querySelectorAll<HTMLInputElement>('input[name="theme"]')]
+const themeToggle = need<HTMLButtonElement>('theme-toggle')
 const zoomSelect = need<HTMLSelectElement>('zoom')
 const zoomValue = need<HTMLOutputElement>('zoom-value')
 const eventsValue = need<HTMLOutputElement>('events')
 const contentRectPre = need('content-rect')
 const metricsPre = need('metrics')
 const pageSize = need('page-size')
-const sfSymbolsValue = need<HTMLOutputElement>('sf-symbols-value')
+const deviceThemeValue = need<HTMLOutputElement>('device-theme')
+const demoTitle = need('demo-title')
+const demoIntro = need('demo-intro')
+const pageDescription = need<HTMLMetaElement>('page-description')
+const canonicalUrl = need<HTMLLinkElement>('canonical-url')
+const deviceJsonLd = need<HTMLScriptElement>('device-jsonld')
 
 const bars = {
   mp: document.createElement(MINI_PROGRAM_NAVIGATION_TAG),
@@ -90,7 +96,7 @@ const safeAreaBands = {
   left: safeAreaOverlay.querySelector<HTMLElement>('.safe-area-overlay__band--left span'),
 } as const
 
-let sfSymbols: SfSymbolPayload = { status: 'fallback', masks: null }
+let showingDeviceMetadata = document.body.dataset.initialDevice !== undefined || deviceForLocation() !== undefined
 
 function fillDevices(): void {
   for (const os of ['ios', 'android', 'harmony'] as const) {
@@ -104,7 +110,34 @@ function fillDevices(): void {
     }
     deviceSelect.append(group)
   }
-  deviceSelect.value = DEMO_DEFAULT_DEVICE_NAME
+}
+
+function devicePathname(name: string): string {
+  const marker = '/devices/'
+  const deviceIndex = window.location.pathname.indexOf(marker)
+  const basePath = deviceIndex === -1
+    ? window.location.pathname.endsWith('/') ? window.location.pathname : `${window.location.pathname}/`
+    : window.location.pathname.slice(0, deviceIndex + 1)
+  return new URL(devicePath(name), new URL(basePath, window.location.origin)).pathname
+}
+
+function deviceForLocation() {
+  return DEVICES.find((device) => devicePathname(device.name) === window.location.pathname)
+}
+
+function syncPageMetadata(device?: (typeof DEVICES)[number]): void {
+  const metadata = demoPageMetadata(device)
+  demoTitle.textContent = metadata.heading
+  demoIntro.textContent = metadata.intro
+  document.title = metadata.title
+  pageDescription.content = metadata.description
+  canonicalUrl.href = metadata.canonical
+  deviceJsonLd.textContent = JSON.stringify(metadata.jsonLd)
+}
+
+function pushDeviceUrl(): void {
+  const pathname = devicePathname(deviceSelect.value)
+  if (window.location.pathname !== pathname) history.pushState({ device: deviceSelect.value }, '', pathname)
 }
 
 function setOrRemove(name: string, value: string): void {
@@ -174,9 +207,10 @@ function apply(): void {
   frame.setAttribute('device', deviceSelect.value)
   frame.setAttribute('orientation', orientationSelect.value)
   const device = DEVICES.find((candidate) => candidate.name === deviceSelect.value)
+  if (device === undefined) throw new Error(`unknown demo device ${deviceSelect.value}`)
+  const deviceTheme = applyDeviceTheme([frame, bars.mp, bars.h5, bars.tab], device, selectedTheme())
+  deviceThemeValue.value = `${deviceTheme.label} · ${deviceTheme.system} · ${deviceTheme.library} · ${deviceTheme.appearance}`
   for (const navigation of [bars.mp, bars.h5]) navigation.setAttribute('device-os', device?.os ?? 'ios')
-  const layoutMode = frame.shadowRoot?.querySelector<HTMLElement>('.status-bar')?.dataset.layout
-  sfSymbolsValue.value = applySfSymbolMasks(frame, device?.os ?? 'ios', layoutMode, sfSymbols)
   frame.toggleAttribute('immersive', immersiveInput.checked)
   frame.toggleAttribute('embedded', embeddedInput.checked)
   setOrRemove('status-bar', statusBarSelect.value)
@@ -198,70 +232,80 @@ function apply(): void {
   syncSlot(safeAreaInput.checked ? safeAreaOverlay : null, [safeAreaOverlay])
 
   scaler.classList.toggle('stage__scaler--embedded', embeddedInput.checked)
+  syncPageMetadata(showingDeviceMetadata ? device : undefined)
   layout()
 }
 
 function selectedTheme(): DemoTheme {
-  return (themeInputs.find((input) => input.checked)?.value ?? 'light') as DemoTheme
+  return (document.documentElement.dataset.theme ?? 'light') as DemoTheme
+}
+
+function syncThemeToggle(theme: DemoTheme): void {
+  const nextTheme = theme === 'light' ? 'dark' : 'light'
+  themeToggle.setAttribute('aria-label', `Switch to ${nextTheme} theme`)
+  themeToggle.dataset.theme = theme
 }
 
 function syncStatusBarTextStyle(): void {
-  const navigation = navigationSelect.value as DemoNavigation
-  textStyleSelect.value = statusBarTextStyleForThemeAndNavigation(selectedTheme(), navigation)
+  textStyleSelect.value = statusBarTextStyleForTheme(selectedTheme())
 }
 
-let events = 0
-frame.addEventListener(CONTENT_RECT_CHANGE_EVENT, (event) => {
-  events += 1
-  eventsValue.value = String(events)
-  report((event as CustomEvent<ContentRect>).detail)
-})
+let bootstrapped = false
 
-for (const control of [
-  deviceSelect,
-  orientationSelect,
-  statusBarSelect,
-  textStyleSelect,
-  tabBarInput,
-  tabBarHeightInput,
-  immersiveInput,
-  embeddedInput,
-  safeAreaInput,
-]) {
-  control.addEventListener('change', apply)
-}
-for (const themeInput of themeInputs) {
-  themeInput.addEventListener('change', () => {
-    if (!themeInput.checked) return
-    const theme = themeInput.value as DemoTheme
+/** Installs the demo controls once after Astro has parsed the page. */
+export function bootstrapDemo(): void {
+  if (bootstrapped) return
+  bootstrapped = true
+
+  let events = 0
+  frame.addEventListener(CONTENT_RECT_CHANGE_EVENT, (event) => {
+    events += 1
+    eventsValue.value = String(events)
+    report((event as CustomEvent<ContentRect>).detail)
+  })
+
+  for (const control of [
+    orientationSelect,
+    statusBarSelect,
+    textStyleSelect,
+    tabBarInput,
+    tabBarHeightInput,
+    immersiveInput,
+    embeddedInput,
+    safeAreaInput,
+  ]) {
+    control.addEventListener('change', apply)
+  }
+  deviceSelect.addEventListener('change', () => {
+    showingDeviceMetadata = true
+    pushDeviceUrl()
+    apply()
+  })
+  themeToggle.addEventListener('click', () => {
+    const theme = selectedTheme() === 'light' ? 'dark' : 'light'
     applyDemoTheme(theme)
+    syncThemeToggle(theme)
     syncStatusBarTextStyle()
     apply()
   })
-}
-navigationSelect.addEventListener('change', () => {
+  navigationSelect.addEventListener('change', apply)
+  statusBarBackgroundInput.addEventListener('input', apply)
+  tabBarHeightInput.addEventListener('input', apply)
+  zoomSelect.addEventListener('change', layout)
+  window.addEventListener('resize', layout)
+  window.addEventListener('popstate', () => {
+    const device = deviceForLocation()
+    showingDeviceMetadata = device !== undefined
+    deviceSelect.value = device?.name ?? DEMO_DEFAULT_DEVICE_NAME
+    apply()
+  })
+
+  fillDevices()
+  deviceSelect.value = document.body.dataset.initialDevice ?? deviceForLocation()?.name ?? DEMO_DEFAULT_DEVICE_NAME
+  navigationSelect.value = 'mp'
+  tabBarInput.checked = true
+  applyDemoTheme('light')
+  syncThemeToggle('light')
   syncStatusBarTextStyle()
   apply()
-})
-statusBarBackgroundInput.addEventListener('input', apply)
-tabBarHeightInput.addEventListener('input', apply)
-zoomSelect.addEventListener('change', layout)
-window.addEventListener('resize', layout)
-
-fillDevices()
-navigationSelect.value = 'mp'
-tabBarInput.checked = true
-applyDemoTheme('light')
-syncStatusBarTextStyle()
-apply()
-
-void fetch(SF_SYMBOLS_ENDPOINT)
-  .then((response) => response.ok ? response.json() : null)
-  .then((value) => {
-    sfSymbols = normalizeSfSymbolPayload(value)
-    apply()
-  })
-  .catch(() => {
-    sfSymbols = { status: 'fallback', masks: null }
-    apply()
-  })
+}

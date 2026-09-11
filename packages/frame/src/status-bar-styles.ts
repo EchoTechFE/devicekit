@@ -40,6 +40,10 @@ export const STATUS_BAR_STYLES = `
   font-family: "SamsungOne", Roboto, sans-serif;
 }
 
+.status-bar[data-style="android-hyperos"] {
+  font-family: "MiSans", Roboto, "Noto Sans SC", sans-serif;
+}
+
 .status-bar[data-style="harmony"] {
   font-family: "HarmonyOS Sans", 'Noto Sans SC', sans-serif;
 }
@@ -137,6 +141,12 @@ export const STATUS_BAR_STYLES = `
   font-size: 13px;
   font-weight: 600;
   letter-spacing: -0.15px;
+}
+
+.status-bar[data-style="android-hyperos"] .status-bar__time {
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.1px;
 }
 
 .status-bar[data-style="harmony"] .status-bar__time {
@@ -251,6 +261,10 @@ export const STATUS_BAR_STYLES = `
 
 .status-bar[data-style="android-samsung"] .status-bar__icons {
   gap: 6px;
+}
+
+.status-bar[data-style="android-hyperos"] .status-bar__icons {
+  gap: 5.5px;
 }
 
 .status-bar[data-style="harmony"] .status-bar__icons {
@@ -419,6 +433,21 @@ export const STATUS_BAR_STYLES = `
 }
 .status-bar[data-style="android-samsung"] .status-bar__battery {
   --status-bar-battery-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 10'><path fill='none' stroke='black' stroke-width='1' d='M1 1h16v8H1z'/><path d='M17 3h2v4h-2zM3 3h9v4H3z'/></svg>");
+}
+
+/* Project-authored HyperOS family: no vendor files or system-font glyphs. */
+.status-bar[data-style="android-hyperos"] .status-bar__signal {
+  width: calc(var(--sb-signal-width, 13px) * var(--sb-scale, 1));
+  height: calc(var(--sb-signal-height, 12px) * var(--sb-scale, 1));
+  --status-bar-signal-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 13 12'><path d='M1 11h2V8H1zm3 0h2V5H4zm3 0h2V2H7zm3 0h2V0h-2z'/></svg>");
+}
+.status-bar[data-style="android-hyperos"] .status-bar__wifi {
+  width: calc(var(--sb-wifi-width, 14px) * var(--sb-scale, 1));
+  height: calc(var(--sb-wifi-height, 12px) * var(--sb-scale, 1));
+  --status-bar-wifi-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 12'><path d='M7 1.1C4.4 1.1 2 2 .4 3.7L2 5.2C3.3 4 5 3.4 7 3.4s3.7.6 5 1.8l1.6-1.5C12 2 9.6 1.1 7 1.1zm0 3.8c-1.3 0-2.6.5-3.5 1.4L5 7.8c.6-.5 1.3-.8 2-.8s1.4.3 2 .8l1.5-1.5A5 5 0 0 0 7 4.9zm0 4.2a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z'/></svg>");
+}
+.status-bar[data-style="android-hyperos"] .status-bar__battery {
+  --status-bar-battery-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 19 10'><path fill='none' stroke='black' stroke-width='1' d='M1 1h15v8H1z'/><path d='M16 3h2v4h-2zM3 3h10v4H3z'/></svg>");
 }
 
 .status-bar[data-style="harmony"] .status-bar__signal {

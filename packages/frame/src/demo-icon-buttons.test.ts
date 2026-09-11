@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { defineDemoComponents } from '../demo/components/index.js'
 
-const demoHtml = readFileSync('demo/index.html', 'utf8')
+const demoHtml = readFileSync('demo/src/components/DemoPage.astro', 'utf8')
 const demoMain = readFileSync('demo/main.ts', 'utf8')
 const readme = readFileSync('README.zh-CN.md', 'utf8')
 

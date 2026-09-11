@@ -1,0 +1,16 @@
+---
+import { DEVICES } from '@devicekit/devices'
+import DemoPage from '../../components/DemoPage.astro'
+import { deviceSlug } from '../../../../src/demo-device-url.js'
+
+export function getStaticPaths() {
+  return DEVICES.map((device) => ({
+    params: { device: deviceSlug(device.name) },
+    props: { device },
+  }))
+}
+
+const { device } = Astro.props
+---
+
+<DemoPage {device} />

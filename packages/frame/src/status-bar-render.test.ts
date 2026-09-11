@@ -47,6 +47,7 @@ describe('the rendered status bar carries its layout mode and geometry as data-l
   it.each([
     ['Pixel 7', 'android-stock', '31px', '28px', '1'],
     ['Samsung Galaxy A55', 'android-samsung', '28px', '24px', '1'],
+    ['Xiaomi 14', 'android-hyperos', '30px', '26px', '1'],
     ['HUAWEI Mate 60 Pro', 'harmony', '27px', '22px', '1.02'],
   ])('%s publishes family geometry through the status-bar DOM', (device, style, timeLeft, trailing, scale) => {
     const bar = statusBar(mountFrame({ device }))
@@ -61,39 +62,41 @@ describe('the rendered status bar carries its layout mode and geometry as data-l
     expect(statusBar(mountFrame({ device: 'iPhone 15' })).dataset.style).toBe('ios')
     expect(statusBar(mountFrame({ device: 'Pixel 7' })).dataset.style).toBe('android-stock')
     expect(statusBar(mountFrame({ device: 'Samsung Galaxy A55' })).dataset.style).toBe('android-samsung')
+    expect(statusBar(mountFrame({ device: 'Xiaomi 14' })).dataset.style).toBe('android-hyperos')
     expect(statusBar(mountFrame({ device: 'HUAWEI Mate 60 Pro' })).dataset.style).toBe('harmony')
   })
 
   it('ships distinct, deterministic paint tokens for every visual family', () => {
-    for (const style of ['ios', 'android-stock', 'android-samsung', 'harmony']) {
+    for (const style of ['ios', 'android-stock', 'android-samsung', 'android-hyperos', 'harmony']) {
       expect(STATUS_BAR_STYLES).toContain(`.status-bar[data-style="${style}"]`)
     }
     expect(STATUS_BAR_STYLES).toContain('font-family: Roboto')
     expect(STATUS_BAR_STYLES).toContain('font-family: "SamsungOne"')
     expect(STATUS_BAR_STYLES).toContain('font-family: "HarmonyOS Sans"')
     expect(STATUS_BAR_STYLES).toContain('data-style="android-samsung"] .status-bar__battery')
+    expect(STATUS_BAR_STYLES).toContain('data-style="android-hyperos"] .status-bar__signal')
     expect(STATUS_BAR_STYLES).toContain('data-style="harmony"] .status-bar__wifi')
     expect(STATUS_BAR_STYLES).toContain('var(--device-status-bar-signal-image')
     expect(STATUS_BAR_STYLES).toContain('var(--device-status-bar-wifi-image')
     expect(STATUS_BAR_STYLES).toContain('var(--device-status-bar-battery-image')
   })
 
-  it('uses three independent family signal and Wi-Fi path tokens', () => {
+  it('uses four independent Android-family signal and Wi-Fi path tokens', () => {
     const ruleFor = (selector: string): string => {
       const start = STATUS_BAR_STYLES.lastIndexOf(`${selector} {`)
       const end = STATUS_BAR_STYLES.indexOf('\n}', start)
       return STATUS_BAR_STYLES.slice(start, end)
     }
-    const signalRules = ['android-stock', 'android-samsung', 'harmony']
+    const signalRules = ['android-stock', 'android-samsung', 'android-hyperos', 'harmony']
       .map((style) => ruleFor(`.status-bar[data-style="${style}"] .status-bar__signal`))
-    const wifiRules = ['android-stock', 'android-samsung', 'harmony']
+    const wifiRules = ['android-stock', 'android-samsung', 'android-hyperos', 'harmony']
       .map((style) => ruleFor(`.status-bar[data-style="${style}"] .status-bar__wifi`))
-    expect(new Set(signalRules).size).toBe(3)
-    expect(new Set(wifiRules).size).toBe(3)
+    expect(new Set(signalRules).size).toBe(4)
+    expect(new Set(wifiRules).size).toBe(4)
     for (const rule of [...signalRules, ...wifiRules]) expect(rule).toMatch(/--status-bar-(signal|wifi)-mask:/)
-    const batteryRules = ['android-stock', 'android-samsung', 'harmony']
+    const batteryRules = ['android-stock', 'android-samsung', 'android-hyperos', 'harmony']
       .map((style) => ruleFor(`.status-bar[data-style="${style}"] .status-bar__battery`))
-    expect(new Set(batteryRules).size).toBe(3)
+    expect(new Set(batteryRules).size).toBe(4)
     for (const rule of batteryRules) expect(rule).toMatch(/--status-bar-battery-mask:/)
   })
 
@@ -181,7 +184,7 @@ describe('the rendered status bar carries its layout mode and geometry as data-l
     expect(STATUS_BAR_STYLES).toContain('.status-bar[data-layout="ipad"] .status-bar__signal')
   })
 
-  it.each(['android-stock', 'android-samsung', 'harmony'] as const)('%s override keeps the Duo connectivity host geometry', (style) => {
+  it.each(['android-stock', 'android-samsung', 'android-hyperos', 'harmony'] as const)('%s override keeps the Duo connectivity host geometry', (style) => {
     const bar = statusBar(mountDuoWithStyle(style))
     expect(bar.dataset.layout).toBe('ios-duo')
     expect(bar.dataset.style).toBe(style)
@@ -193,7 +196,7 @@ describe('the rendered status bar carries its layout mode and geometry as data-l
     const topologyStart = STATUS_BAR_STYLES.lastIndexOf(`${selector} {`)
     const topologyEnd = STATUS_BAR_STYLES.indexOf('\n}', topologyStart)
     const topologyRule = STATUS_BAR_STYLES.slice(topologyStart, topologyEnd)
-    for (const family of ['android-stock', 'android-samsung', 'harmony']) {
+    for (const family of ['android-stock', 'android-samsung', 'android-hyperos', 'harmony']) {
       expect(topologyStart).toBeGreaterThan(
         STATUS_BAR_STYLES.lastIndexOf(`.status-bar[data-style="${family}"] .status-bar__wifi {`),
       )
@@ -219,6 +222,7 @@ describe('the rendered status bar carries its layout mode and geometry as data-l
   it.each([
     ['Pixel 9', 'android-stock', ['13px', '12.6px', '11.5px', '11px', '0px'], ['13px', '12.6px', '12px', '8.5px', '-0.25px'], ['8px', '12.6px', '8px', '10.5px', '0.25px']],
     ['Samsung Galaxy A55', 'android-samsung', ['14px', '12px', '13px', '11px', '0px'], ['14px', '12px', '13px', '10px', '0px'], ['20px', '10px', '20px', '10px', '0px']],
+    ['Xiaomi 14', 'android-hyperos', ['13px', '12px', '12px', '11px', '0px'], ['14px', '12px', '13px', '10px', '-0.25px'], ['19px', '10px', '19px', '10px', '0px']],
     ['HUAWEI Mate 60 Pro', 'harmony', ['12px', '12px', '11px', '12px', '0px'], ['13px', '11px', '13px', '10px', '-0.75px'], ['8px', '12px', '8px', '12px', '-0.5px']],
   ] as const)('%s publishes independent icon box and ink metrics', (device, style, signal, wifi, battery) => {
     const bar = statusBar(mountFrame({ device }))

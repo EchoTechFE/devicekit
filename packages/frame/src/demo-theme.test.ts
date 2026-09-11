@@ -5,12 +5,11 @@ import { readFileSync } from 'node:fs'
 import { beforeEach, describe, expect, it } from 'vitest'
 import {
   applyDemoTheme,
-  statusBarTextStyleForThemeAndNavigation,
-  type DemoNavigation,
+  statusBarTextStyleForTheme,
   type DemoTheme,
 } from '../demo/theme.js'
 
-const demoHtml = readFileSync('demo/index.html', 'utf8')
+const demoHtml = readFileSync('demo/src/components/DemoPage.astro', 'utf8')
 const demoMain = readFileSync('demo/main.ts', 'utf8')
 
 describe('demo theme controller', () => {
@@ -26,7 +25,7 @@ describe('demo theme controller', () => {
     expect(applyDemoTheme(theme, document.documentElement)).toBe(theme)
     expect(document.documentElement.dataset.theme).toBe(theme)
     expect(document.documentElement.style.colorScheme).toBe(colorScheme)
-    expect(statusBarTextStyleForThemeAndNavigation(theme, 'none')).toBe(statusText)
+    expect(statusBarTextStyleForTheme(theme)).toBe(statusText)
   })
 
   it('round-trips light and dark without leaving the previous root state', () => {
@@ -37,29 +36,25 @@ describe('demo theme controller', () => {
     }
   })
 
-  it('maps theme and navigation together before a status-bar style is applied', () => {
-    const matrix: [DemoTheme, DemoNavigation, 'black' | 'white'][] = [
-      ['light', 'none', 'black'],
-      ['light', 'mp', 'black'],
-      ['light', 'h5', 'white'],
-      ['dark', 'none', 'white'],
-      ['dark', 'mp', 'white'],
-      ['dark', 'h5', 'white'],
+  it('maps status-bar text from the selected device appearance', () => {
+    const matrix: [DemoTheme, 'black' | 'white'][] = [
+      ['light', 'black'],
+      ['dark', 'white'],
     ]
-    for (const [theme, navigation, expected] of matrix) {
-      expect(statusBarTextStyleForThemeAndNavigation(theme, navigation)).toBe(expected)
+    for (const [theme, expected] of matrix) {
+      expect(statusBarTextStyleForTheme(theme)).toBe(expected)
     }
   })
 
-  it('uses accessible radio controls and keeps theme syncing outside unrelated apply calls', () => {
-    expect(demoHtml).toMatch(/<fieldset[^>]*class="[^"]*theme-switch[^"]*"[^>]*>/)
-    expect(demoHtml).toMatch(/<input[^>]*type="radio"[^>]*value="light"[^>]*checked/)
-    expect(demoHtml).toMatch(/<input[^>]*type="radio"[^>]*value="dark"/)
-    expect(demoHtml).toContain('>Light<')
-    expect(demoHtml).toContain('>Dark<')
+  it('uses an accessible icon button in the preview corner and keeps theme syncing outside unrelated apply calls', () => {
+    expect(demoHtml).toMatch(/<button[^>]*id="theme-toggle"[^>]*aria-label="Switch to dark theme"/)
+    expect(demoHtml).toContain('class="theme-toggle__sun"')
+    expect(demoHtml).toContain('class="theme-toggle__moon"')
+    expect(demoHtml).not.toContain('theme-switch')
     expect(demoMain).toContain('applyDemoTheme')
-    expect(demoMain).toContain('statusBarTextStyleForThemeAndNavigation')
-    expect(demoMain).toContain('themeInputs')
+    expect(demoMain).toContain('statusBarTextStyleForTheme')
+    expect(demoMain).toContain('applyDeviceTheme')
+    expect(demoMain).toContain('themeToggle')
     const applyBody = demoMain.slice(demoMain.indexOf('function apply()'), demoMain.indexOf('function selectedTheme'))
     expect(applyBody).not.toContain('statusBarTextStyleForThemeAndNavigation')
     expect(demoMain).not.toContain('darkPageInput')
