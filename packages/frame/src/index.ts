@@ -3,6 +3,7 @@ export {
   DeviceFrameElement,
   DEVICE_FRAME_TAG,
   defineDeviceFrame,
+  type DeviceInputMode,
   type DeviceMetrics,
   type StatusBarTextStyle,
 } from './device-frame.js'

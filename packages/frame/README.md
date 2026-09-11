@@ -57,6 +57,7 @@ import { DeviceFrame } from '@devicekit/frame/react'
 | `deviceProfile` | `DeviceProfile \| null` | Element property |
 | `os` | `DeviceOS` | `os` |
 | `orientation` | `Orientation` | `orientation` |
+| `inputMode` | `DeviceInputMode` | `input-mode` |
 | `width`, `height` | `number` | `width`, `height` |
 | `pixelRatio` | `number` | `pixel-ratio` |
 | `cutout` | `CutoutShape \| 'none'` | `cutout` |
@@ -87,6 +88,7 @@ import '@devicekit/frame/react'
 | `device` | Device name | Selects a profile from `@devicekit/devices` |
 | `os` | `ios`, `android`, `harmony` | Selects platform defaults when no profile supplies them |
 | `orientation` | `portrait`, `landscape` | Defaults to `portrait` |
+| `input-mode` | `mobile`, `mobile-no-touch`, `desktop`, `desktop-touch` | Defaults to `mobile`; controls the preview cursor and publishes the resolved mode to slotted content |
 | `width`, `height` | Positive numbers | Overrides the portrait screen size in CSS pixels |
 | `pixel-ratio` | Positive number | Overrides the profile pixel ratio |
 | `cutout` | `none`, `notch`, `pill`, `circle` | Uses the stock geometry for that shape |
@@ -103,6 +105,12 @@ import '@devicekit/frame/react'
 
 Boolean attributes are enabled by their presence. In JavaScript or React, pass booleans rather than strings such as `embedded="false"`.
 
+## Input mode
+
+`input-mode` makes a desktop preview read as mobile or desktop input. `mobile` and `desktop-touch` show the centered touch cursor; `mobile-no-touch` and `desktop` show the normal cursor. The resolved value is available as `frame.inputMode` and `data-devicekit-input-mode` on the frame, so slotted content can switch its own affordances.
+
+This is presentation and metadata only. A frame does not fabricate browser touch events or change APIs such as `navigator.maxTouchPoints`; use a real device, an iframe/runtime adapter, or browser emulation when application code must observe those changes.
+
 ## Properties and methods
 
 | Member | Type | Description |
@@ -110,6 +118,7 @@ Boolean attributes are enabled by their presence. In JavaScript or React, pass b
 | `deviceProfile` | `DeviceProfile \| null` | Custom profile; takes precedence over `device` |
 | `device` | `DeviceProfile \| null` when read | Resolved profile named by the `device` attribute |
 | `orientation` | `Orientation` | Reflects the `orientation` attribute |
+| `inputMode` | `DeviceInputMode` | Reflects `input-mode`; unsupported values resolve to `mobile` |
 | `embedded` | `boolean` | Reflects the `embedded` attribute |
 | `immersive` | `boolean` | Reflects the `immersive` attribute |
 | `profile` | `DeviceProfile` | Effective profile after attribute overrides |
