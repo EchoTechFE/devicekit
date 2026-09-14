@@ -809,7 +809,12 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     cutout: { shape: 'circle', width: 37, height: 37, top: 26, centerX: 0.9 },
     // Rotated clockwise from the portrait geometry measured in Apple's closed-device render; not a DeviceHub measurement.
     cutoutLandscape: { shape: 'circle', width: 37, height: 37, top: 401, centerX: 0.934 },
-    shell: { screenRadius: 66, screenCorners: { topLeft: 12, bottomLeft: 12 }, bezel: 6, bezelInsets: { left: 8 } },
+    shell: {
+      screenRadius: 66,
+      screenCorners: { topLeft: 12, bottomLeft: 12 },
+      bezel: 6,
+      bezelInsets: { left: 8 },
+    },
     releaseYear: 2026,
   },
   {
