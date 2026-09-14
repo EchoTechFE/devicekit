@@ -40,13 +40,20 @@ export const DEVICE_FRAME_STYLES = `
   --device-safe-area-bottom: 0px;
   --device-safe-area-left: 0px;
   --device-screen-radius: 38px;
+  --device-screen-radius-top-left: 38px;
+  --device-screen-radius-top-right: 38px;
+  --device-screen-radius-bottom-right: 38px;
+  --device-screen-radius-bottom-left: 38px;
   --device-bezel: 0px;
   --device-bezel-top: 0px;
   --device-bezel-right: 0px;
   --device-bezel-bottom: 0px;
   --device-bezel-left: 0px;
   --device-body-radius: 38px;
-  --device-screen-radius-effective: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
+  --device-screen-radius-effective-top-left: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius-top-left) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
+  --device-screen-radius-effective-top-right: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius-top-right) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
+  --device-screen-radius-effective-bottom-right: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius-bottom-right) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
+  --device-screen-radius-effective-bottom-left: max(0px, calc(var(--device-frame-radius, calc(var(--device-screen-radius-bottom-left) + var(--device-bezel) + var(--device-frame-border-width))) - var(--device-bezel) - var(--device-frame-border-width)));
   --device-frame-border-width: ${DEVICE_FRAME_BORDER_WIDTH}px;
 
   /* Host-overridable skin. --device-frame-radius overrides the body radius the
@@ -131,7 +138,7 @@ export const DEVICE_FRAME_STYLES = `
   /* The screen sits inside both the bezel and the border, so staying concentric
      with the body needs both subtracted back out — floored at 0 so a small
      --device-frame-radius override never asks for a negative radius. */
-  border-radius: var(--device-screen-radius-effective);
+  border-radius: var(--device-screen-radius-effective-top-left) var(--device-screen-radius-effective-top-right) var(--device-screen-radius-effective-bottom-right) var(--device-screen-radius-effective-bottom-left);
 }
 
 /* A centered ring makes a desktop mouse read as a touch point while it is

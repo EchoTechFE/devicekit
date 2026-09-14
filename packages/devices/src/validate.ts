@@ -41,6 +41,7 @@ function expectString(path: string, value: unknown): void {
 }
 
 const EDGES = ['top', 'right', 'bottom', 'left'] as const
+const CORNERS = ['topLeft', 'topRight', 'bottomRight', 'bottomLeft'] as const
 const NONNEGATIVE_HEIGHT_FIELDS = [
   'statusBarHeight',
   'statusBarHeightLandscape',
@@ -158,6 +159,14 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
     for (const field of SHELL_FIELDS) {
       if (shell[field] !== undefined) {
         expectFiniteAtLeast(`${label}.shell.${field}`, shell[field], 0, false)
+      }
+    }
+    if (shell.screenCorners !== undefined) {
+      if (!isPlainObject(shell.screenCorners)) throw new TypeError(`${label}.shell.screenCorners must be an object, got ${shell.screenCorners === null ? 'null' : typeof shell.screenCorners}`)
+      for (const corner of CORNERS) {
+        if (shell.screenCorners[corner] !== undefined) {
+          expectFiniteAtLeast(`${label}.shell.screenCorners.${corner}`, shell.screenCorners[corner], 0, false)
+        }
       }
     }
     if (shell.bezelInsets !== undefined) {

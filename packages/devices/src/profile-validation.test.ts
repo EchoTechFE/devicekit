@@ -340,6 +340,12 @@ describe('assertDeviceProfile checks shell when present', () => {
     expectRejects({ ...VALID, shell: { bezelInsets: { top: -1 } } }, undefined, 'deviceProfile.shell.bezelInsets.top', 'got -1')
   })
 
+  it('rejects a non-object, null, or a negative corner in screenCorners with the bad value named', () => {
+    expectRejects({ ...VALID, shell: { screenCorners: 'round' } }, undefined, 'deviceProfile.shell.screenCorners', 'got string')
+    expectRejects({ ...VALID, shell: { screenCorners: null } }, undefined, 'deviceProfile.shell.screenCorners', 'got null')
+    expectRejects({ ...VALID, shell: { screenCorners: { topLeft: -1 } } }, undefined, 'deviceProfile.shell.screenCorners.topLeft', 'got -1')
+  })
+
   it('rejects an incomplete or zero-diameter Home button', () => {
     expectRejects({ ...VALID, shell: { homeButton: 'button' } }, undefined, 'deviceProfile.shell.homeButton', 'got string')
     expectRejects({ ...VALID, shell: { homeButton: {} } }, undefined, 'deviceProfile.shell.homeButton.diameter')

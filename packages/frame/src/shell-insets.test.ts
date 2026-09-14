@@ -2,7 +2,7 @@ import { findDevice, resolveDevice } from '@devicekit/devices'
 import { describe, expect, it } from 'vitest'
 import { frameOuterSize } from './frame-size.js'
 import { reflectMetrics } from './reflect.js'
-import { orientedShellInsets } from './shell-insets.js'
+import { orientedShellCorners, orientedShellInsets } from './shell-insets.js'
 import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
 
 describe('oriented shell insets', () => {
@@ -30,5 +30,13 @@ describe('oriented shell insets', () => {
     expect(style.getPropertyValue('--device-bezel-right')).toBe(`${insets.right}px`)
     expect(style.getPropertyValue('--device-bezel-bottom')).toBe(`${insets.bottom}px`)
     expect(style.getPropertyValue('--device-bezel-left')).toBe(`${insets.left}px`)
+  })
+})
+
+describe('oriented shell corners', () => {
+  it('rotates each corner 90° clockwise with the physical shell: TL to TR, TR to BR, BR to BL, BL to TL', () => {
+    const corners = { topLeft: 1, topRight: 2, bottomRight: 3, bottomLeft: 4 }
+    expect(orientedShellCorners(corners, 'portrait')).toEqual(corners)
+    expect(orientedShellCorners(corners, 'landscape')).toEqual({ topLeft: 4, topRight: 1, bottomRight: 2, bottomLeft: 3 })
   })
 })

@@ -186,6 +186,7 @@ Resolved layout values are published on the element:
 | `--device-tab-bar-height` | Tab slot height, or zero |
 | `--device-safe-area-top`, `--device-safe-area-right`, `--device-safe-area-bottom`, `--device-safe-area-left` | Safe-area insets |
 | `--device-screen-radius`, `--device-body-radius` | Shell geometry |
+| `--device-screen-radius-top-left`, `--device-screen-radius-top-right`, `--device-screen-radius-bottom-right`, `--device-screen-radius-bottom-left` | Per-corner screen radius, oriented — see `screenCorners` in `@devicekit/devices` |
 | `--device-bezel` | Uniform bezel fallback when an edge is not specified separately |
 | `--device-bezel-top`, `--device-bezel-right`, `--device-bezel-bottom`, `--device-bezel-left` | Oriented bezel thickness on each physical edge |
 | `--device-frame-border-width` | Body border width in device CSS pixels |

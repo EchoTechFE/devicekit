@@ -13,6 +13,7 @@ export {
   type DeviceProfile,
   type PresetDeviceProfile,
   type DeviceShell,
+  type CornerRadii,
   type EdgeInsets,
   type HomeButtonSpec,
   type Orientation,
