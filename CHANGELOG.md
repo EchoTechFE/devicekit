@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `@devicekit/devices`: `DeviceShell` accepts an optional `screenCorners`, overriding `screenRadius` per corner for shells whose screen corners are not all the same.
+- `@devicekit/frame`: publish oriented per-corner `--device-screen-radius-top-left/top-right/bottom-right/bottom-left` variables and derive the `.screen` border-radius from them.
+
+### Changed
+
+- `@devicekit/devices`: correct "iPhone Duo (outer)" to a "D"-shaped screen — near-right-angle hinge corners and large free-edge corners — using the new `screenCorners` field.
+
 ## [0.3.0] - 2026-09-11
 
 ### Added

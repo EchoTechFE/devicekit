@@ -38,10 +38,15 @@ describe('DEVICE_FRAME_STYLES corner radius variables', () => {
     )
   })
 
-  it('.screen uses an effective radius that preserves the host override calculation', () => {
-    expect(ruleBody('.screen')).toMatch(/border-radius:\s*var\(--device-screen-radius-effective\)/)
-    expect(DEVICE_FRAME_STYLES).toMatch(
-      /--device-screen-radius-effective:\s*max\(0px,\s*calc\(var\(--device-frame-radius,\s*calc\(var\(--device-screen-radius\)\s*\+\s*var\(--device-bezel\)\s*\+\s*var\(--device-frame-border-width\)\)\)\s*-\s*var\(--device-bezel\)\s*-\s*var\(--device-frame-border-width\)\)\)/,
+  it('.screen uses per-corner effective radii that each preserve the host override calculation', () => {
+    expect(ruleBody('.screen')).toMatch(
+      /border-radius:\s*var\(--device-screen-radius-effective-top-left\)\s*var\(--device-screen-radius-effective-top-right\)\s*var\(--device-screen-radius-effective-bottom-right\)\s*var\(--device-screen-radius-effective-bottom-left\)/,
     )
+    for (const corner of ['top-left', 'top-right', 'bottom-right', 'bottom-left']) {
+      const pattern = new RegExp(
+        `--device-screen-radius-effective-${corner}:\\s*max\\(0px,\\s*calc\\(var\\(--device-frame-radius,\\s*calc\\(var\\(--device-screen-radius-${corner}\\)\\s*\\+\\s*var\\(--device-bezel\\)\\s*\\+\\s*var\\(--device-frame-border-width\\)\\)\\)\\s*-\\s*var\\(--device-bezel\\)\\s*-\\s*var\\(--device-frame-border-width\\)\\)\\)`,
+      )
+      expect(DEVICE_FRAME_STYLES).toMatch(pattern)
+    }
   })
 })

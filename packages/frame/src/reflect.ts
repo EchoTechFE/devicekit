@@ -13,7 +13,7 @@
  */
 import type { DeviceProfile } from '@devicekit/devices'
 import type { DeviceMetrics } from './metrics.js'
-import { orientedShellInsets } from './shell-insets.js'
+import { orientedShellCorners, orientedShellInsets } from './shell-insets.js'
 import { DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
 
 /** A value-carrying attribute. `null`/`undefined` clear it, matching `removeAttribute`. */
@@ -64,6 +64,11 @@ export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetric
   style.setProperty('--device-safe-area-bottom', `${insets.bottom}px`)
   style.setProperty('--device-safe-area-left', `${insets.left}px`)
   style.setProperty('--device-screen-radius', `${shell.screenRadius}px`)
+  const corners = orientedShellCorners(shell.screenCorners, metrics.orientation)
+  style.setProperty('--device-screen-radius-top-left', `${corners.topLeft}px`)
+  style.setProperty('--device-screen-radius-top-right', `${corners.topRight}px`)
+  style.setProperty('--device-screen-radius-bottom-right', `${corners.bottomRight}px`)
+  style.setProperty('--device-screen-radius-bottom-left', `${corners.bottomLeft}px`)
   style.setProperty('--device-bezel', `${shell.bezel}px`)
   const shellInsets = orientedShellInsets(shell.bezelInsets, metrics.orientation)
   style.setProperty('--device-bezel-top', `${shellInsets.top}px`)
@@ -79,20 +84,32 @@ export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetric
   const uniformInsets = shellInsets.top === shellInsets.right
     && shellInsets.right === shellInsets.bottom
     && shellInsets.bottom === shellInsets.left
+  const uniformCorners = corners.topLeft === corners.topRight
+    && corners.topRight === corners.bottomRight
+    && corners.bottomRight === corners.bottomLeft
   // A caller-provided scalar is an explicit shell contract, even when the
-  // screen also has asymmetric insets. Automatic elliptical radii apply only
-  // when the profile leaves bodyRadius unspecified.
+  // screen also has asymmetric insets or corners. Automatic elliptical radii
+  // apply only when the profile leaves bodyRadius unspecified.
   const explicitBodyRadius = profile?.shell?.bodyRadius !== undefined
-  if (shell.screenRadius === 0 || uniformInsets || explicitBodyRadius) {
+  const allCornersZero = Object.values(corners).every(v => v === 0)
+  if (allCornersZero || (uniformInsets && uniformCorners) || explicitBodyRadius) {
     style.removeProperty('--device-body-radius-x')
     style.removeProperty('--device-body-radius-y')
   }
   else {
-    const left = shell.screenRadius + shellInsets.left + DEVICE_FRAME_BORDER_WIDTH
-    const right = shell.screenRadius + shellInsets.right + DEVICE_FRAME_BORDER_WIDTH
-    const top = shell.screenRadius + shellInsets.top + DEVICE_FRAME_BORDER_WIDTH
-    const bottom = shell.screenRadius + shellInsets.bottom + DEVICE_FRAME_BORDER_WIDTH
-    style.setProperty('--device-body-radius-x', `${left}px ${right}px ${right}px ${left}px`)
-    style.setProperty('--device-body-radius-y', `${top}px ${top}px ${bottom}px ${bottom}px`)
+    const x = {
+      topLeft: corners.topLeft + shellInsets.left + DEVICE_FRAME_BORDER_WIDTH,
+      topRight: corners.topRight + shellInsets.right + DEVICE_FRAME_BORDER_WIDTH,
+      bottomRight: corners.bottomRight + shellInsets.right + DEVICE_FRAME_BORDER_WIDTH,
+      bottomLeft: corners.bottomLeft + shellInsets.left + DEVICE_FRAME_BORDER_WIDTH,
+    }
+    const y = {
+      topLeft: corners.topLeft + shellInsets.top + DEVICE_FRAME_BORDER_WIDTH,
+      topRight: corners.topRight + shellInsets.top + DEVICE_FRAME_BORDER_WIDTH,
+      bottomRight: corners.bottomRight + shellInsets.bottom + DEVICE_FRAME_BORDER_WIDTH,
+      bottomLeft: corners.bottomLeft + shellInsets.bottom + DEVICE_FRAME_BORDER_WIDTH,
+    }
+    style.setProperty('--device-body-radius-x', `${x.topLeft}px ${x.topRight}px ${x.bottomRight}px ${x.bottomLeft}px`)
+    style.setProperty('--device-body-radius-y', `${y.topLeft}px ${y.topRight}px ${y.bottomRight}px ${y.bottomLeft}px`)
   }
 }

@@ -196,6 +196,8 @@ import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 | `CutoutShape` | `'notch' \| 'pill' \| 'circle'` |
 | `CutoutSpec` | 挖孔的形状和几何：`shape`、`width`、`height`、`top`，可选 `centerX` |
 | `DeviceShell` | 机身：`screenRadius`、统一的 `bezel`；`bezelInsets` 可单独指定四边，`homeButton` 描述实体 Home 键；用了分边 inset 时应显式设置 `bodyRadius` |
+| `CornerRadii` | `{ topLeft, topRight, bottomRight, bottomLeft }`，顺序和 CSS `border-radius` 一致 |
+| `screenCorners`（`DeviceShell` 上的字段） | 按角覆盖 `screenRadius`，用于四角屏幕圆角不一致的机身——比如折叠屏合页那一侧。省略的角沿用统一的 `screenRadius` |
 | `HomeButtonSpec` | `{ diameter }`，机身 bezel 中央的实体 Home 键 |
 | `ResolvedDeviceShell` | 四边都已补齐、`homeButton` 为规格或 `null` 的机身数据 |
 | `WindowSizeOptions` | `resolveWindowSize` 的选项：`orientation`、`navigationBar`、`tabBarHeight` |

@@ -787,6 +787,12 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     releaseYear: 2026,
   },
   // Points, DPR, safe area, and chrome are provisional HIG visual calibrations from Apple physical pixels and diagrams, not Xcode 27.1 DeviceHub measurements.
+  // The corner radii (66/12, roughly 5.5:1) come from a third-party open-source
+  // project's reconstruction of Apple's own USDZ/AR model, not a published Apple
+  // figure. 12 (the hinge corners) has no independent corroboration — it is
+  // only plausible in magnitude. 66 (the free-edge corners) checks out against
+  // iPhone 18 Pro Max's `screenRadius: 62` scaled by screen width (62 × 466/440
+  // ≈ 65.7).
   {
     name: 'iPhone Duo (outer)',
     os: 'ios',
@@ -803,7 +809,12 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     cutout: { shape: 'circle', width: 37, height: 37, top: 26, centerX: 0.9 },
     // Rotated clockwise from the portrait geometry measured in Apple's closed-device render; not a DeviceHub measurement.
     cutoutLandscape: { shape: 'circle', width: 37, height: 37, top: 401, centerX: 0.934 },
-    shell: { screenRadius: 42, bezel: 6, bezelInsets: { left: 8 } },
+    shell: {
+      screenRadius: 66,
+      screenCorners: { topLeft: 12, bottomLeft: 12 },
+      bezel: 6,
+      bezelInsets: { left: 8 },
+    },
     releaseYear: 2026,
   },
   {

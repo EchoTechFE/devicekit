@@ -41,3 +41,36 @@ describe('resolved shell default precedence', () => {
     expect(resolveDevice(profile({ homeButton: null })).shell.homeButton).toBeNull()
   })
 })
+
+describe('resolved screenCorners precedence', () => {
+  it('every corner takes the uniform screenRadius when the profile omits screenCorners', () => {
+    PLATFORM_DEFAULTS.ios.shell = { screenRadius: 10, bezel: 3 }
+    expect(resolveDevice(profile({ screenRadius: 20 })).shell.screenCorners).toEqual({
+      topLeft: 20, topRight: 20, bottomRight: 20, bottomLeft: 20,
+    })
+  })
+
+  it('a partial screenCorners override, including zero, falls back to screenRadius for the omitted corners', () => {
+    PLATFORM_DEFAULTS.ios.shell = { screenRadius: 10, bezel: 3 }
+    expect(resolveDevice(profile({ screenRadius: 20, screenCorners: { topLeft: 0, bottomLeft: 0 } })).shell.screenCorners).toEqual({
+      topLeft: 0, topRight: 20, bottomRight: 20, bottomLeft: 0,
+    })
+  })
+
+  it('a profile with screenCorners but no screenRadius falls back to the platform screenRadius for omitted corners', () => {
+    PLATFORM_DEFAULTS.ios.shell = { screenRadius: 15, bezel: 3 }
+    expect(resolveDevice(profile({ screenCorners: { topLeft: 4, bottomLeft: 4 } })).shell.screenCorners).toEqual({
+      topLeft: 4, topRight: 15, bottomRight: 15, bottomLeft: 4,
+    })
+  })
+
+  it('the default bodyRadius is the largest corner radius plus the largest bezel inset', () => {
+    PLATFORM_DEFAULTS.ios.shell = { screenRadius: 10, bezel: 3 }
+    const resolved = resolveDevice(profile({
+      screenRadius: 20,
+      screenCorners: { topLeft: 5, bottomLeft: 5 },
+      bezelInsets: { left: 9 },
+    }))
+    expect(resolved.shell.bodyRadius).toBe(20 + 9)
+  })
+})

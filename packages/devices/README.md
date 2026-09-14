@@ -168,6 +168,8 @@ const version = systemVersion(profile)
 | `CutoutShape` | `'notch' \| 'pill' \| 'circle'` |
 | `CutoutSpec` | Cutout shape and geometry |
 | `DeviceShell` | Screen radius and uniform `bezel`; `bezelInsets` can override individual edges, `homeButton` describes physical hardware, and per-edge profiles should set `bodyRadius` explicitly |
+| `CornerRadii` | `{ topLeft, topRight, bottomRight, bottomLeft }`, ordered the way CSS `border-radius` orders them |
+| `screenCorners` (on `DeviceShell`) | Per-corner override of `screenRadius`, for shells whose screen corners are not all the same — a folding phone's hinge side, say. Omitted corners keep the uniform `screenRadius` value |
 | `HomeButtonSpec` | `{ diameter }`, the physical Home button centered in the body bezel |
 | `ResolvedDeviceShell` | A shell with every edge resolved and `homeButton` set to a spec or `null` |
 | `WindowSizeOptions` | Options for `resolveWindowSize()` |

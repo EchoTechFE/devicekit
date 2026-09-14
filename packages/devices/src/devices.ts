@@ -58,6 +58,14 @@ export interface EdgeInsets {
   left: number
 }
 
+/** Four corner radii, named the way CSS `border-radius` orders them: clockwise from top-left. */
+export interface CornerRadii {
+  topLeft: number
+  topRight: number
+  bottomRight: number
+  bottomLeft: number
+}
+
 /**
  * The shape of what interrupts the screen. `notch` hangs off the top edge,
  * `pill` floats below it (a Dynamic Island), `circle` is a punch-hole camera —
@@ -83,8 +91,10 @@ export interface CutoutSpec {
 
 /** The phone's body around the screen. */
 export interface DeviceShell {
-  /** Screen corner radius. */
+  /** Screen corner radius on every corner. */
   screenRadius: number
+  /** Per-corner screen radius. Omitted corners keep the uniform `screenRadius` value. */
+  screenCorners?: Partial<CornerRadii>
   /** Body thickness around the screen on every side. 0 = a bezel-less preview. */
   bezel: number
   /** Per-edge body thickness. Omitted edges keep the uniform `bezel` value. */
@@ -99,7 +109,8 @@ export interface HomeButtonSpec {
   diameter: number
 }
 
-export interface ResolvedDeviceShell extends Required<Omit<DeviceShell, 'bezelInsets' | 'homeButton'>> {
+export interface ResolvedDeviceShell extends Required<Omit<DeviceShell, 'screenCorners' | 'bezelInsets' | 'homeButton'>> {
+  screenCorners: CornerRadii
   bezelInsets: EdgeInsets
   homeButton: HomeButtonSpec | null
 }
@@ -259,6 +270,16 @@ function withInsets(partial: Partial<EdgeInsets> | undefined, fallback: EdgeInse
   }
 }
 
+function withCorners(partial: Partial<CornerRadii> | undefined, fallback: CornerRadii): CornerRadii {
+  if (!partial) return fallback
+  return {
+    topLeft: partial.topLeft ?? fallback.topLeft,
+    topRight: partial.topRight ?? fallback.topRight,
+    bottomRight: partial.bottomRight ?? fallback.bottomRight,
+    bottomLeft: partial.bottomLeft ?? fallback.bottomLeft,
+  }
+}
+
 /**
  * Fills a profile's optional fields in from its platform's defaults, generating
  * the user agent when the profile states none.
@@ -274,6 +295,13 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
   const statusBarEdge = profile.statusBarEdge ?? defaults.statusBarEdge
   const statusBarEdgeLandscape = profile.statusBarEdgeLandscape ?? defaults.statusBarEdgeLandscape
   const screenRadius = profile.shell?.screenRadius ?? defaults.shell.screenRadius
+  const uniformCorners = { topLeft: screenRadius, topRight: screenRadius, bottomRight: screenRadius, bottomLeft: screenRadius }
+  const profileCorners = profile.shell?.screenCorners
+  const screenCorners = profileCorners !== undefined
+    ? withCorners(profileCorners, uniformCorners)
+    : profile.shell?.screenRadius !== undefined
+      ? uniformCorners
+      : withCorners(defaults.shell.screenCorners, uniformCorners)
   const bezel = profile.shell?.bezel ?? defaults.shell.bezel
   const uniformBezelInsets = { top: bezel, right: bezel, bottom: bezel, left: bezel }
   const profileInsets = profile.shell?.bezelInsets
@@ -309,6 +337,7 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
     cutoutLandscape: profile.cutoutLandscape ?? null,
     shell: {
       screenRadius,
+      screenCorners,
       bezel,
       bezelInsets,
       homeButton,
@@ -316,7 +345,8 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
       // asymmetric modern shell. reflectMetrics may replace it with the
       // per-corner ellipse when the profile did not explicitly provide a
       // scalar bodyRadius.
-      bodyRadius: profile.shell?.bodyRadius ?? screenRadius + Math.max(...Object.values(bezelInsets)),
+      bodyRadius: profile.shell?.bodyRadius
+        ?? Math.max(...Object.values(screenCorners)) + Math.max(...Object.values(bezelInsets)),
     },
   }
 }
