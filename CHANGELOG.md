@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-14
+
 ### Added
 
 - `@devicekit/devices`: `DeviceShell` accepts an optional `screenCorners`, overriding `screenRadius` per corner for shells whose screen corners are not all the same.
