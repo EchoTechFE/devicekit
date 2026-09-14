@@ -23,17 +23,14 @@
     "test": "pnpm -r test && pnpm run test:scripts",
     "test:scripts": "node --test scripts/*.test.mjs",
     "test:coverage": "pnpm -r test:coverage",
-    "lint": "pnpm -r lint && pnpm lint:oxc",
-    "lint:oxc": "oxlint .",
+    "lint": "oxlint .",
     "verify:pack": "pnpm -r build && node scripts/verify-pack.mjs",
     "images": "node scripts/render-readme-images.mjs"
   },
   "devDependencies": {
-    "eslint": "^10.2.1",
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0",
-    "typescript": "5.9.2",
-    "typescript-eslint": "^8.58.2"
+    "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.15.9"
 }
