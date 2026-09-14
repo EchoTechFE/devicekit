@@ -46,21 +46,14 @@
     "build": "tsc -p tsconfig.build.json",
     "generate:device-names": "pnpm run build && node scripts/generate-device-names.mjs",
     "check-types": "tsc --noEmit && tsc --noEmit -p type-tests/tsconfig.json",
-    "lint": "eslint . --max-warnings 0",
     "test": "vitest run --reporter=default --reporter=json --outputFile.json=test-report.json --coverage.enabled --coverage.reporter=json-summary --coverage.reportsDirectory=coverage",
     "test:dev": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepack": "pnpm run build"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@vitest/coverage-v8": "^4.1.4",
-    "eslint": "^10.2.1",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-only-warn": "^1.2.1",
-    "jiti": "^2.7.0",
     "typescript": "5.9.2",
-    "typescript-eslint": "^8.58.2",
     "vitest": "^4.1.4"
   },
   "publishConfig": {
