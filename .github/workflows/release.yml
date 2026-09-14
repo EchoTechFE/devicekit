@@ -16,6 +16,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Must match the "Environment name" configured on each package's npm
+    # trusted publisher entry, or OIDC-based publishing is refused.
+    environment: npm-release
     # push: already only fires on main. workflow_dispatch: restrict to main so
     # a feature branch can't be manually dispatched into a publish.
     if: github.ref == 'refs/heads/main'
@@ -38,9 +41,3 @@ jobs:
       - uses: changesets/action@ae32849d5ba541f9ae29e40e22a623bc13562f51 # v2.1.2
         with:
           publish-script: pnpm release
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # pnpm release runs `changeset publish` directly, not `pnpm publish`,
-          # so there is no `--provenance` flag to pass; this env var is how
-          # npm's provenance attestation gets turned on for that path instead.
-          NPM_CONFIG_PROVENANCE: "true"
