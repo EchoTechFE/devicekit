@@ -29,9 +29,9 @@
     "release": "pnpm build && pnpm test && pnpm run verify:pack && changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "^3.0.2",
-    "oxfmt": "0.67.0",
-    "oxlint": "1.82.0",
+    "@changesets/cli": "^3.0.3",
+    "oxfmt": "0.68.0",
+    "oxlint": "1.83.0",
     "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.15.9"
