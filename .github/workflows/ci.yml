@@ -32,7 +32,7 @@ jobs:
 
       - run: pnpm format:check
 
-      - run: pnpm build
+      - run: pnpm run check:device-pages
 
       - run: pnpm lint
 

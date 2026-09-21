@@ -1,5 +1,6 @@
 ---
 import type { PresetDeviceProfile } from '@devicekit/devices'
+import { DEMO_DEVICE_DIRECTORY_URL } from '../../../src/demo-device-seo.js'
 import { demoPageMetadata } from '../../../src/demo-page-metadata.js'
 import '../../style.css'
 
@@ -7,6 +8,7 @@ interface Props { device?: PresetDeviceProfile }
 
 const { device } = Astro.props
 const metadata = demoPageMetadata(device)
+const deviceDirectoryHref = new URL(DEMO_DEVICE_DIRECTORY_URL).pathname
 ---
 
 <!doctype html>
@@ -25,6 +27,16 @@ const metadata = demoPageMetadata(device)
       <div class="panel__eyebrow">devicekit / frame</div>
       <div class="panel__header"><h1 id="demo-title">{metadata.heading}</h1><a class="github-link" href="https://github.com/EchoTechFE/devicekit">GitHub ↗</a></div>
       <p class="demo-intro" id="demo-intro">{metadata.intro}</p>
+      <a class="device-directory-link" id="device-directory" href={deviceDirectoryHref}>Browse all device profiles</a>
+      {device !== undefined && <section class="device-profile" aria-labelledby="device-profile-title">
+        <h2 id="device-profile-title">Device profile specifications</h2>
+        <dl>
+          <div><dt>Operating system</dt><dd>{device.os}</dd></div>
+          <div><dt>CSS viewport</dt><dd>{device.screen.width} × {device.screen.height}</dd></div>
+          <div><dt>Pixel ratio</dt><dd>{device.pixelRatio}×</dd></div>
+          <div><dt>Release year</dt><dd>{device.releaseYear}</dd></div>
+        </dl>
+      </section>}
 
       <section class="control-section"><div class="control-section__title">Device</div>
         <label class="field"><span>Profile</span><select id="device"></select></label>

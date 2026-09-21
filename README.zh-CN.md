@@ -12,6 +12,8 @@
 
 [打开在线演示](https://echotechfe.github.io/devicekit/)
 
+[查看全部机型页面](docs/device-pages.md)
+
 ## 安装
 
 需要渲染设备外观时安装 frame 包：

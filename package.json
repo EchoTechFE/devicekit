@@ -22,6 +22,8 @@
     "format:check": "oxfmt --check packages/devices/src/presets/ios.ts packages/devices/src/presets/android.ts packages/devices/src/presets/harmony.ts",
     "test": "pnpm -r test && pnpm run test:scripts",
     "test:scripts": "node --test scripts/*.test.mjs",
+    "generate:device-pages": "pnpm run build && node scripts/generate-device-pages.mjs",
+    "check:device-pages": "pnpm run build && node scripts/generate-device-pages.mjs --check",
     "test:coverage": "pnpm -r test:coverage",
     "lint": "oxlint .",
     "verify:pack": "pnpm -r build && node scripts/verify-pack.mjs",
