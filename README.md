@@ -12,6 +12,8 @@ Device profiles and a Web Component for rendering phone and tablet previews.
 
 [Open the live demo](https://echotechfe.github.io/devicekit/)
 
+[Browse every device profile page](docs/device-pages.md)
+
 ## Install
 
 Install the frame package to render previews:

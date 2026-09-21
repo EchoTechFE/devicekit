@@ -2,6 +2,7 @@ import type { PresetDeviceProfile } from '@devicekit/devices'
 import { devicePath } from './demo-device-url.js'
 
 export const DEMO_SITE_URL = 'https://echotechfe.github.io/devicekit/'
+export const DEMO_DEVICE_DIRECTORY_URL = new URL('devices/', DEMO_SITE_URL).href
 
 const OS_LABEL = { ios: 'iOS', android: 'Android', harmony: 'HarmonyOS' } as const
 
@@ -28,7 +29,7 @@ export function devicePageJsonLd(device: PresetDeviceProfile): Record<string, un
     isPartOf: {
       '@type': 'CollectionPage',
       name: 'devicekit device profiles',
-      url: DEMO_SITE_URL,
+      url: DEMO_DEVICE_DIRECTORY_URL,
     },
     mainEntity: {
       '@type': 'Thing',

@@ -1,0 +1,42 @@
+---
+import { DEVICES } from '@devicekit/devices'
+import { DEMO_DEVICE_DIRECTORY_URL, DEMO_SITE_URL } from '../../../../src/demo-device-seo.js'
+import { devicePath } from '../../../../src/demo-device-url.js'
+import '../../../style.css'
+
+const deviceHref = (name: string) => new URL(devicePath(name), DEMO_SITE_URL).pathname
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>All device profiles | devicekit</title>
+    <meta name="description" content={`Browse all ${DEVICES.length} iOS, Android and HarmonyOS device profiles available in the devicekit device-frame simulator.`}>
+    <link rel="canonical" href={DEMO_DEVICE_DIRECTORY_URL}>
+    <meta property="og:title" content="All device profiles | devicekit">
+    <meta property="og:description" content={`Browse all ${DEVICES.length} devicekit device profiles.`}>
+    <meta property="og:url" content={DEMO_DEVICE_DIRECTORY_URL}>
+    <meta property="og:type" content="website">
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'CollectionPage',
+      name: 'devicekit device profiles',
+      description: `Browse all ${DEVICES.length} devicekit device profiles.`,
+      url: DEMO_DEVICE_DIRECTORY_URL,
+      numberOfItems: DEVICES.length,
+    })}></script>
+  </head>
+  <body class="device-directory-page">
+    <main class="device-directory">
+      <p class="device-directory__eyebrow">devicekit / frame</p>
+      <h1>All device profiles</h1>
+      <p class="device-directory__intro">Choose one of {DEVICES.length} iOS, Android and HarmonyOS device profiles to inspect its viewport, pixel ratio, safe areas and device frame.</p>
+      <p><a class="device-directory__home" href={new URL(DEMO_SITE_URL).pathname}>Open the device frame simulator</a></p>
+      <ul class="device-directory__list">
+        {DEVICES.map((device) => <li><a href={deviceHref(device.name)}>{device.name}</a><span>{device.os} · {device.screen.width} × {device.screen.height} · {device.pixelRatio}×</span></li>)}
+      </ul>
+    </main>
+  </body>
+</html>

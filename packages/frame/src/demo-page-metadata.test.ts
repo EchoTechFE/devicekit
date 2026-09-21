@@ -25,7 +25,11 @@ describe('demoPageMetadata', () => {
     expect(metadata.title).toBe('iPhone 18 Pro device frame simulator | devicekit')
     expect(metadata.heading).toBe('iPhone 18 Pro device frame simulator')
     expect(metadata.canonical).toBe('https://echotechfe.github.io/devicekit/devices/iphone-18-pro/')
-    expect(metadata.jsonLd).toMatchObject({ '@type': 'WebPage', url: metadata.canonical })
+    expect(metadata.jsonLd).toMatchObject({
+      '@type': 'WebPage',
+      url: metadata.canonical,
+      isPartOf: { url: 'https://echotechfe.github.io/devicekit/devices/' },
+    })
   })
 
   it('makes browser history restore homepage metadata after a device route', () => {
