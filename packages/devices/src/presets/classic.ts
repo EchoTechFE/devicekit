@@ -29,11 +29,11 @@ export const CLASSIC_DEVICES: readonly PresetDeviceProfile[] = [
   pick('iPhone 17 Pro'),
   pick('iPad Mini'),
   pick('iPad Pro 11'),
-  pick('Pixel 8'),
+  // Pixel 8 dropped from Classic until RoundedCorner is measured (no invented radius).
   pick('Pixel 9 Pro'),
   pick('Galaxy S24'),
   pick('Galaxy S24 Ultra'),
-  pick('Xiaomi 14'),
+  // Xiaomi 14 dropped from Classic until screenRadius/cutout/safe are measured.
   pick('Pixel Tablet'),
   pick('HUAWEI Mate 60 Pro'),
   pick('HUAWEI Mate 70'),

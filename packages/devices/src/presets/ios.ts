@@ -13,6 +13,30 @@ const LEGACY_IPHONE_SHELL = {
   homeButton: { diameter: 30 },
 }
 
+/**
+ * Face ID notch families — cited radii only.
+ *
+ * - X / XS / 11 Pro: PaintCode bottom **20** + ear **topRadius: 6**.
+ * - XR / 11 / 12* / 13* / 14 / Plus / 16e / 17e: bottomRadius from bezel circular
+ *   fit; **topRadius intentionally omitted** (no public per-gen ear dump).
+ *   Paint falls back to `DEFAULT_NOTCH_TOP_RADIUS=6` — PaintCode-X **legacy
+ *   only**, not a per-gen calibration.
+ * - Bboxes: safearea / DeviceHub where cited (XR/11 **227×32**; minis unlocked).
+ */
+const NOTCH_X = { shape: 'notch' as const, width: 209, height: 30, top: 0, bottomRadius: 20, topRadius: 6 }
+const NOTCH_XS_MAX = { shape: 'notch' as const, width: 209, height: 30, top: 0, bottomRadius: 20, topRadius: 6 }
+/** ear unset → DEFAULT_NOTCH_TOP_RADIUS legacy fallback (uncalibrated) */
+const NOTCH_XR = { shape: 'notch' as const, width: 227, height: 32, top: 0, bottomRadius: 21.5 }
+const NOTCH_11_PRO = { shape: 'notch' as const, width: 209, height: 30, top: 0, bottomRadius: 20, topRadius: 6 }
+/** ear unset → DEFAULT 6 legacy; not calibrated */
+const NOTCH_12 = { shape: 'notch' as const, width: 210, height: 32, top: 0, bottomRadius: 20 }
+const NOTCH_12_MAX = { shape: 'notch' as const, width: 210, height: 32, top: 0, bottomRadius: 20 }
+const NOTCH_12_MINI = { shape: 'notch' as const, width: 226, height: 34, top: 0, bottomRadius: 20 }
+/** ear unset → DEFAULT 6 legacy; not calibrated (also 14 / Plus / 16e / 17e) */
+const NOTCH_13 = { shape: 'notch' as const, width: 162, height: 34, top: 0, bottomRadius: 21 }
+const NOTCH_13_MAX = { shape: 'notch' as const, width: 161, height: 34, top: 0, bottomRadius: 21 }
+const NOTCH_13_MINI = { shape: 'notch' as const, width: 174, height: 37, top: 0, bottomRadius: 21 }
+
 /** iPhones and iPads. Part of DEVICES; listed here so a host can offer one platform alone. */
 export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
   {
@@ -39,7 +63,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 48, bottom: 34 },
     safeAreaInsetsLandscape: { left: 48, right: 48, bottom: 21 },
-    cutout: { shape: 'notch', width: 231, height: 33, top: 0 },
+    cutout: NOTCH_XR,
+    shell: { screenRadius: 41.5 },
     releaseYear: 2018,
   },
   {
@@ -53,7 +78,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 210, height: 32, top: 0 },
+    cutout: NOTCH_12,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2020,
   },
   {
@@ -67,8 +93,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 162, height: 34, top: 0 },
-    shell: { screenRadius: 47 },
+    cutout: NOTCH_13,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2022,
   },
   {
@@ -82,7 +108,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 161, height: 34, top: 0 },
+    cutout: NOTCH_13_MAX,
+    shell: { screenRadius: 53.33 },
     releaseYear: 2022,
   },
   {
@@ -110,6 +137,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 59, bottom: 34 },
     safeAreaInsetsLandscape: { left: 59, right: 59, bottom: 21 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 11 },
+    shell: { screenRadius: 55 },
     releaseYear: 2022,
   },
   {
@@ -122,6 +150,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 59, bottom: 34 },
     safeAreaInsetsLandscape: { left: 59, right: 59, bottom: 21 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 11 },
+    shell: { screenRadius: 55 },
     releaseYear: 2023,
   },
   {
@@ -136,6 +165,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 59, bottom: 34 },
     safeAreaInsetsLandscape: { left: 59, right: 59, bottom: 21 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 11 },
+    shell: { screenRadius: 55 },
     releaseYear: 2023,
   },
   {
@@ -148,6 +178,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 59, bottom: 34 },
     safeAreaInsetsLandscape: { left: 59, right: 59, bottom: 21 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 11 },
+    shell: { screenRadius: 55 },
     releaseYear: 2023,
   },
   {
@@ -162,6 +193,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 59, bottom: 34 },
     safeAreaInsetsLandscape: { left: 59, right: 59, bottom: 21 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 11 },
+    shell: { screenRadius: 55 },
     releaseYear: 2023,
   },
   {
@@ -175,7 +207,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 162, height: 34, top: 0 },
+    cutout: NOTCH_13,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2025,
   },
   {
@@ -188,6 +221,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 59, bottom: 34 },
     safeAreaInsetsLandscape: { left: 59, right: 59, bottom: 21 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 11 },
+    shell: { screenRadius: 55 },
     releaseYear: 2024,
   },
   {
@@ -202,6 +236,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 59, bottom: 34 },
     safeAreaInsetsLandscape: { left: 59, right: 59, bottom: 21 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 11 },
+    shell: { screenRadius: 55 },
     releaseYear: 2024,
   },
   {
@@ -308,7 +343,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 44, bottom: 34 },
     safeAreaInsetsLandscape: { left: 44, right: 44, bottom: 21 },
-    cutout: { shape: 'notch', width: 209, height: 30, top: 0 },
+    cutout: NOTCH_X,
     shell: { screenRadius: 39 },
     releaseYear: 2017,
   },
@@ -323,7 +358,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 44, bottom: 34 },
     safeAreaInsetsLandscape: { left: 44, right: 44, bottom: 21 },
-    cutout: { shape: 'notch', width: 209, height: 30, top: 0 },
+    cutout: NOTCH_XS_MAX,
+    shell: { screenRadius: 39 },
     releaseYear: 2018,
   },
   {
@@ -337,7 +373,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 50, bottom: 34 },
     safeAreaInsetsLandscape: { left: 50, right: 50, bottom: 21 },
-    cutout: { shape: 'notch', width: 192, height: 30, top: 0 },
+    cutout: NOTCH_13_MINI,
+    shell: { screenRadius: 44 },
     releaseYear: 2020,
   },
   {
@@ -351,7 +388,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 162, height: 34, top: 0 },
+    cutout: NOTCH_13,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2020,
   },
   {
@@ -365,7 +403,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 161, height: 34, top: 0 },
+    cutout: NOTCH_13_MAX,
+    shell: { screenRadius: 53.33 },
     releaseYear: 2020,
   },
   {
@@ -582,7 +621,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 48, bottom: 34 },
     safeAreaInsetsLandscape: { left: 48, right: 48, bottom: 21 },
-    cutout: { shape: 'notch', width: 231, height: 33, top: 0 },
+    cutout: NOTCH_XR,
+    shell: { screenRadius: 41.5 },
     releaseYear: 2019,
   },
   {
@@ -595,7 +635,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 44, bottom: 34 },
     safeAreaInsetsLandscape: { left: 44, right: 44, bottom: 21 },
-    cutout: { shape: 'notch', width: 209, height: 30, top: 0 },
+    cutout: NOTCH_11_PRO,
+    shell: { screenRadius: 39 },
     releaseYear: 2019,
   },
   {
@@ -609,7 +650,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 44, bottom: 34 },
     safeAreaInsetsLandscape: { left: 44, right: 44, bottom: 21 },
-    cutout: { shape: 'notch', width: 209, height: 30, top: 0 },
+    cutout: NOTCH_11_PRO,
+    shell: { screenRadius: 39 },
     releaseYear: 2019,
   },
   {
@@ -623,7 +665,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 210, height: 32, top: 0 },
+    cutout: NOTCH_12,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2020,
   },
   {
@@ -637,7 +680,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 210, height: 32, top: 0 },
+    cutout: NOTCH_12_MAX,
+    shell: { screenRadius: 53.33 },
     releaseYear: 2020,
   },
   {
@@ -651,7 +695,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 50, bottom: 34 },
     safeAreaInsetsLandscape: { left: 50, right: 50, bottom: 21 },
-    cutout: { shape: 'notch', width: 192, height: 30, top: 0 },
+    cutout: NOTCH_12_MINI,
+    shell: { screenRadius: 44 },
     releaseYear: 2020,
   },
   {
@@ -665,7 +710,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 162, height: 34, top: 0 },
+    cutout: NOTCH_13,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2021,
   },
   {
@@ -679,7 +725,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 162, height: 34, top: 0 },
+    cutout: NOTCH_13,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2021,
   },
   {
@@ -693,7 +740,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 21 },
-    cutout: { shape: 'notch', width: 161, height: 34, top: 0 },
+    cutout: NOTCH_13_MAX,
+    shell: { screenRadius: 53.33 },
     releaseYear: 2021,
   },
   {
@@ -707,7 +755,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 50, bottom: 34 },
     safeAreaInsetsLandscape: { left: 50, right: 50, bottom: 21 },
-    cutout: { shape: 'notch', width: 192, height: 30, top: 0 },
+    cutout: NOTCH_13_MINI,
+    shell: { screenRadius: 44 },
     releaseYear: 2021,
   },
   {
@@ -720,6 +769,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 62, bottom: 34 },
     safeAreaInsetsLandscape: { left: 62, right: 62, bottom: 20 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 14 },
+    shell: { screenRadius: 62 },
     releaseYear: 2025,
   },
   {
@@ -732,6 +782,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 68, bottom: 34 },
     safeAreaInsetsLandscape: { left: 68, right: 68, bottom: 20 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 20 },
+    shell: { screenRadius: 62 },
     releaseYear: 2025,
   },
   {
@@ -757,6 +808,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 62, bottom: 34 },
     safeAreaInsetsLandscape: { left: 62, right: 62, bottom: 20 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 14 },
+    shell: { screenRadius: 62 },
     releaseYear: 2025,
   },
   // Safe-area, Dynamic Island, and shell values follow the same-sized iPhone 17 Pro series; iOS 27 has not been measured in Xcode yet.
@@ -786,13 +838,10 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     shell: { screenRadius: 62 },
     releaseYear: 2026,
   },
-  // Points, DPR, safe area, and chrome are provisional HIG visual calibrations from Apple physical pixels and diagrams, not Xcode 27.1 DeviceHub measurements.
-  // The corner radii (66/12, roughly 5.5:1) come from a third-party open-source
-  // project's reconstruction of Apple's own USDZ/AR model, not a published Apple
-  // figure. 12 (the hinge corners) has no independent corroboration — it is
-  // only plausible in magnitude. 66 (the free-edge corners) checks out against
-  // iPhone 18 Pro Max's `screenRadius: 62` scaled by screen width (62 × 466/440
-  // ≈ 65.7).
+  // Layout points, safe area, and screen corners follow Xcode 27.1 DeviceHub /
+  // safearea.info measurements (not marketing panel÷3). Outer free-edge radius
+  // 59 continuous; hinge-side corners 8 (DeviceHub). Outer punch-hole stays
+  // idle Ø37 circle. Inner window is 669×951 @3.
   {
     name: 'iPhone Duo (outer)',
     os: 'ios',
@@ -804,14 +853,15 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     statusBarHeightLandscape: 44,
     statusBarEdge: 'right',
     statusBarEdgeLandscape: 'right',
-    safeAreaInsets: { top: 12, right: 68, bottom: 12, left: 0 },
-    safeAreaInsetsLandscape: { top: 12, right: 68, bottom: 12, left: 0 },
+    safeAreaInsets: { top: 0, right: 84, bottom: 34, left: 0 },
+    safeAreaInsetsLandscape: { top: 0, right: 84, bottom: 34, left: 0 },
     cutout: { shape: 'circle', width: 37, height: 37, top: 26, centerX: 0.9 },
     // Rotated clockwise from the portrait geometry measured in Apple's closed-device render; not a DeviceHub measurement.
     cutoutLandscape: { shape: 'circle', width: 37, height: 37, top: 401, centerX: 0.934 },
     shell: {
-      screenRadius: 66,
-      screenCorners: { topLeft: 12, bottomLeft: 12 },
+      screenRadius: 59,
+      // Hinge-side corners from DeviceHub / safearea.info (Xcode 27.1): 8.
+      screenCorners: { topLeft: 8, bottomLeft: 8 },
       bezel: 6,
       bezelInsets: { left: 8 },
     },
@@ -820,7 +870,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
   {
     name: 'iPhone Duo (inner)',
     os: 'ios',
-    screen: { width: 626, height: 890 },
+    screen: { width: 669, height: 951 },
     pixelRatio: 3,
     formFactor: 'foldable',
     system: 'iOS 27.1',
@@ -828,9 +878,10 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     statusBarHeightLandscape: 44,
     statusBarEdge: 'top',
     statusBarEdgeLandscape: 'right',
-    safeAreaInsets: { top: 68, bottom: 34 },
-    safeAreaInsetsLandscape: { right: 68 },
-    shell: { screenRadius: 38, bezel: 6 },
+    safeAreaInsets: { top: 82, bottom: 34 },
+    // Fully Open · Landscape · HT Off (Xcode 27.1 / safearea.info): right rail 84 + home indicator 34.
+    safeAreaInsetsLandscape: { top: 0, right: 84, bottom: 34, left: 0 },
+    shell: { screenRadius: 59, bezel: 6 },
     releaseYear: 2026,
   },
   {
@@ -844,7 +895,8 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     navigationBarHeightLandscape: 32,
     safeAreaInsets: { top: 47, bottom: 34 },
     safeAreaInsetsLandscape: { left: 47, right: 47, bottom: 20 },
-    cutout: { shape: 'notch', width: 162, height: 34, top: 0 },
+    cutout: NOTCH_13,
+    shell: { screenRadius: 47.33 },
     releaseYear: 2026,
   },
   {
@@ -909,6 +961,7 @@ export const IOS_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 68, bottom: 34 },
     safeAreaInsetsLandscape: { left: 68, right: 68, bottom: 20 },
     cutout: { shape: 'pill', width: 125, height: 37, top: 20 },
+    shell: { screenRadius: 62 },
     releaseYear: 2025,
   },
   {

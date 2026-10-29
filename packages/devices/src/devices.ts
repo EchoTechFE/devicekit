@@ -73,6 +73,9 @@ export interface CornerRadii {
  */
 export type CutoutShape = 'notch' | 'pill' | 'circle'
 
+/** How `.screen` corners are curved. iOS uses continuous (squircle); Android/Harmony stay circular. */
+export type CornerCurve = 'circular' | 'continuous'
+
 /**
  * Where to draw the cutout, in CSS px at the device's portrait width.
  *
@@ -87,6 +90,17 @@ export interface CutoutSpec {
   top: number
   /** Horizontal center as a fraction of screen width. Omitted = centered. */
   centerX?: number
+  /**
+   * Notch bottom-corner radius in CSS px (portrait). Omitted → `round(height * 0.6)`.
+   * Sourced from Apple Design Resources bezel screen-hole path fits, or NotchView mm→pt
+   * when no bezel asset exists (see NOTCH-CORNER-RESTORE.md).
+   */
+  bottomRadius?: number
+  /**
+   * Notch top-edge ear fillet radius in CSS px (the outward sweep where the notch
+   * meets the screen's top edge). Omitted → 6.
+   */
+  topRadius?: number
 }
 
 /** The phone's body around the screen. */
@@ -95,6 +109,11 @@ export interface DeviceShell {
   screenRadius: number
   /** Per-corner screen radius. Omitted corners keep the uniform `screenRadius` value. */
   screenCorners?: Partial<CornerRadii>
+  /**
+   * Screen corner curve applied only to `.screen` (not the body/bezel).
+   * Omitted = the platform default (`continuous` on iOS, `circular` elsewhere).
+   */
+  cornerCurve?: CornerCurve
   /** Body thickness around the screen on every side. 0 = a bezel-less preview. */
   bezel: number
   /** Per-edge body thickness. Omitted edges keep the uniform `bezel` value. */
@@ -207,7 +226,7 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
     statusBarEdgeLandscape: 'top',
     navigationBarHeight: 44,
     navigationBarHeightLandscape: 32,
-    shell: { screenRadius: 38, bezel: 6 },
+    shell: { screenRadius: 38, bezel: 6, cornerCurve: 'continuous' },
   },
   android: {
     statusBarStyle: 'android-stock',
@@ -217,7 +236,7 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
     statusBarEdgeLandscape: 'top',
     navigationBarHeight: 48,
     navigationBarHeightLandscape: 48,
-    shell: { screenRadius: 16, bezel: 4 },
+    shell: { screenRadius: 16, bezel: 4, cornerCurve: 'circular' },
   },
   harmony: {
     statusBarStyle: 'harmony',
@@ -227,7 +246,7 @@ export const PLATFORM_DEFAULTS: Record<DeviceOS, {
     statusBarEdgeLandscape: 'top',
     navigationBarHeight: 28,
     navigationBarHeightLandscape: 28,
-    shell: { screenRadius: 34, bezel: 4 },
+    shell: { screenRadius: 34, bezel: 4, cornerCurve: 'circular' },
   },
 }
 
@@ -338,6 +357,7 @@ export function resolveDevice(profile: DeviceProfile): ResolvedDevice {
     shell: {
       screenRadius,
       screenCorners,
+      cornerCurve: profile.shell?.cornerCurve ?? defaults.shell.cornerCurve ?? 'circular',
       bezel,
       bezelInsets,
       homeButton,

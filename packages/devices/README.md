@@ -49,7 +49,7 @@ const windowSize = resolveWindowSize(profile, {
 
 `DEVICES` contains the complete table. `IOS_DEVICES`, `ANDROID_DEVICES`, and `HARMONY_DEVICES` expose the platform lists. Folding devices use separate profiles for their inner and outer screens.
 
-`CLASSIC_DEVICES` is a 19-profile subset for compact device selectors. `DEFAULT_DEVICE` is the iPhone X profile. `DEVICE_NAMES` provides typed names such as `DEVICE_NAMES.iPhone_16_Pro`.
+`CLASSIC_DEVICES` is a 17-profile subset for compact device selectors (Pixel 8 and Xiaomi 14 are kept in `DEVICES` but omitted from Classic until screen radius / cutout / safe are measured). `DEFAULT_DEVICE` is the iPhone X profile. `DEVICE_NAMES` provides typed names such as `DEVICE_NAMES.iPhone_16_Pro`.
 
 ## Device profiles
 
@@ -100,9 +100,39 @@ const windowSize = resolveWindowSize(profile, {
 
 `resolveSafeAreaInsets()` returns distances from the four screen edges. `resolveSafeArea()` returns `{ top, left, right, bottom, width, height }` in screen coordinates. `resolveWindowSize()` subtracts the status bar, the requested navigation bar, and `tabBarHeight` from the oriented screen.
 
-The iPhone Duo rows are provisional: camera and status chrome are pixel-calibrated against Apple's website renders, while points, DPR, and safe-area values still await Xcode 27.1 DeviceHub verification.
+iPhone Duo layout points, safe-area insets, and free-edge screen radius (59, continuous) follow Xcode 27.1 DeviceHub / safearea.info. Outer idle cutout remains Ø37 circle; hinge-side corners are **8**. Crease / pose APIs are not modeled yet.
 
 `navigationBar` accepts `true`, `false`, or a non-negative number. `tabBarHeight` accepts a non-negative number. Invalid numeric options throw a `RangeError`.
+
+
+## Galaxy S24 Ultra window mode (FHD+ default)
+
+Classic / default `Galaxy S24 Ultra` uses the **FHD+ gesture window** reported by windowinsets.info at densityDpi 450:
+
+| Field | Value |
+| --- | --- |
+| Logical window | **384×832** @ **2.8125** |
+| Screen radius | **2.13** (WindowInsets.RoundedCorner — near-sharp content clip under FHD+; screenshot QA should expect a near-square content corner, not S24's 36) |
+| Safe area | top ≈34 / bottom ≈15 |
+
+This is **not** the panel's full WQHD+ logical size (previously shipped as 412×915 @2.625). Hosts that need the old WQHD+-ish window should pass an explicit `deviceProfile` override:
+
+```ts
+const ultra = findDevice('Galaxy S24 Ultra')!
+const wqhd = {
+  ...ultra,
+  screen: { width: 412, height: 915 },
+  pixelRatio: 2.625,
+}
+```
+
+A named dual-field / `screenMode` API is tracked as P1. Until then, Classic consumers should treat 384×832 as the breaking default.
+
+## Classic screen-fidelity notes
+
+- Modern Classic phones (non-tablet, non-Harmony) lock an explicit measured `shell.screenRadius` in CI.
+- Harmony Classic rows stay in the picker but **skip** the radius lock until RoundedCorner + bottom inset are measured — no invented cutouts.
+- Pixel 8 and Xiaomi 14 remain in `ANDROID_DEVICES` / `DEVICES` but are **not** Classic.
 
 ## User agents
 
@@ -127,7 +157,7 @@ const version = systemVersion(profile)
 | `IOS_DEVICES` | `readonly PresetDeviceProfile[]` | iOS profiles |
 | `ANDROID_DEVICES` | `readonly PresetDeviceProfile[]` | Android profiles |
 | `HARMONY_DEVICES` | `readonly PresetDeviceProfile[]` | HarmonyOS profiles |
-| `CLASSIC_DEVICES` | `readonly PresetDeviceProfile[]` | 19 profiles for short selectors |
+| `CLASSIC_DEVICES` | `readonly PresetDeviceProfile[]` | 17 profiles for short selectors |
 | `DEFAULT_DEVICE` | `PresetDeviceProfile` | iPhone X profile |
 | `PLATFORM_DEFAULTS` | `Record<DeviceOS, ...>` | Default bar and shell values by platform |
 | `DEVICE_NAMES` | `const object` | Typed name constants generated from `DEVICES` |
@@ -170,6 +200,7 @@ const version = systemVersion(profile)
 | `DeviceShell` | Screen radius and uniform `bezel`; `bezelInsets` can override individual edges, `homeButton` describes physical hardware, and per-edge profiles should set `bodyRadius` explicitly |
 | `CornerRadii` | `{ topLeft, topRight, bottomRight, bottomLeft }`, ordered the way CSS `border-radius` orders them |
 | `screenCorners` (on `DeviceShell`) | Per-corner override of `screenRadius`, for shells whose screen corners are not all the same — a folding phone's hinge side, say. Omitted corners keep the uniform `screenRadius` value |
+| `cornerCurve` (on `DeviceShell`) | `'circular'` or `'continuous'`; applied only to `.screen` (iOS defaults to continuous / squircle; Android and HarmonyOS stay circular) |
 | `HomeButtonSpec` | `{ diameter }`, the physical Home button centered in the body bezel |
 | `ResolvedDeviceShell` | A shell with every edge resolved and `homeButton` set to a spec or `null` |
 | `WindowSizeOptions` | Options for `resolveWindowSize()` |
