@@ -180,13 +180,14 @@ describe('the cutout follows the current orientation', () => {
   it('shows the cutout in portrait, wired to the resolved metrics', () => {
     const el = mountFrame({ device: 'iPhone X' })
     expect(cutoutEl(el).hidden).toBe(false)
-    // Legacy radial ears (::before/::after) + bottomRadius — clip-path path
-    // failed bidirectional image gate (NOTCH-BIDIRECTIONAL-IMAGE-ADV.md).
+    // Circular Face ID clip-path: paint box expands by ear fillets on each side.
     const ear = el.metrics.cutout!.topRadius ?? 6
-    expect(cutoutEl(el).style.width).toBe(`${el.metrics.cutout!.width}px`)
+    const bodyW = el.metrics.cutout!.width
+    expect(cutoutEl(el).style.width).toBe(`${bodyW + 2 * ear}px`)
     expect(cutoutEl(el).style.height).toBe(`${el.metrics.cutout!.height}px`)
-    expect(cutoutEl(el).dataset.notchCurve).toBeUndefined()
-    expect(cutoutEl(el).style.clipPath || cutoutEl(el).style.getPropertyValue('clip-path')).toBe('')
+    expect(cutoutEl(el).dataset.notchCurve).toBe('circular')
+    const clip = cutoutEl(el).style.clipPath || cutoutEl(el).style.getPropertyValue('clip-path')
+    expect(clip.startsWith('path(')).toBe(true)
     expect(cutoutEl(el).style.getPropertyValue('--device-notch-top-radius')).toBe(`${ear}px`)
   })
 

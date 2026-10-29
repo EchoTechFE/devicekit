@@ -34,10 +34,12 @@ describe('every top-edge tabled cutout leaves room for the horizontal status bar
   it('holds the icon group in the right ear for every top-edge device with a top-region cutout', () => {
     // Bottom camera bars (e.g. Flip cover cutout.top near screen bottom) are not status-bar cutouts —
     // they must not be held to status-icon ear clearance.
+    // Right-edge punch holes (centerX ≳ 0.9) put icons in the LEFT ear — skip right-ear budget.
     const tooNarrow = DEVICES
       .filter((d) => {
         const resolved = resolveDevice(d)
         if (resolved.cutout === null || statusBarEdgeFor(resolved, 'portrait') !== 'top') return false
+        if ((resolved.cutout.centerX ?? 0.5) >= 0.9) return false
         return resolved.cutout.top + resolved.cutout.height / 2 < resolved.screen.height / 2
       })
       .filter((d) => {

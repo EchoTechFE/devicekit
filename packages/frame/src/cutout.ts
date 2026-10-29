@@ -74,7 +74,7 @@ export function statusBarEars(cutout: CutoutSpec | null, screenWidth: number): {
  * Face ID notch clip-path (circular ears + bottom; ξ=0).
  *
  * Figma ξ≈0.6 continuous is NOT used — ADV found leftover sidewall=0 melt +
- * anisotropic ear arcs (`NOTCH-CONTINUOUS-VISUAL-ADV.md`). Path default is
+ * anisotropic ear arcs. Path default is
  * circular quarter-circles matching PaintCode / Bezel radii.
  */
 export function cutoutNotchContinuousClipPath(cutout: CutoutSpec): string | null {
