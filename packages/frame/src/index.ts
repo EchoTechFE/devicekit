@@ -16,8 +16,18 @@ export type { DeviceFrameElementEventMap } from './element-events.js'
 export {
   CUTOUT_PRESETS,
   cutoutBorderRadius,
+  cutoutTopRadius,
+  DEFAULT_NOTCH_TOP_RADIUS,
   cutoutLeft,
+  cutoutNotchContinuousClipPath,
+  cutoutPaintLeft,
+  cutoutPaintWidth,
   statusBarEars,
+  notchContinuousPathD,
+  notchContinuousClipPath,
+  notchContinuousOuterWidth,
+  NOTCH_CURVE_TOKEN,
+  NOTCH_PATH_DEFAULT_SMOOTHING,
 } from './cutout.js'
 
 export {

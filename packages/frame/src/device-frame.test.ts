@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DEVICE_FRAME_TAG, defineDeviceFrame, type DeviceFrameElement } from './device-frame.js'
+import { DEVICES, resolveDevice } from '@devicekit/devices'
 import { DEVICE_FRAME_STYLES } from './styles.js'
 
 defineDeviceFrame()
@@ -179,8 +180,14 @@ describe('the cutout follows the current orientation', () => {
   it('shows the cutout in portrait, wired to the resolved metrics', () => {
     const el = mountFrame({ device: 'iPhone X' })
     expect(cutoutEl(el).hidden).toBe(false)
+    // Legacy radial ears (::before/::after) + bottomRadius — clip-path path
+    // failed bidirectional image gate (NOTCH-BIDIRECTIONAL-IMAGE-ADV.md).
+    const ear = el.metrics.cutout!.topRadius ?? 6
     expect(cutoutEl(el).style.width).toBe(`${el.metrics.cutout!.width}px`)
     expect(cutoutEl(el).style.height).toBe(`${el.metrics.cutout!.height}px`)
+    expect(cutoutEl(el).dataset.notchCurve).toBeUndefined()
+    expect(cutoutEl(el).style.clipPath || cutoutEl(el).style.getPropertyValue('clip-path')).toBe('')
+    expect(cutoutEl(el).style.getPropertyValue('--device-notch-top-radius')).toBe(`${ear}px`)
   })
 
   // Android keeps its status bar visible in landscape, so this reaches the
@@ -263,14 +270,51 @@ describe('the home indicator bar is paintable in either foreground color', () =>
 })
 
 describe('the home indicator', () => {
-  it('shows only on devices whose safe area reports a bottom inset', () => {
+  it('shows only on iOS devices whose safe area reports a bottom inset', () => {
     // iPhone X: portrait bottom inset 34 (gesture bar). iPhone SE: 0 (home button).
     expect(homeIndicator(mountFrame({ device: 'iPhone X' })).hidden).toBe(false)
+    expect(homeIndicator(mountFrame({ device: 'iPhone 16 Pro' })).hidden).toBe(false)
     expect(homeIndicator(mountFrame({ device: 'iPhone SE' })).hidden).toBe(true)
   })
 
-  it('keeps showing in landscape, since the gesture bar does not rotate away', () => {
+  it('stays hidden on Android/Harmony even when bottom safe inset is > 0', () => {
+    // Galaxy S24 gesture inset ~15, Pixel 9 Pro ~24 — content keeps the inset,
+    // but the iOS 118×4 pill must not draw.
+    expect(homeIndicator(mountFrame({ device: 'Galaxy S24' })).hidden).toBe(true)
+    expect(homeIndicator(mountFrame({ device: 'Pixel 9 Pro' })).hidden).toBe(true)
+  })
+
+  it('hides on every android and harmony preset (no sampling)', () => {
+    const nonIos = DEVICES.filter((d) => d.os !== 'ios')
+    expect(nonIos.length).toBeGreaterThan(50)
+    for (const device of nonIos) {
+      const el = mountFrame({ device: device.name })
+      expect(homeIndicator(el).hidden, device.name).toBe(true)
+      el.remove()
+    }
+  })
+
+  it('shows on every iOS preset with bottom safe inset > 0, including Duo', () => {
+    const iosWithBottom = DEVICES.filter((d) => {
+      if (d.os !== 'ios') return false
+      const resolved = resolveDevice(d)
+      return resolved.safeAreaInsets.bottom > 0
+    })
+    expect(iosWithBottom.map((d) => d.name)).toEqual(
+      expect.arrayContaining(['iPhone Duo (outer)', 'iPhone Duo (inner)']),
+    )
+    for (const device of iosWithBottom) {
+      const el = mountFrame({ device: device.name })
+      expect(homeIndicator(el).hidden, device.name).toBe(false)
+      el.remove()
+    }
+  })
+
+  it('keeps showing in landscape on iOS, since the gesture bar does not rotate away', () => {
     expect(homeIndicator(mountFrame({ device: 'iPhone X', orientation: 'landscape' })).hidden).toBe(false)
+    // Duo inner Fully Open landscape keeps bottom 34 (safearea.info HT Off); HI must not hide.
+    expect(homeIndicator(mountFrame({ device: 'iPhone Duo (inner)', orientation: 'landscape' })).hidden).toBe(false)
+    expect(homeIndicator(mountFrame({ device: 'iPhone Duo (outer)', orientation: 'landscape' })).hidden).toBe(false)
   })
 })
 
