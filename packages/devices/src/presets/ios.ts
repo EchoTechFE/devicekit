@@ -23,11 +23,32 @@ const LEGACY_IPHONE_SHELL = {
  *   only**, not a per-gen calibration.
  * - Bboxes: safearea / DeviceHub where cited (XR/11 **227×32**; minis unlocked).
  */
-const NOTCH_X = { shape: 'notch' as const, width: 209, height: 30, top: 0, bottomRadius: 20, topRadius: 6 }
-const NOTCH_XS_MAX = { shape: 'notch' as const, width: 209, height: 30, top: 0, bottomRadius: 20, topRadius: 6 }
+const NOTCH_X = {
+  shape: 'notch' as const,
+  width: 209,
+  height: 30,
+  top: 0,
+  bottomRadius: 20,
+  topRadius: 6,
+}
+const NOTCH_XS_MAX = {
+  shape: 'notch' as const,
+  width: 209,
+  height: 30,
+  top: 0,
+  bottomRadius: 20,
+  topRadius: 6,
+}
 /** ear unset → DEFAULT_NOTCH_TOP_RADIUS legacy fallback (uncalibrated) */
 const NOTCH_XR = { shape: 'notch' as const, width: 227, height: 32, top: 0, bottomRadius: 21.5 }
-const NOTCH_11_PRO = { shape: 'notch' as const, width: 209, height: 30, top: 0, bottomRadius: 20, topRadius: 6 }
+const NOTCH_11_PRO = {
+  shape: 'notch' as const,
+  width: 209,
+  height: 30,
+  top: 0,
+  bottomRadius: 20,
+  topRadius: 6,
+}
 /** ear unset → DEFAULT 6 legacy; not calibrated */
 const NOTCH_12 = { shape: 'notch' as const, width: 210, height: 32, top: 0, bottomRadius: 20 }
 const NOTCH_12_MAX = { shape: 'notch' as const, width: 210, height: 32, top: 0, bottomRadius: 20 }

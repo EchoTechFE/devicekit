@@ -21,7 +21,7 @@
  * Fallback: if path is empty/`none`, keep labeled circular CSS radii.
  */
 import type { CornerRadii } from '@devicekit/devices'
-import { figmaContinuousClipPath, figmaContinuousRoundedRectPath, FIGMA_IOS_CORNER_SMOOTHING } from './figma-continuous-path.js'
+import { figmaContinuousClipPath } from './figma-continuous-path.js'
 export { FIGMA_IOS_CORNER_SMOOTHING, figmaContinuousClipPath, figmaContinuousRoundedRectPath } from './figma-continuous-path.js'
 
 /** Apple continuous screens match a superellipse near n=5 (approximation, not CoreAnimation). */

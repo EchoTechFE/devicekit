@@ -12,7 +12,6 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
-import { pathToFileURL } from 'node:url'
 
 const require = createRequire('/tmp/shot-tools/package.json')
 const puppeteer = require('puppeteer-core')
@@ -113,7 +112,7 @@ async function shotOne(browser, name, outPath) {
 }
 
 async function mapPool(items, limit, fn) {
-  const results = new Array(items.length)
+  const results = Array.from({ length: items.length })
   let i = 0
   async function worker() {
     while (i < items.length) {

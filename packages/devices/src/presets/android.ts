@@ -588,7 +588,10 @@ export const ANDROID_DEVICES: readonly PresetDeviceProfile[] = [
     safeAreaInsets: { top: 0, bottom: 84 },
     safeAreaInsetsLandscape: { right: 0 },
     cutout: { shape: 'pill', width: 198, height: 84, top: 315, centerX: 0.726 },
-    shell: { screenRadius: 6.1, screenCorners: { topLeft: 6.1, topRight: 6.1, bottomRight: 41.14, bottomLeft: 41.14 } },
+    shell: {
+      screenRadius: 6.1,
+      screenCorners: { topLeft: 6.1, topRight: 6.1, bottomRight: 41.14, bottomLeft: 41.14 },
+    },
     userAgent:
       'Mozilla/5.0 (Linux; Android 16; SM-F761U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.7827.55 Mobile Safari/537.36',
     releaseYear: 2025,

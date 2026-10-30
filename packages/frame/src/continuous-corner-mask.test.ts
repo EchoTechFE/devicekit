@@ -139,7 +139,7 @@ describe('continuousScreenMaskDataURL (authoritative paint)', () => {
     const alpha = new Uint8Array(4)
     alpha[0] = 255
     const png = encodeAlphaMaskPng(2, 2, alpha)
-    expect([...png.slice(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10])
+    expect(Array.from(png.slice(0, 8))).toEqual([137, 80, 78, 71, 13, 10, 26, 10])
   })
 })
 

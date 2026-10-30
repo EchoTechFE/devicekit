@@ -75,9 +75,7 @@ async function probeOne(browser, name, expectedOs) {
       const sb = host.shadowRoot.querySelector('.status-bar')
       const screen = host.shadowRoot.querySelector('.screen')
       const bottomSafe = host.style.getPropertyValue('--device-safe-area-bottom')
-      const curve = host.dataset?.curve
-        ?? host.style.getPropertyValue('--device-corner-curve')
-        ?? ''
+
       // computed visibility of ::before is not directly available; use hidden + getComputedStyle
       const hiHidden = Boolean(!hi || hi.hidden || hi.hasAttribute('hidden'))
       let beforeDisplay = null
@@ -146,7 +144,7 @@ async function probeOne(browser, name, expectedOs) {
 }
 
 async function mapPool(items, limit, fn) {
-  const results = new Array(items.length)
+  const results = Array.from({ length: items.length })
   let i = 0
   async function worker() {
     while (i < items.length) {
