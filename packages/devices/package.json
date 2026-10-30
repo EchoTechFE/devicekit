@@ -52,9 +52,9 @@
     "prepack": "pnpm run build"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.4",
+    "@vitest/coverage-v8": "^4.1.12",
     "typescript": "5.9.2",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.12"
   },
   "publishConfig": {
     "access": "public",
