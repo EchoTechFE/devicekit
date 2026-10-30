@@ -6,6 +6,7 @@ export {
   safeAreaInsetsFor,
   statusBarEdgeFor,
   statusBarHeightFor,
+  type CornerCurve,
   type CutoutShape,
   type CutoutSpec,
   type DeviceFormFactor,

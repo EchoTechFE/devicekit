@@ -170,30 +170,49 @@ export const STATUS_BAR_STYLES = `
 }
 
 /*
- * A notch's bottom corners are rounded (cutoutBorderRadius), but where it meets
- * the screen's top edge a real phone curves the OTHER way — the edge sweeps
- * outward around the notch rather than cutting a straight corner. Two 6px
- * squares astride the top corners, each a radial gradient centered on the
- * corner nearest the notch, draw that outward curve; a pill or punch-hole
+ * A notch's bottom corners are rounded (cutoutBorderRadius / bottomRadius), but
+ * where it meets the screen's top edge a real phone curves the OTHER way — the
+ * edge sweeps outward around the notch rather than cutting a straight corner.
+ * Two squares astride the top corners, sized by --device-notch-top-radius
+ * (from CutoutSpec.topRadius, default 6), each a radial gradient centered on
+ * the corner nearest the notch, draw that outward curve; a pill or punch-hole
  * floats clear of the edge and needs none of this.
  */
+
+/* Continuous clip-path bakes ears into the silhouette — hide legacy radial patches. */
+.status-bar__notch[data-notch-curve="circular"]::before,
+.status-bar__notch[data-notch-curve="circular"]::after,
+.status-bar__notch[data-notch-curve="continuous"]::before,
+.status-bar__notch[data-notch-curve="continuous"]::after {
+  content: none;
+  display: none;
+}
+
 .status-bar__notch[data-shape="notch"]::before,
 .status-bar__notch[data-shape="notch"]::after {
   content: "";
   position: absolute;
   top: 0;
-  width: 6px;
-  height: 6px;
+  width: var(--device-notch-top-radius, 6px);
+  height: var(--device-notch-top-radius, 6px);
 }
 
 .status-bar__notch[data-shape="notch"]::before {
-  left: -6px;
-  background: radial-gradient(circle at bottom left, transparent 6px, var(--device-cutout-color) 6.5px);
+  left: calc(-1 * var(--device-notch-top-radius, 6px));
+  background: radial-gradient(
+    circle at bottom left,
+    transparent var(--device-notch-top-radius, 6px),
+    var(--device-cutout-color) calc(var(--device-notch-top-radius, 6px) + 0.5px)
+  );
 }
 
 .status-bar__notch[data-shape="notch"]::after {
-  right: -6px;
-  background: radial-gradient(circle at bottom right, transparent 6px, var(--device-cutout-color) 6.5px);
+  right: calc(-1 * var(--device-notch-top-radius, 6px));
+  background: radial-gradient(
+    circle at bottom right,
+    transparent var(--device-notch-top-radius, 6px),
+    var(--device-cutout-color) calc(var(--device-notch-top-radius, 6px) + 0.5px)
+  );
 }
 
 /* Right-anchored at --sb-trailing — the battery host's own visual box. */

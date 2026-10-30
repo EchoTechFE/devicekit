@@ -187,6 +187,8 @@ Resolved layout values are published on the element:
 | `--device-safe-area-top`, `--device-safe-area-right`, `--device-safe-area-bottom`, `--device-safe-area-left` | Safe-area insets |
 | `--device-screen-radius`, `--device-body-radius` | Shell geometry |
 | `--device-screen-radius-top-left`, `--device-screen-radius-top-right`, `--device-screen-radius-bottom-right`, `--device-screen-radius-bottom-left` | Per-corner screen radius, oriented — see `screenCorners` in `@devicekit/devices` |
+| `--device-screen-corner-shape` | `squircle` when the profile uses `cornerCurve: continuous` (iOS default), otherwise `round`. Applied **only** to `.screen` — body / bezel stay circular. Native CSS `corner-shape` needs Chromium 139+; Safari / Firefox ignore it |
+| `--device-screen-continuous-mask` | SVG `mask-image` approximating continuous corners for browsers without `corner-shape`. Set only for continuous profiles; consumed under `@supports not (corner-shape: squircle)` |
 | `--device-bezel` | Uniform bezel fallback when an edge is not specified separately |
 | `--device-bezel-top`, `--device-bezel-right`, `--device-bezel-bottom`, `--device-bezel-left` | Oriented bezel thickness on each physical edge |
 | `--device-frame-border-width` | Body border width in device CSS pixels |
@@ -202,6 +204,18 @@ Use these variables to change the frame appearance:
 | `--device-cutout-color` | Cutout color |
 | `--device-screen-background` | Empty screen and transparent status bar background |
 | `--device-status-bar-signal-image`, `--device-status-bar-wifi-image`, `--device-status-bar-battery-image` | Optional inherited mask-image overrides for a native host; the built-in project-owned paths remain the fallback |
+
+
+### Screen corner curve
+
+`cornerCurve` from `@devicekit/devices` is progressive enhancement on the **content clip** (`.screen`) only:
+
+1. Chromium 139+: `corner-shape: var(--device-screen-corner-shape)` draws a true squircle when the value is `squircle`.
+2. Safari / Firefox / older engines: the same profiles publish `--device-screen-continuous-mask`, an SVG mask used only inside `@supports not (corner-shape: squircle)`.
+3. Android and HarmonyOS stay `round` / circular — no continuous mask.
+4. `:host([embedded]) .screen` clears radius, corner-shape, and mask.
+
+Do not treat body / bezel chrome as part of screen-fidelity acceptance.
 
 If `--device-frame-border` changes the border width, set `--device-frame-border-width` to the same width so the radius calculation remains aligned.
 

@@ -372,11 +372,25 @@ frame 只帮这个槽让开状态栏。**横屏时它不处理左右安全区**�
 | `--device-safe-area-top` / `-right` / `-bottom` / `-left` | 安全区**边距**（离各边多远），跟 `env(safe-area-inset-*)` 报的是同一回事 |
 | `--device-screen-radius`、`--device-body-radius` | 机身几何 |
 | `--device-screen-radius-top-left`、`--device-screen-radius-top-right`、`--device-screen-radius-bottom-right`、`--device-screen-radius-bottom-left` | 按角、已按方向旋转的屏幕圆角——对应 `@devicekit/devices` 里的 `screenCorners` |
+| `--device-screen-corner-shape` | 配置 `cornerCurve: continuous`（iOS 默认）时为 `squircle`，否则 `round`。**只作用在 `.screen`**，机身 / bezel 仍是正圆。原生 CSS `corner-shape` 需 Chromium 139+；Safari / Firefox 会忽略 |
+| `--device-screen-continuous-mask` | 给不支持 `corner-shape` 的浏览器用的 continuous 圆角 SVG `mask-image`；仅 continuous 机型会写出，并在 `@supports not (corner-shape: squircle)` 下生效 |
 | `--device-bezel` | 没有单独指定某条边时用的统一 bezel 兜底值 |
 | `--device-bezel-top`、`--device-bezel-right`、`--device-bezel-bottom`、`--device-bezel-left` | 当前方向下机身四条物理边的 bezel 厚度 |
 | `--device-frame-border-width` | 机身描边宽度，单位是设备逻辑像素 |
 
 `embedded` 下屏幕尺寸那两个不再写出：元素自己宽高走 `100%`，尺寸归容器管。归零的是本来被手机外壳占掉的那些——窗口尺寸、三条栏的高度、四条安全区边距。`--device-pixel-ratio`、`--device-screen-radius`、`--device-bezel`、`--device-bezel-top`、`--device-bezel-right`、`--device-bezel-bottom`、`--device-bezel-left`、`--device-body-radius` 仍然是这台机器自己的值，宿主画自己的外壳时照样读得到。
+
+
+### 屏幕圆角曲率
+
+`@devicekit/devices` 的 `cornerCurve` 是**屏幕内容裁切**（`.screen`）上的渐进增强：
+
+1. Chromium 139+：`corner-shape: var(--device-screen-corner-shape)` 在值为 `squircle` 时画真正的 continuous 圆角。
+2. Safari / Firefox / 旧引擎：同一批机型会发布 `--device-screen-continuous-mask`，只在 `@supports not (corner-shape: squircle)` 里当 SVG mask 用。
+3. 安卓与鸿蒙保持 `round` / 正圆，不写 continuous mask。
+4. `:host([embedded]) .screen` 会清掉圆角、corner-shape 和 mask。
+
+屏幕保真验收不要拿机身 / bezel 外观打分。
 
 外观也留了几个变量可以盖：`--device-frame-radius`（盖过机型自己的机身圆角，现在同时驱动机身和屏幕两处圆角，屏幕会自动跟着收窄描边和内边距那部分；统一 bezel 会使用标量圆角，设置了 `bezelInsets` 且省略 `bodyRadius` 时会按四边厚度自动生成同心椭圆圆角，显式设置 `bodyRadius` 则保留这个标量；按角屏幕圆角（`screenCorners`）也会被这个覆盖统一取代，四角一起变成同一个值；只接受 CSS `<length>`——百分比会被浏览器各自相对两个盒子单独解析，机身和屏幕就不再共享同一个圆心，这个变量也就不再是"同心一个圆角"的意思了）、`--device-frame-border`、`--device-frame-background`、`--device-frame-shadow`、`--device-cutout-color`（刘海/灵动岛/挖孔的颜色）、`--device-screen-background`（屏幕上没被 slot 盖住的地方显示什么——状态栏默认透明，没有 `navigation-bar` slot 时时钟那一条露出来的就是它；默认白色，暗色页面要把它设成页面自己的背景色，否则白色状态栏文字没东西衬）。原生宿主如果能提供合法的图像输出，也可以通过继承的 `--device-status-bar-signal-image`、`--device-status-bar-wifi-image`、`--device-status-bar-battery-image` 覆盖三种状态栏 mask；不提供时仍使用包内自有 fallback path。机身默认是近黑色（`#0b0b0c`）配一圈极淡的白色描边，`--device-bezel` 按平台取默认值（iOS 6、Android/HarmonyOS 4），单个机型可以在 `shell.bezel` 里覆盖。改 `--device-frame-border` 顺带把描边宽度也改了的话，必须同步设置 `--device-frame-border-width`，否则圆角公式还是按旧的默认宽度算。
 

@@ -316,6 +316,21 @@ describe('assertDeviceProfile checks cutout when present', () => {
       'deviceProfile.cutout.centerX',
     )
   })
+
+  it('optional bottomRadius / topRadius are accepted when non-negative', () => {
+    expect(() => assertDeviceProfile({
+      ...VALID,
+      cutout: { ...VALID_CUTOUT, bottomRadius: 21, topRadius: 6 },
+    })).not.toThrow()
+  })
+
+  it('a negative cutout.bottomRadius is rejected', () => {
+    expectRejects(
+      { ...VALID, cutout: { ...VALID_CUTOUT, bottomRadius: -1 } },
+      undefined,
+      'deviceProfile.cutout.bottomRadius',
+    )
+  })
 })
 
 describe('assertDeviceProfile checks shell when present', () => {

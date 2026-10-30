@@ -44,6 +44,10 @@ export const DEVICE_FRAME_STYLES = `
   --device-screen-radius-top-right: 38px;
   --device-screen-radius-bottom-right: 38px;
   --device-screen-radius-bottom-left: 38px;
+  --device-screen-corner-shape: round;
+  --device-screen-continuous-mask: none;
+  --device-screen-clip-path: none;
+  --device-body-overflow: hidden;
   --device-bezel: 0px;
   --device-bezel-top: 0px;
   --device-bezel-right: 0px;
@@ -65,7 +69,10 @@ export const DEVICE_FRAME_STYLES = `
      radius math below stays sized for the old, thinner border. */
   --device-frame-border: var(--device-frame-border-width) solid rgba(255, 255, 255, 0.08);
   --device-frame-background: #0b0b0c;
+  /* Legacy box-shadow token kept for hosts; continuous chrome uses filter
+     (--device-frame-filter) so the outer glow follows the rounded clip-path. */
   --device-frame-shadow: 0 18px 50px rgba(16, 20, 24, 0.22);
+  --device-frame-filter: drop-shadow(0 18px 50px rgba(16, 20, 24, 0.22));
   --device-cutout-color: #000;
   /* The status bar is transparent by default, so without a navigation-bar slot
      this is what shows behind the clock — a real screen is never the bezel
@@ -94,11 +101,19 @@ export const DEVICE_FRAME_STYLES = `
   height: var(--device-height);
   padding: var(--device-bezel-top) var(--device-bezel-right) var(--device-bezel-bottom) var(--device-bezel-left);
   min-height: 0;
-  overflow: hidden;
+  /* Continuous screens: --device-body-overflow: hidden + --device-body-css-border-radius: 0
+     with an inline continuous clip-path on .body (outer chrome rounded to
+     screenRadius + bezel; no side buttons). Rectangular overflow alone left a
+     square bezel; circular body radius + overflow ate free corners (round2). */
+  overflow: var(--device-body-overflow, hidden);
   border: var(--device-frame-border);
-  border-radius: var(--device-frame-radius, var(--device-body-radius-x, calc(var(--device-body-radius) + var(--device-frame-border-width))) / var(--device-body-radius-y, calc(var(--device-body-radius) + var(--device-frame-border-width))));
+  border-radius: var(--device-body-css-border-radius, var(--device-frame-radius, var(--device-body-radius-x, calc(var(--device-body-radius) + var(--device-frame-border-width))) / var(--device-body-radius-y, calc(var(--device-body-radius) + var(--device-frame-border-width)))));
   background: var(--device-frame-background);
-  box-shadow: var(--device-frame-shadow);
+  /* drop-shadow follows clip-path silhouette; box-shadow would be clipped away
+     once continuous outer clip is applied. Hosts can still zero it via the var
+     by setting --device-frame-shadow: none (filter mirrors that when none). */
+  box-shadow: none;
+  filter: var(--device-frame-filter, drop-shadow(0 18px 50px rgba(16, 20, 24, 0.22)));
 }
 
 /* Fills its container with no phone pretense: no bezel, no status bar, no home
@@ -117,10 +132,15 @@ export const DEVICE_FRAME_STYLES = `
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  filter: none;
 }
 
 :host([embedded]) .screen {
   border-radius: 0;
+  corner-shape: round;
+  clip-path: none;
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 :host([hidden]) {
@@ -137,8 +157,17 @@ export const DEVICE_FRAME_STYLES = `
   background: var(--device-screen-background);
   /* The screen sits inside both the bezel and the border, so staying concentric
      with the body needs both subtracted back out — floored at 0 so a small
-     --device-frame-radius override never asks for a negative radius. */
-  border-radius: var(--device-screen-radius-effective-top-left) var(--device-screen-radius-effective-top-right) var(--device-screen-radius-effective-bottom-right) var(--device-screen-radius-effective-bottom-left);
+     --device-frame-radius override never asks for a negative radius.
+     Continuous screens: paint authority is an **inline** Figma ξ clip-path set
+     by DeviceFrame (not these CSS vars). When that clip is applied,
+     --device-screen-css-border-radius is 0; if unavailable, labeled circular
+     effective radii below remain (never a square clip). */
+  border-radius: var(--device-screen-css-border-radius, var(--device-screen-radius-effective-top-left) var(--device-screen-radius-effective-top-right) var(--device-screen-radius-effective-bottom-right) var(--device-screen-radius-effective-bottom-left));
+  corner-shape: var(--device-screen-corner-shape);
+  /* Inert for continuous — inline clip-path on .screen is authoritative. */
+  clip-path: var(--device-screen-clip-path, none);
+  -webkit-mask-image: none;
+  mask-image: none;
 }
 
 /* A centered ring makes a desktop mouse read as a touch point while it is
@@ -233,9 +262,10 @@ export const DEVICE_FRAME_STYLES = `
 ${STATUS_BAR_STYLES}
 
 /*
- * Home-indicator pill — an absolute overlay at the device bottom, present only
- * on gesture-bar devices (the home-button class has bottom inset 0). It is NOT
- * in flow and is transparent, so whatever the screen renders behind it shows
+ * Home-indicator pill — iOS-only absolute overlay at the device bottom (Android
+ * / Harmony gesture nav do not use this chrome). Present only when os === 'ios'
+ * and bottom safe inset > 0 (home-button iPhones have inset 0). It is NOT in
+ * flow and is transparent, so whatever the screen renders behind it shows
  * through; content reserves bottom space via its own safe-area handling.
  */
 .home-indicator {
