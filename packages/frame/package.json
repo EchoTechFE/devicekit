@@ -57,7 +57,7 @@
     "@devicekit/devices": "workspace:^"
   },
   "devDependencies": {
-    "astro": "7.3.5",
+    "astro": "7.4.2",
     "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

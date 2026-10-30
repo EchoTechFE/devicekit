@@ -32,8 +32,8 @@
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",
-    "oxfmt": "0.72.0",
-    "oxlint": "1.87.0",
+    "oxfmt": "0.75.0",
+    "oxlint": "1.90.0",
     "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.15.9",
@@ -43,8 +43,12 @@
       "undici@^8": "8.12.3",
       "launch-editor": "2.14.2",
       "shell-quote": "1.12.0",
-      "devalue": "5.9.3",
-      "http-cache-semantics": "4.3.0"
+      "http-cache-semantics": "4.3.0",
+      "devalue@^5": "5.9.3",
+      "zod": "4.6.6",
+      "sharp": "0.35.5",
+      "smol-toml": "1.9.1",
+      "source-map-js": "1.2.2"
     }
   }
 }
