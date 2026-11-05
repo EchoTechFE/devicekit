@@ -7,7 +7,15 @@
  * leaves the document is easier to get right when one object starts and stops
  * it.
  */
-import { cutoutBorderRadius, cutoutLeft } from './cutout.js'
+import {
+  cutoutBorderRadius,
+  cutoutLeft,
+  cutoutNotchContinuousClipPath,
+  cutoutPaintLeft,
+  cutoutPaintWidth,
+  cutoutTopRadius,
+  NOTCH_CURVE_TOKEN,
+} from './cutout.js'
 import { computeStatusBarLayout, type StatusBarLayout } from './status-bar-layout.js'
 import { setStatusBarIconMetrics } from './status-bar-icons.js'
 import { cutoutFor, type Orientation, type ResolvedDevice } from '@devicekit/devices'
@@ -214,22 +222,50 @@ export class StatusBar {
       this.#cutoutEl.style.removeProperty('top')
       this.#cutoutEl.style.removeProperty('left')
       this.#cutoutEl.style.removeProperty('border-radius')
+      this.#cutoutEl.style.removeProperty('--device-notch-top-radius')
+      this.#cutoutEl.style.removeProperty('clip-path')
+      this.#cutoutEl.style.removeProperty('-webkit-clip-path')
+      delete this.#cutoutEl.dataset.notchCurve
       return
     }
 
-    // The stylesheet keys shape-specific paint (the notch's outward-curving
-    // ears) off this attribute; geometry alone can't tell a notch from a pill.
+    // The stylesheet keys shape-specific paint (legacy radial ears) off this
+    // attribute; geometry alone can't tell a notch from a pill.
     this.#cutoutEl.dataset.shape = cutout.shape
-    this.#cutoutEl.style.width = `${cutout.width}px`
     this.#cutoutEl.style.height = `${cutout.height}px`
     this.#cutoutEl.style.top = `${cutout.top}px`
     const screenWidth = orientation === 'landscape' ? device.screen.height : device.screen.width
-    const left = cutoutLeft(cutout, screenWidth)
-    this.#cutoutEl.style.left = `${layout.edge === 'right' ? left - (screenWidth - layout.height) : left}px`
-    this.#cutoutEl.style.borderRadius = cutoutBorderRadius(cutout)
+    // Face ID notch: single circular clip-path (ears + bottomRadius). Pixel-gated
+    // vs CSS radial+radius gold — outward ears (sweep 0) + bottom fillets.
+    // Avoids CSS ::before/::after seam bias at the sharp body top corners.
+    // Legacy radial kept as stylesheet fallback when data-notch-curve is unset.
+    const notchClip = cutout.shape === 'notch' ? cutoutNotchContinuousClipPath(cutout) : null
+    if (notchClip) {
+      this.#cutoutEl.dataset.notchCurve = NOTCH_CURVE_TOKEN
+      this.#cutoutEl.style.width = `${cutoutPaintWidth(cutout)}px`
+      // Integer snap: fractional left made L/R ear AA look biased in crops.
+      const rawLeft = cutoutPaintLeft(cutout, screenWidth)
+      const left = Math.round(rawLeft)
+      this.#cutoutEl.style.left = `${layout.edge === 'right' ? left - (screenWidth - layout.height) : left}px`
+      // Shape comes from clip-path; zero CSS radius so it can't fight the path.
+      this.#cutoutEl.style.borderRadius = '0'
+      this.#cutoutEl.style.clipPath = notchClip
+      this.#cutoutEl.style.setProperty('-webkit-clip-path', notchClip)
+      this.#cutoutEl.style.setProperty('--device-notch-top-radius', `${cutoutTopRadius(cutout)}px`)
+    } else {
+      delete this.#cutoutEl.dataset.notchCurve
+      this.#cutoutEl.style.width = `${cutout.width}px`
+      // Keep fractional left for pill/circle (Duo punch-hole centering).
+      const left = cutoutLeft(cutout, screenWidth)
+      this.#cutoutEl.style.left = `${layout.edge === 'right' ? left - (screenWidth - layout.height) : left}px`
+      this.#cutoutEl.style.borderRadius = cutoutBorderRadius(cutout)
+      this.#cutoutEl.style.removeProperty('clip-path')
+      this.#cutoutEl.style.removeProperty('-webkit-clip-path')
+      this.#cutoutEl.style.removeProperty('--device-notch-top-radius')
+    }
   }
 
-  #tick(): void {
+    #tick(): void {
     this.#timeEl.textContent = currentClockText(new Date())
   }
 

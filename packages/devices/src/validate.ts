@@ -149,6 +149,12 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
     if (cutout.centerX !== undefined) {
       expectFiniteBetween(`${label}.${field}.centerX`, cutout.centerX, 0, 1)
     }
+    if (cutout.bottomRadius !== undefined) {
+      expectFiniteAtLeast(`${label}.${field}.bottomRadius`, cutout.bottomRadius, 0, false)
+    }
+    if (cutout.topRadius !== undefined) {
+      expectFiniteAtLeast(`${label}.${field}.topRadius`, cutout.topRadius, 0, false)
+    }
   }
 
   if (value.shell !== undefined) {
@@ -180,6 +186,9 @@ export function assertDeviceProfile(value: unknown, label = 'deviceProfile'): as
     if (shell.homeButton !== undefined && shell.homeButton !== null) {
       if (!isPlainObject(shell.homeButton)) throw new TypeError(`${label}.shell.homeButton must be an object, got ${shell.homeButton === null ? 'null' : typeof shell.homeButton}`)
       expectFiniteAtLeast(`${label}.shell.homeButton.diameter`, shell.homeButton.diameter, 0, true)
+    }
+    if (shell.cornerCurve !== undefined && shell.cornerCurve !== 'circular' && shell.cornerCurve !== 'continuous') {
+      throw new TypeError(`${label}.shell.cornerCurve must be one of "circular", "continuous", got ${JSON.stringify(shell.cornerCurve)}`)
     }
   }
 }

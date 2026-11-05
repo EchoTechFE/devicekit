@@ -24,7 +24,31 @@ const device = findDevice(DEVICE_NAMES.iPhone_16_Pro) ?? DEFAULT_DEVICE
 
 `DEVICE_NAMES` 把表里每个 `name` 都变成一个能自动补全的常量，不用手打字符串：`DEVICE_NAMES.iPhone_16_Pro` 就是字符串 `'iPhone 16 Pro'`。键的推导规则是把机型名里每一段不属于 `[A-Za-z0-9]` 的字符合并成一个 `_`，再去掉首尾的 `_`——`'iPhone 12/13 (Pro)'` 变成 `iPhone_12_13_Pro`，`'iPad Pro 10.5-inch'` 变成 `iPad_Pro_10_5_inch`。写 `findDevice(DEVICE_NAMES.iPhone_16_Pro)` 传的还是字符串本身，常量的作用只是让手误变成一个不存在的属性报错，而不是查找悄悄落空。`DEVICE_NAMES` 来自一份生成文件，见下面的 API 一览。
 
-`CLASSIC_DEVICES` 是从同一批对象里手选出的精简子集——19 台，按 iOS → Android → HarmonyOS 分组——给放不下 171 行的机型下拉框用。选哪几台是主观判断，不是排名：iPhone 和 iPad、Pixel 和 Galaxy，加一台小米和四台华为。需要完整机型表的宿主仍然读 `DEVICES`。
+`CLASSIC_DEVICES` 是从同一批对象里手选出的精简子集——**17** 台，按 iOS → Android → HarmonyOS 分组——给放不下 171 行的机型下拉框用。选哪几台是主观判断，不是排名：iPhone 和 iPad、Pixel 9 Pro 与 Galaxy S24/Ultra，加四台华为。Pixel 8 与小米 14 仍在 `DEVICES` 里，但未测到 RoundedCorner / cutout / safe 前不进 Classic。需要完整机型表的宿主仍然读 `DEVICES`。
+
+
+## Galaxy S24 Ultra 窗口模式（默认 FHD+）
+
+Classic / 默认的 `Galaxy S24 Ultra` 使用 windowinsets.info 在 densityDpi 450 下报告的 **FHD+ 手势窗**：
+
+| 字段 | 值 |
+| --- | --- |
+| 逻辑窗 | **384×832** @ **2.8125** |
+| 屏幕圆角 | **2.13**（FHD+ 下接近直角裁切；截图验收不要按 S24 的 36 来比） |
+| 安全区 | top ≈34 / bottom ≈15 |
+
+这不是面板完整 WQHD+ 逻辑尺寸（旧值曾是 412×915 @2.625）。需要旧窗的宿主请显式覆盖 `deviceProfile`：
+
+```ts
+const ultra = findDevice('Galaxy S24 Ultra')!
+const wqhd = {
+  ...ultra,
+  screen: { width: 412, height: 915 },
+  pixelRatio: 2.625,
+}
+```
+
+命名的双字段 / `screenMode` API 记为 P1。在此之前，Classic 消费者应把 384×832 当作破坏性默认。
 
 ## 一条机型长什么样
 
@@ -95,7 +119,7 @@ const resolved = resolveDevice(device)
 
 明确**未核实**、因而留在默认值上没有猜的：
 
-- iPhone Duo 的摄像头孔和专用状态栏已按 Apple 官网营销图做像素校准；points、DPR 和安全区仍未经过 Xcode 27.1 DeviceHub 实测。
+- iPhone Duo 的布局点、安全区和自由边圆角（59，continuous）按 Xcode 27.1 DeviceHub / safearea.info；外屏空闲挖孔仍为 Ø37 圆；铰链边圆角（~6）仍为 provisional。折痕 / pose API 尚未建模。
 
 - 鸿蒙的手势条高度——来源里没有这一项，所以这些机型报的底部安全区是 0，手势条也不画。
 - 安卓和鸿蒙横屏的一切——包括状态栏转屏后是不是还在。机型不写横屏字段时并不会沿用自己竖屏的值，而是落到 `PLATFORM_DEFAULTS`：安卓固定 24、鸿蒙固定 36，跟这台机器竖屏实测多少无关（比如 Pixel 7 竖屏状态栏是 52，横屏没写就落到 24）。机型不写 `safeAreaInsetsLandscape` 时，顶部安全区仍然按横屏状态栏高度补齐，不会补成 0——安卓和鸿蒙转成横屏状态栏照样在，补 0 跟竖屏不测就漏填一样是错的。只有横屏状态栏本来就是 0 的 iOS 才能放心用空安全区兜底。
@@ -156,7 +180,7 @@ import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 | `IOS_DEVICES` | `readonly PresetDeviceProfile[]` | iOS 那部分 |
 | `ANDROID_DEVICES` | `readonly PresetDeviceProfile[]` | Android 那部分 |
 | `HARMONY_DEVICES` | `readonly PresetDeviceProfile[]` | HarmonyOS 那部分 |
-| `CLASSIC_DEVICES` | `readonly PresetDeviceProfile[]` | 手选的不到 20 台，同一批对象，给短列表用 |
+| `CLASSIC_DEVICES` | `readonly PresetDeviceProfile[]` | 手选的 17 台，同一批对象，给短列表用 |
 | `DEFAULT_DEVICE` | `PresetDeviceProfile` | 没指定机型时画的那台（iPhone X） |
 | `PLATFORM_DEFAULTS` | `Record<DeviceOS, {...}>` | 各平台的状态栏、导航栏和机身默认值 |
 | `DEVICE_NAMES` | `{ [key: string]: string }`（as const） | 每个 `DEVICES[number].name`，键是 `deviceNameKey(name)`——生成文件，见下 |
@@ -198,6 +222,7 @@ import { deviceUserAgent, systemVersion } from '@devicekit/devices'
 | `DeviceShell` | 机身：`screenRadius`、统一的 `bezel`；`bezelInsets` 可单独指定四边，`homeButton` 描述实体 Home 键；用了分边 inset 时应显式设置 `bodyRadius` |
 | `CornerRadii` | `{ topLeft, topRight, bottomRight, bottomLeft }`，顺序和 CSS `border-radius` 一致 |
 | `screenCorners`（`DeviceShell` 上的字段） | 按角覆盖 `screenRadius`，用于四角屏幕圆角不一致的机身——比如折叠屏合页那一侧。省略的角沿用统一的 `screenRadius` |
+| `cornerCurve`（`DeviceShell` 上的字段） | `'circular'` 或 `'continuous'`；只作用在 `.screen`（iOS 默认 continuous / squircle；安卓与鸿蒙保持 circular） |
 | `HomeButtonSpec` | `{ diameter }`，机身 bezel 中央的实体 Home 键 |
 | `ResolvedDeviceShell` | 四边都已补齐、`homeButton` 为规格或 `null` 的机身数据 |
 | `WindowSizeOptions` | `resolveWindowSize` 的选项：`orientation`、`navigationBar`、`tabBarHeight` |

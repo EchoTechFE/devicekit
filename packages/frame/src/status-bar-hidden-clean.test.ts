@@ -26,7 +26,7 @@ function cutoutEl(el: DeviceFrameElement): HTMLElement {
   return el.shadowRoot!.querySelector<HTMLElement>('.status-bar__notch')!
 }
 
-const GEOMETRY_PROPS = ['height', 'width', 'top', 'left', 'border-radius'] as const
+const GEOMETRY_PROPS = ['height', 'width', 'top', 'left', 'border-radius', 'clip-path'] as const
 
 afterEach(() => {
   document.body.innerHTML = ''

@@ -1,5 +1,18 @@
 # @devicekit/frame
 
+## Unreleased
+
+### Minor Changes
+
+- Screen continuous corners: Figma ξ≈0.6 `clip-path` on `.screen` + matching outer body chrome; Chromium `corner-shape: squircle` kept as progressive enhancement. Documented in the frame README.
+- Face ID notch paint: circular `clip-path` ears + bottom fillets (`notch-continuous-path`); no Figma ξ on the notch.
+- Home indicator: iOS-only — hidden for every non-iOS preset.
+
+### Patch Changes
+
+- Updated dependencies
+  - @devicekit/devices (screen-fidelity radii / Duo landscape / Android cutouts)
+
 ## 0.4.1
 
 ### Patch Changes

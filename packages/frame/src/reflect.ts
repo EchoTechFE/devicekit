@@ -69,6 +69,25 @@ export function reflectMetrics(style: CSSStyleDeclaration, metrics: DeviceMetric
   style.setProperty('--device-screen-radius-top-right', `${corners.topRight}px`)
   style.setProperty('--device-screen-radius-bottom-right', `${corners.bottomRight}px`)
   style.setProperty('--device-screen-radius-bottom-left', `${corners.bottomLeft}px`)
+  // Continuous applies only via DeviceFrame `#applyScreenClip` (inline Figma
+  // `clip-path` on `.screen` / `.body`) — not via these CSS vars.
+  //
+  // Do NOT zero CSS radius here. That path is gated on a successful clip; if
+  // the clip is `'none'`, circular labeled radii must remain.
+  if (shell.cornerCurve === 'continuous') {
+    style.setProperty('--device-screen-corner-shape', 'round')
+    style.removeProperty('--device-screen-css-border-radius')
+    style.removeProperty('--device-body-overflow')
+    style.setProperty('--device-screen-clip-path', 'none')
+    style.setProperty('--device-screen-continuous-mask', 'none')
+  }
+  else {
+    style.setProperty('--device-screen-corner-shape', 'round')
+    style.removeProperty('--device-screen-css-border-radius')
+    style.removeProperty('--device-screen-clip-path')
+    style.removeProperty('--device-body-overflow')
+    style.removeProperty('--device-screen-continuous-mask')
+  }
   style.setProperty('--device-bezel', `${shell.bezel}px`)
   const shellInsets = orientedShellInsets(shell.bezelInsets, metrics.orientation)
   style.setProperty('--device-bezel-top', `${shellInsets.top}px`)

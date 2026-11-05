@@ -34,13 +34,13 @@ describe('DEVICE_FRAME_STYLES corner radius variables', () => {
 
   it('.body border-radius accepts per-corner elliptical variables with scalar fallback', () => {
     expect(ruleBody('.body')).toMatch(
-      /border-radius:\s*var\(--device-frame-radius,\s*var\(--device-body-radius-x,\s*calc\(var\(--device-body-radius\)\s*\+\s*var\(--device-frame-border-width\)\)\)\s*\/\s*var\(--device-body-radius-y,\s*calc\(var\(--device-body-radius\)\s*\+\s*var\(--device-frame-border-width\)\)\)\)/,
+      /border-radius:\s*var\(--device-body-css-border-radius,\s*var\(--device-frame-radius,\s*var\(--device-body-radius-x,\s*calc\(var\(--device-body-radius\)\s*\+\s*var\(--device-frame-border-width\)\)\)\s*\/\s*var\(--device-body-radius-y,\s*calc\(var\(--device-body-radius\)\s*\+\s*var\(--device-frame-border-width\)\)\)\)\)/,
     )
   })
 
   it('.screen uses per-corner effective radii that each preserve the host override calculation', () => {
     expect(ruleBody('.screen')).toMatch(
-      /border-radius:\s*var\(--device-screen-radius-effective-top-left\)\s*var\(--device-screen-radius-effective-top-right\)\s*var\(--device-screen-radius-effective-bottom-right\)\s*var\(--device-screen-radius-effective-bottom-left\)/,
+      /border-radius:\s*var\(--device-screen-css-border-radius,\s*var\(--device-screen-radius-effective-top-left\)\s*var\(--device-screen-radius-effective-top-right\)\s*var\(--device-screen-radius-effective-bottom-right\)\s*var\(--device-screen-radius-effective-bottom-left\)\)/,
     )
     for (const corner of ['top-left', 'top-right', 'bottom-right', 'bottom-left']) {
       const pattern = new RegExp(
@@ -49,4 +49,24 @@ describe('DEVICE_FRAME_STYLES corner radius variables', () => {
       expect(DEVICE_FRAME_STYLES).toMatch(pattern)
     }
   })
+
+  it('.screen declares corner-shape from --device-screen-corner-shape (continuous only on screen)', () => {
+    expect(ruleBody('.screen')).toMatch(/corner-shape:\s*var\(--device-screen-corner-shape\)/)
+    expect(ruleBody('.body')).not.toMatch(/corner-shape/)
+  })
+
+  it('keeps circular border-radius fallback vars; continuous paint is inline Figma clip-path', () => {
+    const screen = ruleBody('.screen')
+    // CSS-var clip-path hook stays present but inert for continuous;
+    // authoritative paint is inline Figma clip-path from DeviceFrame.
+    expect(screen).toMatch(/clip-path:\s*var\(--device-screen-clip-path/)
+    expect(screen).toMatch(/mask-image:\s*none/)
+    expect(screen).toMatch(/border-radius:\s*var\(--device-screen-css-border-radius,/)
+    expect(DEVICE_FRAME_STYLES).toMatch(/inline.*Figma|Figma.*clip-path/i)
+    expect(DEVICE_FRAME_STYLES).not.toMatch(/@supports\s+not\s*\(corner-shape:\s*squircle\)/)
+    const body = ruleBody('.body')
+    expect(body).toMatch(/overflow:\s*var\(--device-body-overflow,\s*hidden\)/)
+    expect(body).toMatch(/--device-body-css-border-radius/)
+  })
 })
+

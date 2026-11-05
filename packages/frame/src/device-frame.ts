@@ -48,8 +48,16 @@ import {
 import { CONTENT_RECT_CHANGE_EVENT, type DeviceFrameElementEventMap } from './element-events.js'
 import { computeDeviceMetrics, DEFAULT_TAB_BAR_HEIGHT, type DeviceMetrics, type StatusBarTextStyle } from './metrics.js'
 import { reflectAttribute, reflectFlag, reflectMetrics } from './reflect.js'
+import {
+  applyContinuousScreenPaint,
+  clearContinuousScreenPaint,
+  continuousBodyCorners,
+  continuousScreenClipPath,
+} from './continuous-corner-mask.js'
+import { figmaContinuousClipPath } from './figma-continuous-path.js'
+import { orientedShellCorners, orientedShellInsets } from './shell-insets.js'
 import { StatusBar, statusBarTextColor } from './status-bar.js'
-import { adoptDeviceFrameStyles } from './styles.js'
+import { adoptDeviceFrameStyles, DEVICE_FRAME_BORDER_WIDTH } from './styles.js'
 import { upgradeProperties } from './upgrade-properties.js'
 
 export { CONTENT_RECT_CHANGE_EVENT }
@@ -411,6 +419,9 @@ export class DeviceFrameElement extends HTMLElementBase {
     this.dataset.devicekitInteractionMode = this.interactionMode
     const metrics = this.metrics
     reflectMetrics(this.style, metrics, this.embedded, this.profile)
+    // Continuous silhouette: inline analytical PNG mask on .screen (QA round3).
+    // CSS-var masks / clip-path are not the paint authority.
+    this.#applyScreenClip(metrics)
 
     const statusBarMode = this.getAttribute('status-bar')
     const showStatusBar = !this.embedded && statusBarMode !== 'hidden' && metrics.statusBarHeight > 0
@@ -428,10 +439,13 @@ export class DeviceFrameElement extends HTMLElementBase {
       embedded: this.embedded,
     })
 
-    // Unconditional, not gated on showStatusBar: iOS landscape hides the status
-    // bar but the home indicator still has to track status-bar-text-style.
+    // iOS-only chrome: Android/Harmony gesture nav does not draw the 118×4 home
+    // pill. Bottom safe-area inset still applies for content; only the visual is
+    // gated. Unconditional vs showStatusBar: iOS landscape hides the status bar
+    // but the home indicator still has to track status-bar-text-style.
     this.#homeIndicatorEl.style.color = statusBarTextColor(this.getAttribute('status-bar-text-style'))
-    this.#homeIndicatorEl.hidden = this.embedded || metrics.safeAreaInsets.bottom <= 0
+    this.#homeIndicatorEl.hidden =
+      this.embedded || this.profile.os !== 'ios' || metrics.safeAreaInsets.bottom <= 0
     const homeButton = metrics.shell.homeButton
     if (homeButton && !this.embedded) {
       if (!this.#homeButtonEl.isConnected) this.shadowRoot?.querySelector('.body')?.append(this.#homeButtonEl)
@@ -477,6 +491,40 @@ export class DeviceFrameElement extends HTMLElementBase {
    * "only fire on an actual change" contract is the same one attribute-driven
    * re-renders already keep. A no-op while disconnected — see `#publishContentRect`.
    */
+
+  /**
+   * Continuous screens: inline Figma ξ≈0.6 `clip-path: path(...)` on `.screen`
+   * (hard clip — paint authority) and a matching outer continuous clip on
+   * `.body` so black chrome is rounded (bodyRadius ≈ screen + bezel) without
+   * drawing side buttons. Screen path is NOT inset: a 1px inset clipped the
+   * Face ID notch radial ears at y=0 (widest flare). Body corners include
+   * underlap so dark bezel covers screen AA (no white page bleed).
+   */
+  #applyScreenClip(metrics: DeviceMetrics): void {
+    const screen = this.#screenEl
+    const body = this.shadowRoot?.querySelector('.body') as HTMLElement | null
+    if (!screen) return
+    if (this.embedded || metrics.shell.cornerCurve !== 'continuous') {
+      clearContinuousScreenPaint({ screen, body, hostStyle: this.style })
+      return
+    }
+    const corners = orientedShellCorners(metrics.shell.screenCorners, metrics.orientation)
+    // Inset 0: notch ::before/::after ears paint at the top edge; body underlap
+    // covers continuous-corner AA against the page.
+    const clip = figmaContinuousClipPath(
+      metrics.screen.width,
+      metrics.screen.height,
+      corners,
+    )
+    const insets = orientedShellInsets(metrics.shell.bezelInsets, metrics.orientation)
+    // Outer continuous corners: screen + adjacent bezel + hairline + underlap.
+    const bodyCorners = continuousBodyCorners(corners, insets, DEVICE_FRAME_BORDER_WIDTH)
+    const bodyW = metrics.screen.width + insets.left + insets.right + 2 * DEVICE_FRAME_BORDER_WIDTH
+    const bodyH = metrics.screen.height + insets.top + insets.bottom + 2 * DEVICE_FRAME_BORDER_WIDTH
+    const bodyClip = continuousScreenClipPath(bodyW, bodyH, bodyCorners)
+    applyContinuousScreenPaint({ screen, body, hostStyle: this.style, clip, bodyClip })
+  }
+
   refreshContentRect(): void {
     this.#publishContentRect()
   }

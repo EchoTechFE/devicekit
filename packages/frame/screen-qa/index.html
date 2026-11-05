@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>devicekit screen-fidelity QA</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!--
+    Corner / safe-area / outer-chrome QA page for browser screenshots.
+    Frames are immersive so colored corner pads paint under the status bar
+    into the continuous screen clip (no white status "cap").
+  -->
+  <header>
+    <h1>devicekit screen-fidelity QA</h1>
+    <p>
+      <code>immersive</code> content pads fill screen corners (including under the status bar).
+      Accept continuous silhouette on <code>.screen</code>; outer black chrome should be concentric.
+      No side buttons.
+    </p>
+  </header>
+  <div id="gallery" class="gallery"></div>
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>
