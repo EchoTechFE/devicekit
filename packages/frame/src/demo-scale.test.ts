@@ -3,7 +3,7 @@ import { overflowsViewport, scaleFor, scaledViewport } from './demo-scale.js'
 
 describe('demo scale modes', () => {
   it('uses the clamped stage fit only for Fit to window', () => {
-    expect(scaleFor('fit', 1.4)).toBe(1)
+    expect(scaleFor('fit', 1.4)).toBe(0.75)
     expect(scaleFor('fit', 0.62)).toBe(0.62)
   })
 

@@ -14,7 +14,14 @@ import {
   type ContentRect,
   type DeviceFrameElement,
 } from '@devicekit/frame'
-import { overflowsViewport, scaleFor, scaleLabel, scaledViewport, type DemoScaleMode } from '../src/demo-scale.js'
+import {
+  DEMO_FIT_MAX_SCALE,
+  overflowsViewport,
+  scaleFor,
+  scaleLabel,
+  scaledViewport,
+  type DemoScaleMode,
+} from '../src/demo-scale.js'
 import { DEMO_DEFAULT_DEVICE_NAME, newestDevicesFirst } from '../src/demo-device-order.js'
 import { demoPageMetadata } from '../src/demo-page-metadata.js'
 import { devicePath } from '../src/demo-device-url.js'
@@ -180,12 +187,12 @@ function report(rect: ContentRect = frame.contentRect): void {
 function layout(): void {
   scaler.style.transform = 'none'
   const fit = Math.min(
-    1,
+    DEMO_FIT_MAX_SCALE,
     (stage.clientWidth - STAGE_MARGIN) / scaler.offsetWidth,
     (stage.clientHeight - STAGE_MARGIN) / scaler.offsetHeight,
   )
   const mode = zoomSelect.value as DemoScaleMode
-  const scale = scaleFor(mode, fit > 0 ? fit : 1)
+  const scale = scaleFor(mode, fit > 0 ? fit : DEMO_FIT_MAX_SCALE)
   const footprint = scaledViewport({ width: scaler.offsetWidth, height: scaler.offsetHeight }, scale)
   const overflow = overflowsViewport(footprint, { width: stage.clientWidth, height: stage.clientHeight })
   zoomValue.value = scaleLabel(mode, fit > 0 ? fit : 1)

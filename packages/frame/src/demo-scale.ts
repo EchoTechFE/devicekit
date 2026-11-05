@@ -1,8 +1,19 @@
 export type DemoScaleMode = 'fit' | '100' | '75' | '50'
 
+/**
+ * Universal default scale ceiling for Fit mode (75%).
+ *
+ * Real phone displays have ~150 CSS PPI (e.g. 460 physical PPI @ 3x DPR),
+ * while desktop displays are 96-120 CSS PPI. At 100% CSS pixels, mobile frames
+ * render ~40-60% larger than physical devices. Capping Fit at 75% delivers a
+ * realistic physical size (~65mm width on Retina displays, ~78mm on 96 PPI)
+ * and guarantees frames fit within standard 700-800px viewports without scrolling.
+ */
+export const DEMO_FIT_MAX_SCALE = 0.75
+
 /** Resolves the demo's Chrome-style scale choice without reading the DOM. */
 export function scaleFor(mode: DemoScaleMode, fit: number): number {
-  if (mode === 'fit') return Math.min(1, Math.max(0, fit))
+  if (mode === 'fit') return Math.min(DEMO_FIT_MAX_SCALE, Math.max(0, fit))
   return Number(mode) / 100
 }
 
