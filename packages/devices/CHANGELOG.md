@@ -1,8 +1,8 @@
 # @devicekit/devices
 
-## Unreleased
+## 0.4.2
 
-### Minor Changes
+### Patch Changes
 
 - Screen-fidelity P0 follow-up (adversarial review):
   - iOS ScreenCorners fractions: store **47.33** / **53.33** where measured (was truncated 47 / 53).
